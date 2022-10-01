@@ -1,4 +1,4 @@
-# beetirme
+# Beetirme
 Beetirme project repo for Bilkent University graduation design project.
 
 # Members
