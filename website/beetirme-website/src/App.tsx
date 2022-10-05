@@ -63,8 +63,6 @@ function App() {
               <Typography
                 variant="h4"
                 noWrap
-                component="a"
-                href="/"
                 sx={{
                   mr: 8,
                   display: { xs: "none", md: "flex" },
