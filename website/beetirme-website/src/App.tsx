@@ -20,6 +20,8 @@ import {
 } from "@mui/material";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 
+import { releaseDate } from "./releaseDate";
+
 import ardaOnalPhoto from "./static/images/avatar/ardaOnal.jpg";
 import efeBeydoganPhoto from "./static/images/avatar/efeBeydogan.jpg";
 import mertBarkinErPhoto from "./static/images/avatar/mertBarkinEr.jpg";
@@ -203,76 +205,67 @@ function App() {
               </div>
               <List>
                 <ListItem>
-                  <ListItemAvatar>
-                    <Avatar
-                      alt="Arda Onal"
-                      src={ardaOnalPhoto}
-                      sx={avatarStyle}
-                      onClick={() =>
-                        window.open("https://www.linkedin.com/in/ardaonal/")
-                      }
-                    />
-                  </ListItemAvatar>
+                  <a href="https://www.linkedin.com/in/ardaonal/">
+                    <ListItemAvatar>
+                      <Avatar
+                        alt="Arda Onal"
+                        src={ardaOnalPhoto}
+                        sx={avatarStyle}
+                      />
+                    </ListItemAvatar>
+                  </a>
                   <ListItemText primary="Arda Önal" />
                 </ListItem>
 
                 <ListItem>
-                  <ListItemAvatar>
-                    <Avatar
-                      alt="Efe Beydogan"
-                      src={efeBeydoganPhoto}
-                      sx={avatarStyle}
-                      onClick={() =>
-                        window.open("https://www.linkedin.com/in/efebeydogan/")
-                      }
-                    />
-                  </ListItemAvatar>
+                  <a href="https://www.linkedin.com/in/efebeydogan/">
+                    <ListItemAvatar>
+                      <Avatar
+                        alt="Efe Beydogan"
+                        src={efeBeydoganPhoto}
+                        sx={avatarStyle}
+                      />
+                    </ListItemAvatar>
+                  </a>
                   <ListItemText primary="Efe Beydogan" />
                 </ListItem>
 
                 <ListItem>
-                  <ListItemAvatar>
-                    <Avatar
-                      alt="Emir Melih Erdem"
-                      src={emirMelihErdemPhoto}
-                      sx={avatarStyle}
-                      onClick={() =>
-                        window.open(
-                          "https://www.linkedin.com/in/emir-melih-erdem/"
-                        )
-                      }
-                    />
-                  </ListItemAvatar>
+                  <a href="https://www.linkedin.com/in/emir-melih-erdem/">
+                    <ListItemAvatar>
+                      <Avatar
+                        alt="Emir Melih Erdem"
+                        src={emirMelihErdemPhoto}
+                        sx={avatarStyle}
+                      />
+                    </ListItemAvatar>
+                  </a>
                   <ListItemText primary="Emir Melih Erdem" />
                 </ListItem>
 
                 <ListItem>
-                  <ListItemAvatar>
-                    <Avatar
-                      alt="Eren Polat"
-                      src={erenPolatPhoto}
-                      sx={avatarStyle}
-                      onClick={() =>
-                        window.open(
-                          "https://www.linkedin.com/in/eren-polat323/"
-                        )
-                      }
-                    />
-                  </ListItemAvatar>
+                  <a href="https://www.linkedin.com/in/eren-polat323/">
+                    <ListItemAvatar>
+                      <Avatar
+                        alt="Eren Polat"
+                        src={erenPolatPhoto}
+                        sx={avatarStyle}
+                      />
+                    </ListItemAvatar>
+                  </a>
                   <ListItemText primary="Eren Polat" />
                 </ListItem>
 
                 <ListItem>
-                  <ListItemAvatar>
-                    <Avatar
-                      alt="Mert Barkin Er"
-                      src={mertBarkinErPhoto}
-                      sx={avatarStyle}
-                      onClick={() =>
-                        window.open("https://www.linkedin.com/in/mertbarkın/")
-                      }
-                    />
-                  </ListItemAvatar>
+                  <a href="https://www.linkedin.com/in/mertbarkın/">
+                    <ListItemAvatar>
+                      <Avatar
+                        alt="Mert Barkin Er"
+                        src={mertBarkinErPhoto}
+                        sx={avatarStyle}
+                      />
+                    </ListItemAvatar>
+                  </a>
                   <ListItemText
                     primary="Mert Barkın Er"
                     onClick={() =>
@@ -313,14 +306,15 @@ function App() {
                 <Typography variant="h4"> Supervisor</Typography>
               </div>
               <ListItem>
-                <ListItemAvatar>
-                  <Avatar
-                    alt="Ozgur Oguz"
-                    src={ozgurOguzPhoto}
-                    sx={avatarStyle}
-                    onClick={() => window.open("https://oz-oguz.github.io")}
-                  />
-                </ListItemAvatar>
+                <a href="https://oz-oguz.github.io">
+                  <ListItemAvatar>
+                    <Avatar
+                      alt="Ozgur Oguz"
+                      src={ozgurOguzPhoto}
+                      sx={avatarStyle}
+                    />
+                  </ListItemAvatar>
+                </a>
                 <ListItemText primary="Ozgur S. Oguz" />
               </ListItem>
 
@@ -335,7 +329,7 @@ function App() {
 
         <AppBar sx={{ top: "auto", bottom: 0 }}>
           <Box style={{ display: "flex", justifyContent: "space-between" }}>
-            <Typography>Last updated: 05/10/2022</Typography>
+            <Typography>Last updated: {releaseDate}</Typography>
             <Typography>
               &#169; {new Date().getFullYear()} Beetirme. All rights reserved.
             </Typography>
