@@ -1,8 +1,8 @@
 {
-  "name": "beetirme-website",
+  "name": "shopping-bee-website",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://ardaonal.github.io/beetirme/",
+  "homepage": "https://ardaonal.github.io/shopping-bee/",
   "dependencies": {
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
