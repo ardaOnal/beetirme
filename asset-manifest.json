@@ -1,7 +1,8 @@
 {
   "files": {
-    "main.js": "/grocery-bee/static/js/main.ffcaa516.js",
+    "main.js": "/grocery-bee/static/js/main.5095c8a0.js",
     "static/media/T2323_Project_Specification_Document.pdf": "/grocery-bee/static/media/T2323_Project_Specification_Document.5574b006267876d4ad84.pdf",
+    "static/media/erhanDolak.jpg": "/grocery-bee/static/media/erhanDolak.b567200025cdc0005207.jpg",
     "static/media/ozgurOguz.jpg": "/grocery-bee/static/media/ozgurOguz.09787be1954e26121fee.jpg",
     "static/media/efeBeydogan.jpg": "/grocery-bee/static/media/efeBeydogan.9c216912557e35b79f90.jpg",
     "static/media/mertBarkinEr.jpg": "/grocery-bee/static/media/mertBarkinEr.9b01087b6dc4223e4bc0.jpg",
@@ -9,9 +10,9 @@
     "static/media/emirMelihErdem.jpg": "/grocery-bee/static/media/emirMelihErdem.29d19f098b6c75461df8.jpg",
     "static/media/ardaOnal.jpg": "/grocery-bee/static/media/ardaOnal.9e89a28c3dca45f2e9c5.jpg",
     "index.html": "/grocery-bee/index.html",
-    "main.ffcaa516.js.map": "/grocery-bee/static/js/main.ffcaa516.js.map"
+    "main.5095c8a0.js.map": "/grocery-bee/static/js/main.5095c8a0.js.map"
   },
   "entrypoints": [
-    "static/js/main.ffcaa516.js"
+    "static/js/main.5095c8a0.js"
   ]
 }
