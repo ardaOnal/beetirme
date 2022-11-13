@@ -32,6 +32,7 @@ import erhanDolakPhoto from "./static/images/avatar/erhanDolak.jpg";
 import tagmacTopalPhoto from "./static/images/avatar/tagmacTopal.jpg";
 
 import specReport from "./static/files/reports/T2323_Project_Specification_Document.pdf";
+import analReport from "./static/files/reports/T2323_Analysis_Requirements_Report.pdf";
 
 const paddingMarginStyle: React.CSSProperties = { margin: 16, padding: 16 };
 const appBarSectionStyle = {
@@ -172,16 +173,23 @@ function App() {
               <List>
                 <ListItem>
                   <Checkbox disabled={true} />
-                  <ListItemText primary="Requirement Analysis"></ListItemText>
+                  <ListItemText primary="Implementation of Pick and Place"></ListItemText>
                 </ListItem>
                 <ListItem>
                   <Checkbox disabled={true} />
                   <ListItemText primary="Learning Technologies"></ListItemText>
                 </ListItem>
-
                 <ListItem>
                   <Checkbox defaultChecked disabled={true} />
-                  <ListItemText primary="Project Specification Document"></ListItemText>
+                  <ListItemText primary="Analysis and Requirements Report"></ListItemText>
+                </ListItem>
+                <ListItem>
+                  <Checkbox defaultChecked disabled={true} />
+                  <ListItemText primary="Requirement Analysis"></ListItemText>
+                </ListItem>
+                <ListItem>
+                  <Checkbox defaultChecked disabled={true} />
+                  <ListItemText primary="Project Specification Report"></ListItemText>
                 </ListItem>
 
                 <ListItem>
@@ -293,6 +301,23 @@ function App() {
                 <Typography variant="h3"> Project reports</Typography>
               </div>
               <List>
+                <ListItem>
+                  <ListItemIcon>
+                    <InsertDriveFileIcon />
+                  </ListItemIcon>
+                  <a href={analReport} target="_blank">
+                    <Typography
+                      sx={{
+                        color: "white",
+                        fontSize: "24px",
+                        textDecoration: "underline",
+                        textDecorationColor: "white",
+                      }}
+                    >
+                      Analysis and Requirements Document
+                    </Typography>
+                  </a>
+                </ListItem>
                 <ListItem>
                   <ListItemIcon>
                     <InsertDriveFileIcon />
