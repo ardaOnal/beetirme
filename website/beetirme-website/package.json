@@ -1,8 +1,8 @@
 {
-  "name": "shopping-bee-website",
+  "name": "grocery-bee-website",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://ardaonal.github.io/shopping-bee/",
+  "homepage": "https://ardaonal.github.io/grocery-bee/",
   "dependencies": {
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",

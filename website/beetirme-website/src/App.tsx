@@ -28,7 +28,10 @@ import mertBarkinErPhoto from "./static/images/avatar/mertBarkinEr.jpg";
 import erenPolatPhoto from "./static/images/avatar/erenPolat.jpg";
 import emirMelihErdemPhoto from "./static/images/avatar/emirMelihErdem.jpg";
 import ozgurOguzPhoto from "./static/images/avatar/ozgurOguz.jpg";
-import testReport from "./static/files/reports/test_report.pdf";
+import erhanDolakPhoto from "./static/images/avatar/erhanDolak.jpg";
+import tagmacTopalPhoto from "./static/images/avatar/tagmacTopal.jpg";
+
+import specReport from "./static/files/reports/T2323_Project_Specification_Document.pdf";
 
 const paddingMarginStyle: React.CSSProperties = { margin: 16, padding: 16 };
 const appBarSectionStyle = {
@@ -66,7 +69,7 @@ function App() {
                 variant="h4"
                 noWrap
                 sx={{
-                  mr: 8,
+                  mr: 4,
                   display: { xs: "none", md: "flex" },
                   fontFamily: "monospace",
                   fontWeight: 700,
@@ -75,7 +78,7 @@ function App() {
                   textDecoration: "none",
                 }}
               >
-                R-DA🤖
+                GroceryBee🐝
               </Typography>
 
               <Typography
@@ -141,7 +144,7 @@ function App() {
           <Box style={paddingMarginStyle}>
             <Paper elevation={24} style={paddingMarginStyle}>
               <div id="about"></div>
-              <Typography variant="h2"> About</Typography>
+              <Typography variant="h3"> About</Typography>
               <Typography
                 width="100%"
                 textAlign="center"
@@ -151,44 +154,38 @@ function App() {
                   flexDirection: "column",
                 }}
               >
-                R-DA (Robot for Delivery of Aliments) was founded on October 20,
-                1984 by İhsan Doğramacı (1915 – 2010) through the joint
-                resolution of the İhsan Doğramacı Education Foundation, the
-                İhsan Doğramacı Science and Research Foundation, and the İhsan
-                Doğramacı Health Foundation. The aim was to create a center of
-                excellence in higher education and research. The name “Bilkent”
-                exemplifies the founder’s aim, since it is an acronym of bilim
-                kenti Turkish for “city of science and knowledge.” The
-                university is located in Turkey’s capital city of Ankara. The
-                founder, himself an academic, had earlier contributed to the
-                establishment of numerous public institutions of higher learning
-                and served as rector of Ankara University, as chairman of the
-                Board of Trustees of Middle East Technical University and as
-                founder and first rector of Hacettepe University. It had long
-                been his objective to establish a private, non-profit university
-                distinguished by its high quality education and research. During
-                the time he spent at Harvard and Washington universities in the
-                United States he had observed the advantages of independently
-                endowed non-profit research universities that serve the public
-                through higher education. With these in mind he advocated for
-                decades for the Turkish legal system to allow such institutions,
-                and when this dream finally materialized, he established Bilkent
-                University along the same lines.
+                GroceryBee is a robot to assist grocery stores in keeping up
+                with their online orders. GroceryBee will help grocery store
+                employees by collecting the items which are required for an
+                online order from the store shelves, thus speeding up the
+                delivery process. Additionally, GroceryBee will restock shelves
+                which are empty and keep updated stock information in order to
+                inform customers on whether a product is available in the store
+                or not.
               </Typography>
             </Paper>
 
             <Paper elevation={24} style={paddingMarginStyle}>
               <div id="status">
-                <Typography variant="h2"> Status</Typography>
+                <Typography variant="h3"> Status</Typography>
               </div>
               <List>
                 <ListItem>
                   <Checkbox disabled={true} />
+                  <ListItemText primary="Requirement Analysis"></ListItemText>
+                </ListItem>
+                <ListItem>
+                  <Checkbox disabled={true} />
+                  <ListItemText primary="Learning Technologies"></ListItemText>
+                </ListItem>
+
+                <ListItem>
+                  <Checkbox defaultChecked disabled={true} />
                   <ListItemText primary="Project Specification Document"></ListItemText>
                 </ListItem>
 
                 <ListItem>
-                  <Checkbox disabled={true} />
+                  <Checkbox defaultChecked disabled={true} />
                   <ListItemText primary="Requirement Gathering"></ListItemText>
                 </ListItem>
 
@@ -201,11 +198,14 @@ function App() {
 
             <Paper elevation={24} style={paddingMarginStyle}>
               <div id="team">
-                <Typography variant="h2"> Team</Typography>
+                <Typography variant="h3"> Team</Typography>
               </div>
               <List>
                 <ListItem>
-                  <a href="https://www.linkedin.com/in/ardaonal/">
+                  <a
+                    href="https://www.linkedin.com/in/ardaonal/"
+                    target="_blank"
+                  >
                     <ListItemAvatar>
                       <Avatar
                         alt="Arda Onal"
@@ -218,7 +218,10 @@ function App() {
                 </ListItem>
 
                 <ListItem>
-                  <a href="https://www.linkedin.com/in/efebeydogan/">
+                  <a
+                    href="https://www.linkedin.com/in/efebeydogan/"
+                    target="_blank"
+                  >
                     <ListItemAvatar>
                       <Avatar
                         alt="Efe Beydogan"
@@ -231,7 +234,10 @@ function App() {
                 </ListItem>
 
                 <ListItem>
-                  <a href="https://www.linkedin.com/in/emir-melih-erdem/">
+                  <a
+                    href="https://www.linkedin.com/in/emir-melih-erdem/"
+                    target="_blank"
+                  >
                     <ListItemAvatar>
                       <Avatar
                         alt="Emir Melih Erdem"
@@ -244,7 +250,10 @@ function App() {
                 </ListItem>
 
                 <ListItem>
-                  <a href="https://www.linkedin.com/in/eren-polat323/">
+                  <a
+                    href="https://www.linkedin.com/in/eren-polat323/"
+                    target="_blank"
+                  >
                     <ListItemAvatar>
                       <Avatar
                         alt="Eren Polat"
@@ -257,7 +266,10 @@ function App() {
                 </ListItem>
 
                 <ListItem>
-                  <a href="https://www.linkedin.com/in/mertbarkın/">
+                  <a
+                    href="https://www.linkedin.com/in/mertbarkın/"
+                    target="_blank"
+                  >
                     <ListItemAvatar>
                       <Avatar
                         alt="Mert Barkin Er"
@@ -278,14 +290,14 @@ function App() {
 
             <Paper elevation={24} style={paddingMarginStyle}>
               <div id="project-reports">
-                <Typography variant="h2"> Project reports</Typography>
+                <Typography variant="h3"> Project reports</Typography>
               </div>
               <List>
                 <ListItem>
                   <ListItemIcon>
                     <InsertDriveFileIcon />
                   </ListItemIcon>
-                  <a href={testReport} download="Test_Filename">
+                  <a href={specReport} target="_blank">
                     <Typography
                       sx={{
                         color: "white",
@@ -294,7 +306,7 @@ function App() {
                         textDecorationColor: "white",
                       }}
                     >
-                      Test Project Specification Document
+                      Project Specification Document
                     </Typography>
                   </a>
                 </ListItem>
@@ -303,10 +315,24 @@ function App() {
 
             <Paper elevation={24} style={paddingMarginStyle}>
               <div id="supervisor">
-                <Typography variant="h4"> Supervisor</Typography>
+                <Typography variant="h5"> Supervisor</Typography>
               </div>
               <ListItem>
-                <a href="https://oz-oguz.github.io">
+                <a href="https://oz-oguz.github.io" target="_blank">
+                  <ListItemAvatar>
+                    <Avatar
+                      alt="Ozgur Oguz"
+                      src={ozgurOguzPhoto}
+                      sx={avatarStyle}
+                    />
+                  </ListItemAvatar>
+                </a>
+                <ListItemText primary="Ozgur S. Oguz" />
+              </ListItem>
+
+              <Typography variant="h5"> Innovation Expert</Typography>
+              <ListItem>
+                <a href="https://oz-oguz.github.io" target="_blank">
                   <ListItemAvatar>
                     <Avatar
                       alt="Ozgur Oguz"
@@ -319,10 +345,48 @@ function App() {
               </ListItem>
 
               <Typography variant="h5"> Jury Members</Typography>
-              <Typography> TBD</Typography>
-
-              <Typography variant="h5"> Innovation Expert</Typography>
-              <Typography> TBD</Typography>
+              <ListItem>
+                <a
+                  href="https://www.linkedin.com/in/erhandolak/"
+                  target="_blank"
+                >
+                  <ListItemAvatar>
+                    <Avatar
+                      alt="Erhan Dolak"
+                      src={erhanDolakPhoto}
+                      sx={avatarStyle}
+                    />
+                  </ListItemAvatar>
+                </a>
+                <ListItemText primary="Erhan Dolak" />
+              </ListItem>
+              <ListItem>
+                <a
+                  href="https://www.linkedin.com/in/tagmac-topal-06a8879/"
+                  target="_blank"
+                >
+                  <ListItemAvatar>
+                    <Avatar
+                      alt="Tagmac Topal"
+                      src={tagmacTopalPhoto}
+                      sx={avatarStyle}
+                    />
+                  </ListItemAvatar>
+                </a>
+                <ListItemText primary="Tagmac Topal" />
+              </ListItem>
+              <ListItem>
+                <a href="https://oz-oguz.github.io" target="_blank">
+                  <ListItemAvatar>
+                    <Avatar
+                      alt="Ozgur Oguz"
+                      src={ozgurOguzPhoto}
+                      sx={avatarStyle}
+                    />
+                  </ListItemAvatar>
+                </a>
+                <ListItemText primary="Ozgur S. Oguz" />
+              </ListItem>
             </Paper>
           </Box>
         </Box>
@@ -331,7 +395,7 @@ function App() {
           <Box style={{ display: "flex", justifyContent: "space-between" }}>
             <Typography>Last updated: {releaseDate}</Typography>
             <Typography>
-              &#169; {new Date().getFullYear()} Beetirme. All rights reserved.
+              &#169; {new Date().getFullYear()} GroceryBee. All rights reserved.
             </Typography>
           </Box>
         </AppBar>

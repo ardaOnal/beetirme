@@ -1,1 +1,1 @@
-export const releaseDate = "08/10/2022";
+export const releaseDate = "17/10/2022";
