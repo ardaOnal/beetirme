@@ -30,6 +30,7 @@ import emirMelihErdemPhoto from "./static/images/avatar/emirMelihErdem.jpg";
 import ozgurOguzPhoto from "./static/images/avatar/ozgurOguz.jpg";
 import erhanDolakPhoto from "./static/images/avatar/erhanDolak.jpg";
 import tagmacTopalPhoto from "./static/images/avatar/tagmacTopal.jpg";
+import iiwaPhoto from "./static/images/robot/iiwa.jpg";
 
 import specReport from "./static/files/reports/T2323_Project_Specification_Document.pdf";
 import analReport from "./static/files/reports/T2323_Analysis_Requirements_Report.pdf";
@@ -164,19 +165,48 @@ function App() {
                 inform customers on whether a product is available in the store
                 or not.
               </Typography>
+              <br></br>
+              <Typography variant="h5">Repository</Typography>
+              <a href="https://github.com/ardaOnal/grocery-bee" target="_blank">
+                <Typography
+                  sx={{
+                    color: "white",
+                    textDecoration: "underline",
+                    textDecorationColor: "white",
+                  }}
+                >
+                  https://github.com/ardaOnal/grocery-bee
+                </Typography>
+              </a>
             </Paper>
 
             <Paper elevation={24} style={paddingMarginStyle}>
               <div id="status">
                 <Typography variant="h3"> Status</Typography>
               </div>
+              <br></br>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  flexDirection: "column",
+                }}
+              >
+                <img src={iiwaPhoto} width={"70%"}></img>
+                <Typography>
+                  Screenshot taken from simulation of the robot picking up items
+                  from shelves.
+                </Typography>
+              </div>
+
+              <br></br>
               <List>
                 <ListItem>
-                  <Checkbox disabled={true} />
-                  <ListItemText primary="Implementation of Pick and Place"></ListItemText>
+                  <Checkbox defaultChecked disabled={true} />
+                  <ListItemText primary="Implementation of Pick and Place with Cameras"></ListItemText>
                 </ListItem>
                 <ListItem>
-                  <Checkbox disabled={true} />
+                  <Checkbox defaultChecked disabled={true} />
                   <ListItemText primary="Learning Technologies"></ListItemText>
                 </ListItem>
                 <ListItem>
