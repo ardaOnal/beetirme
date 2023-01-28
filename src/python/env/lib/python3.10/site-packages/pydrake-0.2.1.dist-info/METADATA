@@ -1,0 +1,46 @@
+Metadata-Version: 2.1
+Name: pydrake
+Version: 0.2.1
+Summary: Experimental Python API Wrapper for the Riot Games API.
+Home-page: https://github.com/JPadley18/pydrake
+Author: Jacob Padley
+Author-email: jacob5180@hotmail.co.uk
+License: UNKNOWN
+Download-URL: https://github.com/JPadley18/pydrake/archive/v0.2.1.tar.gz
+Keywords: riot league legends wrapper api pydrake drake
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.5
+Requires-Python: >=3.5
+Description-Content-Type: text/x-rst
+Requires-Dist: certifi
+Requires-Dist: chardet
+Requires-Dist: idna
+Requires-Dist: requests
+Requires-Dist: urllib3
+
+===========================================
+PyDrake - the League of Legends API Wrapper
+===========================================
+.. image:: https://travis-ci.com/JPadley18/pydrake.svg?branch=master
+    :target: https://travis-ci.com/JPadley18/pydrake
+    :alt: Build Status
+.. image:: https://readthedocs.org/projects/pydrake/badge/?version=latest
+    :target: https://pydrake.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
+.. image:: https://codecov.io/gh/JPadley18/pydrake/graph/badge.svg
+    :target: https://codecov.io/gh/JPadley18/pydrake
+    :alt: Codecov
+.. image:: https://codeclimate.com/github/JPadley18/pydrake.png
+    :target: https://codeclimate.com/github/JPadley18/pydrake/maintainability
+    :alt: CodeClimate
+
+Experimental Python wrapper for the Riot Games API.
+
+Documentation
+-------------
+Check out the `Getting Started <https://pydrake.readthedocs.io/en/latest/starting.html>`_
+page to start out using PyDrake.
+

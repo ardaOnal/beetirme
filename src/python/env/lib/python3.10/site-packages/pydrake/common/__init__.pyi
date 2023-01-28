@@ -1,0 +1,3 @@
+from ._module_py import *
+
+def configure_logging() -> None: ...

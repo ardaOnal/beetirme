@@ -1,0 +1,1 @@
+from pydrake.examples import CompassGait as CompassGait, CompassGaitContinuousState as CompassGaitContinuousState, CompassGaitGeometry as CompassGaitGeometry, CompassGaitParams as CompassGaitParams

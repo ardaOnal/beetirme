@@ -1,0 +1,38 @@
+directives:
+- add_frame:
+    name: shelves1_frame
+    X_PF:
+        base_frame: world
+        translation: [0, 0, 0]
+        rotation: !Rpy { deg: [0, 0, 0]}
+
+- add_frame:
+    name: shelves1_origin
+    X_PF:
+        base_frame: shelves1_frame
+        translation: [0, -.6, 0.6085]
+        rotation: !Rpy { deg: [0, 0, 90]}
+
+- add_model:
+    name: shelves1
+    file: package://grocery/shelves.sdf
+
+- add_weld:
+    parent: shelves1_origin
+    child: shelves1::shelves_body
+
+
+- add_frame:
+    name: shelves2_origin
+    X_PF:
+        base_frame: world
+        translation: [-1.1, -.6, 0.6085]
+        rotation: !Rpy { deg: [0, 0, 90]}
+
+- add_model:
+    name: shelves2
+    file: package://grocery/shelves.sdf
+
+- add_weld:
+    parent: shelves2_origin
+    child: shelves2::shelves_body
