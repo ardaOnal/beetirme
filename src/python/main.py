@@ -39,8 +39,12 @@ def make_internal_model():
     plant, scene_graph = AddMultibodyPlantSceneGraph(builder, time_step=0.001)
     parser = Parser(plant)
     AddPackagePaths(parser)
-    parser.AddAllModelsFromFile(
-        "models/clutter_planning.dmd.yaml") # Bunun içindeki two_bins yaml'ini local yerine manipulationdan al diye setledim boku yemis olabilir
+
+    parser.package_map().AddPackageXml(os.path.join(os.path.dirname(os.path.realpath(__file__)), "models/package.xml"))
+
+    
+    parser.AddModels(
+        "models/clutter_planning.dmd.yaml") # (Duzelttim) Bunun içindeki two_bins yaml'ini local yerine manipulationdan al diye setledim boku yemis olabilir
     plant.Finalize()
     return builder.Build()
 
