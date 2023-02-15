@@ -1,0 +1,4 @@
+numpy==1.24.2
+pydrake==0.2.1
+drake==1.12.0
+manipulation==2022.12.4
