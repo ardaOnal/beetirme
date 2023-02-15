@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<package>
+  <name>grocery</name>
+  <version>1.0.0</version>
+  <description>
+    This package provides the models used in our final project at Bilkent University
+  </description>
+  <maintainer email="arda.onal@bilkent.edu.tr">Arda Onal</maintainer>
+  <license>BSD</license>
+</package>
