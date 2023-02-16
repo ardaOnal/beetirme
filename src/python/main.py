@@ -44,7 +44,7 @@ def make_internal_model():
 
     
     parser.AddModels(
-        "models/clutter_planning.dmd.yaml") # (Duzelttim) Bunun içindeki two_bins yaml'ini local yerine manipulationdan al diye setledim boku yemis olabilir
+        "src/python/models/clutter_planning.dmd.yaml") # (Duzelttim) Bunun içindeki two_bins yaml'ini local yerine manipulationdan al diye setledim boku yemis olabilir
     plant.Finalize()
     return builder.Build()
 
@@ -438,7 +438,7 @@ directives:
 - add_model:
     name: ycb{i}
 #    file: package://drake/examples/manipulation_station/models/061_foam_brick.sdf
-    file: package://drake/manipulation/models/ycb/sdf/{ycb[object_num]}
+    file: package://grocery/meshes/{ycb[object_num]}
 """
         i += 1
 
