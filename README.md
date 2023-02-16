@@ -7,3 +7,17 @@ GroceryBee is a robot to assist grocery stores in keeping up with their online o
 - [Emir Melih Erdem](https://www.linkedin.com/in/emir-melih-erdem/) 21903100
 - [Eren Polat](https://www.linkedin.com/in/eren-polat323/) 21902615
 - [Mert Barkın Er](https://www.linkedin.com/in/mertbarkın/) 21901645
+
+# Installation
+1) ```git clone https://github.com/ardaOnal/grocery-bee```
+2) Install python3, pip, venv.
+```
+sudo apt update
+sudo apt install python3 python3-pip python3-virtualenv
+```
+4) Create a virtual environment in the project's root directory and install the requirements.
+```
+python3 -m venv env
+source env/bin/activate
+pip install -r requirements.txt
+```
