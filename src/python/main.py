@@ -532,7 +532,6 @@ directives:
 
 clutter_clearing_demo()
 
-# print("Starting...")
-# while True:
-#     continue
+while True:
+    pass
 
