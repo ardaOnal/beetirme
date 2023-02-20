@@ -1,4 +1,0 @@
-numpy
-pydrake
-drake
-manipulation
