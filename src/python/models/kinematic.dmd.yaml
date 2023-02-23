@@ -1,0 +1,88 @@
+directives:
+# add the shelf and the bin
+- add_frame:
+    name: shelves1_frame
+    X_PF:
+        base_frame: world
+        translation: [-.02, -.3, 0.13]
+        rotation: !Rpy { deg: [0, 0, 0]}
+- add_frame:
+    name: shelves1_origin
+    X_PF:
+        base_frame: world
+        translation: [0, -.88, 0.4]
+        rotation: !Rpy { deg: [0, 0, 90]}
+- add_model:
+    name: shelves1
+    file: package://manipulation/shelves.sdf
+- add_weld:
+    parent: shelves1_origin
+    child: shelves1::shelves_body
+
+
+- add_frame:
+    name: shelves2_origin
+    X_PF:
+        base_frame: world
+        translation: [-.6, -.88, 0.4]
+        rotation: !Rpy { deg: [0, 0, 90]}
+- add_model:
+    name: shelves2
+    file: package://manipulation/shelves.sdf
+- add_weld:
+    parent: shelves2_origin
+    child: shelves2::shelves_body
+
+
+- add_frame:
+    name: bin1_origin
+    X_PF:
+      base_frame: world
+      rotation: !Rpy { deg: [0.0, 0.0, 180.0 ]}
+      translation: [0.6, 0.15, 0]
+- add_model:
+    name: bin1
+    file: package://drake/examples/manipulation_station/models/bin.sdf
+- add_weld:
+    parent: bin1_origin
+    child: bin1::bin_base
+
+
+- add_frame:
+    name: camera0_origin
+    X_PF:
+        base_frame: shelves1_frame
+        rotation: !Rpy { deg: [-120,0,210]} # z 165di
+        translation: [-0.35,-.2,0.65] # x=0.25'di
+- add_model:
+    name: camera0
+    file: package://grocery/camera_box.sdf
+- add_weld:
+    parent: camera0_origin
+    child: camera0::base
+
+- add_frame:
+    name: camera1_origin
+    X_PF:
+        base_frame: shelves1_frame
+        rotation: !Rpy { deg: [-110, 0, -25]}
+        translation: [-.3, -1, .65] # x = -0.3 y= -0.9
+- add_model:
+    name: camera1
+    file: package://grocery/camera_box.sdf
+- add_weld:
+    parent: camera1_origin
+    child: camera1::base
+
+- add_frame:
+    name: camera2_origin
+    X_PF:
+        base_frame: shelves1_frame
+        rotation: !Rpy { deg: [-110, 0, 25]}
+        translation: [0.3, -1, 0.65]
+- add_model:
+    name: camera2
+    file: package://grocery/camera_box.sdf
+- add_weld:
+    parent: camera2_origin
+    child: camera2::base

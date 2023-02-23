@@ -7,7 +7,7 @@ from pydrake.all import (AddMultibodyPlantSceneGraph, BsplineTrajectory,
                          MeshcatVisualizer, MeshcatVisualizerParams,
                          MinimumDistanceConstraint, Parser, PositionConstraint,
                          Rgba, RigidTransform, Role, Solve, Sphere,
-                         StartMeshcat, JointIndex, Simulator)
+                         StartMeshcat, JointIndex, Simulator, RotationMatrix)
 
 import pydrake.systems.framework
 from pydrake.systems.primitives import ConstantVectorSource
@@ -19,7 +19,7 @@ from manipulation.utils import  FindResource
 # Start the visualizer.
 meshcat = StartMeshcat()    
 
-def make_internal_model():
+def create_system():
     builder = DiagramBuilder()
     plant, scene_graph = AddMultibodyPlantSceneGraph(builder, time_step=0.001)
     iiwa = AddIiwa(plant, collision_model="with_box_collision")
@@ -27,21 +27,15 @@ def make_internal_model():
 
     parser = Parser(plant)
     AddPackagePaths(parser)
-    bin = parser.AddModelFromFile(
-        FindResource("models/shelves.sdf"))
-    plant.WeldFrames(plant.world_frame(),
-                    plant.GetFrameByName("shelves_body", bin),
-                    RigidTransform([0.88, 0, 0.4]))
-
-    X_WStart = RigidTransform([0.8, 0, 0.65])
-    meshcat.SetObject("start", Sphere(0.02), rgba=Rgba(.9, .1, .1, 1))
-    meshcat.SetTransform("start", X_WStart)
-    X_WGoal = RigidTransform([0, -0.4, 0])
-    meshcat.SetObject("goal", Sphere(0.02), rgba=Rgba(.1, .9, .1, 1))
-    meshcat.SetTransform("goal", X_WGoal)
-
-    #parser.package_map().AddPackageXml(os.path.join(os.path.dirname(os.path.realpath(__file__)), "models/package.xml"))
+    parser.package_map().AddPackageXml(os.path.join(os.path.dirname(os.path.realpath(__file__)), "models/package.xml"))
+    parser.AddModels(
+        "src/python/models/kinematic.dmd.yaml")
     
+    return builder, parser, plant, scene_graph, iiwa, wsg
+    
+
+def make_internal_model():
+    builder, parser, plant, scene_graph, iiwa, wsg = create_system()
     plant.Finalize()
     return builder.Build()
 
@@ -176,42 +170,34 @@ def trajopt(plant, context, X_WStart, X_WGoal):
 
 def trajopt_shelves_demo():
     meshcat.Delete()
-    builder = DiagramBuilder()
 
-
-    plant, scene_graph = AddMultibodyPlantSceneGraph(builder, time_step=0.001)
-    iiwa = AddIiwa(plant, collision_model="with_box_collision")
-    wsg = AddWsg(plant, iiwa, welded=True, sphere=True)
-
-    X_WStart = RigidTransform([0.8, 0, 0.65])
+    # set start & goal
+    #X_WStart = RigidTransform([0, -0.8, 0.59])  # top
+    #X_WStart = RigidTransform([0, -0.8, 0.33])  # middle
+    X_WStart = RigidTransform([0, -0.8, 0.07])  # bottom
     meshcat.SetObject("start", Sphere(0.02), rgba=Rgba(.9, .1, .1, 1))
     meshcat.SetTransform("start", X_WStart)
-    X_WGoal = RigidTransform([0, -0.4, 0])
+    X_WGoal = RigidTransform([0.6, 0.1, 0.1])
     meshcat.SetObject("goal", Sphere(0.02), rgba=Rgba(.1, .9, .1, 1))
     meshcat.SetTransform("goal", X_WGoal)
-    
-    parser = Parser(plant)
-    bin = parser.AddModelFromFile(
-        FindResource("models/shelves.sdf"))
-    plant.WeldFrames(plant.world_frame(),
-                     plant.GetFrameByName("shelves_body", bin),
-                     RigidTransform([0.88, 0, 0.4]))
 
-    parser.package_map().AddPackageXml(os.path.join(os.path.dirname(os.path.realpath(__file__)), "models/package.xml"))
-    parser.AddModelFromFile(
-        "src/python/models/meshes/004_sugar_box.sdf")
-    plant.SetDefaultFreeBodyPose(plant.GetBodyByName("base_link_sugar"), RigidTransform([0.88, 0, 1.4]))
-    # add free body #
-    #parser.AddModelFromFile(FindResource("models/061_foam_brick_w_visual_contact_spheres.sdf"))
-    #plant.SetDefaultFreeBodyPose(plant.GetBodyByName("base_link"), RigidTransform([0.88, 0, 1.4]))
-
+    # create actual system
+    builder, parser, plant, scene_graph, iiwa, wsg = create_system()
+    parser.AddModelFromFile("src/python/models/meshes/005_tomato_soup_can.sdf")
+    plant.SetDefaultFreeBodyPose(plant.GetBodyByName("base_link_soup"), 
+                                 X_WStart @ RigidTransform(RotationMatrix.MakeXRotation(np.pi / 2)))
     plant.Finalize()
 
+    # create an internal model
     internal_model = make_internal_model()
     internal_context = internal_model.CreateDefaultContext()
     internal_plant = internal_model.GetSubsystemByName("plant")
     internal_scene_graph = internal_model.GetSubsystemByName("scene_graph")
 
+    # trajectory optimization
+    trajectory = trajopt(internal_plant, internal_context, X_WStart, X_WGoal)
+
+    # build diagram and simulation
     nu = plant.num_actuated_dofs(iiwa)
     u0 = np.zeros(nu)
     constant = builder.AddSystem(ConstantVectorSource(u0))
@@ -226,13 +212,11 @@ def trajopt_shelves_demo():
     simulator = Simulator(diagram)
     context = diagram.CreateDefaultContext()
 
-    trajectory = trajopt(internal_plant, internal_context, X_WStart, X_WGoal)
+    # run simulation
     #PublishPositionTrajectory(trajectory, context, plant, visualizer)
-
     run_trajectory(simulator, trajectory, context, plant, visualizer)
     #run_simulation(simulator, visualizer)
 
-    
 trajopt_shelves_demo()
 
 
