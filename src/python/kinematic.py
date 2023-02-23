@@ -10,8 +10,9 @@ from pydrake.all import (AddMultibodyPlantSceneGraph, BsplineTrajectory,
                          StartMeshcat, JointIndex, Simulator)
 
 import pydrake.systems.framework
+from pydrake.systems.primitives import ConstantVectorSource
 
-#from manipulation.meshcat_utils import PublishPositionTrajectory
+from manipulation.meshcat_utils import PublishPositionTrajectory
 from manipulation.scenarios import AddIiwa, AddShape, AddWsg, AddPackagePaths, MakeManipulationStation
 from manipulation.utils import  FindResource
 
@@ -44,92 +45,61 @@ def make_internal_model():
     plant.Finalize()
     return builder.Build()
 
-def trajopt_shelves_demo():
-    meshcat.Delete()
-    builder = DiagramBuilder()
+def PublishPositionTrajectory(trajectory,
+                              root_context,
+                              plant,
+                              visualizer,
+                              time_step=1.0 / 33.0):
+    plant_context = plant.GetMyContextFromRoot(root_context)
+    visualizer_context = visualizer.GetMyContextFromRoot(root_context)
 
+    visualizer.StartRecording(False)
 
-    plant, scene_graph = AddMultibodyPlantSceneGraph(builder, time_step=0.001)
-    iiwa = AddIiwa(plant, collision_model="with_box_collision")
-    wsg = AddWsg(plant, iiwa, welded=True, sphere=True)
+    for t in np.append(
+            np.arange(trajectory.start_time(), trajectory.end_time(),
+                      time_step), trajectory.end_time()):
+        root_context.SetTime(t)
+        positions = np.array(plant.GetPositions(plant_context)[7:])
+        #print(positions)
+        plant.SetPositions(plant_context, np.append(trajectory.value(t), positions))
+        visualizer.ForcedPublish(visualizer_context)
 
-    X_WStart = RigidTransform([0.8, 0, 0.65])
-    meshcat.SetObject("start", Sphere(0.02), rgba=Rgba(.9, .1, .1, 1))
-    meshcat.SetTransform("start", X_WStart)
-    X_WGoal = RigidTransform([0, -0.4, 0])
-    meshcat.SetObject("goal", Sphere(0.02), rgba=Rgba(.1, .9, .1, 1))
-    meshcat.SetTransform("goal", X_WGoal)
+    visualizer.StopRecording()
+    visualizer.PublishRecording()
+
+def run_simulation(simulator, visualizer):
+    #simulator.AdvanceTo(0.1)
+    #meshcat.Flush()
+    visualizer.StartRecording(False)
+    meshcat.AddButton("Stop Simulation", "Escape")
+    while meshcat.GetButtonClicks("Stop Simulation") < 1:
+        simulator.AdvanceTo(simulator.get_context().get_time() + 2.0)
+    visualizer.PublishRecording()
+
+def run_trajectory(simulator,
+                trajectory,
+                root_context,
+                plant,
+                visualizer,
+                time_step=0.001):
+    plant_context = plant.GetMyContextFromRoot(root_context)
+    visualizer_context = visualizer.GetMyContextFromRoot(root_context)
     
-    parser = Parser(plant)
-    bin = parser.AddModelFromFile(
-        FindResource("models/shelves.sdf"))
-    plant.WeldFrames(plant.world_frame(),
-                     plant.GetFrameByName("shelves_body", bin),
-                     RigidTransform([0.88, 0, 0.4]))
+    meshcat.Flush()
+    visualizer.StartRecording(False)
 
-    parser.package_map().AddPackageXml(os.path.join(os.path.dirname(os.path.realpath(__file__)), "models/package.xml"))
-    parser.AddModelFromFile(
-        "src/python/models/meshes/004_sugar_box.sdf")
-    plant.SetDefaultFreeBodyPose(plant.GetBodyByName("base_link_sugar"), RigidTransform([0.88, 0, 1.4]))
-    # add free body #
-    #parser.AddModelFromFile(FindResource("models/061_foam_brick_w_visual_contact_spheres.sdf"))
-    #plant.SetDefaultFreeBodyPose(plant.GetBodyByName("base_link"), RigidTransform([0.88, 0, 1.4]))
-
-    plant.Finalize()
-
-    internal_model = make_internal_model()
-    internal_context = internal_model.CreateDefaultContext()
-    internal_plant = internal_model.GetSubsystemByName("plant")
-    internal_scene_graph = internal_model.GetSubsystemByName("scene_graph")
-
-#     model_directives = """
-# directives:
-# - add_directives:
-#     file: package://grocery/iiwa_and_wsg_with_collision.dmd.yaml
-# - add_model:
-#     name: shelves    
-#     file: package://manipulation/shelves.sdf
-# - add_weld:
-#     parent: world
-#     child: shelves_body
-#     X_PC:
-#         translation: [0.88, 0, 0.4]
-#         rotation: !Rpy { deg: [0, 0, 0]}
-# """
-
-#     station = builder.AddSystem(
-#         MakeManipulationStation(model_directives, time_step=0.001,
-#                                     package_xmls=[os.path.join(os.path.dirname(
-#                                        os.path.realpath(__file__)), "models/package.xml")]))
-#     plant = station.GetSubsystemByName("plant")
-#     print(plant.num_positions(), plant.GetPositionLowerLimits())
-#     for ind in range(plant.num_joints()):
-#         joint = plant.get_joint(JointIndex(ind))
-#         print(type(joint))
-#     scene_graph = station.GetOutputPort("query_object")
-#     #print([sys.get_name() for sys in station.GetSystems()])
-#     wsg = plant.GetModelInstanceByName("wsg")
-
-
-
-    visualizer = MeshcatVisualizer.AddToBuilder(
-        builder, scene_graph, meshcat,
-        MeshcatVisualizerParams(role=Role.kIllustration))
-    collision_visualizer = MeshcatVisualizer.AddToBuilder(
-        builder, scene_graph, meshcat,
-        MeshcatVisualizerParams(prefix="collision", role=Role.kProximity))
-    meshcat.SetProperty("collision", "visible", False)
-
-    diagram = builder.Build()
-    context = diagram.CreateDefaultContext()
-    internal_plant_context = plant.GetMyContextFromRoot(context)
-    trajectory = trajopt(internal_plant, internal_context, X_WStart, X_WGoal)
-
-
-    PublishPositionTrajectory(trajectory, context, plant, visualizer)
-    collision_visualizer.ForcedPublish(
-        collision_visualizer.GetMyContextFromRoot(context))
-    
+    times = np.append(np.arange(trajectory.start_time(), trajectory.end_time(), time_step), 
+                                trajectory.end_time())
+    visualizer.StartRecording(False)
+    meshcat.AddButton("Stop Simulation", "Escape")
+    for t in times:
+        simulator.AdvanceTo(t)
+        root_context.SetTime(t)
+        positions = np.array(plant.GetPositions(plant_context)[7:])
+        plant.SetPositions(plant_context, np.append(trajectory.value(t), positions))
+        visualizer.ForcedPublish(visualizer_context)
+    visualizer.StopRecording()
+    visualizer.PublishRecording()
 
 def trajopt(plant, context, X_WStart, X_WGoal):
     plant_context = plant.GetMyContextFromRoot(context)
@@ -204,28 +174,65 @@ def trajopt(plant, context, X_WStart, X_WGoal):
     
     return trajopt.ReconstructTrajectory(result)
 
-def PublishPositionTrajectory(trajectory,
-                              root_context,
-                              plant,
-                              visualizer,
-                              time_step=1.0 / 33.0):
-    plant_context = plant.GetMyContextFromRoot(root_context)
-    visualizer_context = visualizer.GetMyContextFromRoot(root_context)
+def trajopt_shelves_demo():
+    meshcat.Delete()
+    builder = DiagramBuilder()
 
-    visualizer.StartRecording(False)
 
-    for t in np.append(
-            np.arange(trajectory.start_time(), trajectory.end_time(),
-                      time_step), trajectory.end_time()):
-        root_context.SetTime(t)
-        positions = np.array(plant.GetPositions(plant_context)[7:])
-        print(positions)
-        plant.SetPositions(plant_context, np.append(trajectory.value(t), positions))
-        visualizer.ForcedPublish(visualizer_context)
+    plant, scene_graph = AddMultibodyPlantSceneGraph(builder, time_step=0.001)
+    iiwa = AddIiwa(plant, collision_model="with_box_collision")
+    wsg = AddWsg(plant, iiwa, welded=True, sphere=True)
 
-    visualizer.StopRecording()
-    visualizer.PublishRecording()
+    X_WStart = RigidTransform([0.8, 0, 0.65])
+    meshcat.SetObject("start", Sphere(0.02), rgba=Rgba(.9, .1, .1, 1))
+    meshcat.SetTransform("start", X_WStart)
+    X_WGoal = RigidTransform([0, -0.4, 0])
+    meshcat.SetObject("goal", Sphere(0.02), rgba=Rgba(.1, .9, .1, 1))
+    meshcat.SetTransform("goal", X_WGoal)
+    
+    parser = Parser(plant)
+    bin = parser.AddModelFromFile(
+        FindResource("models/shelves.sdf"))
+    plant.WeldFrames(plant.world_frame(),
+                     plant.GetFrameByName("shelves_body", bin),
+                     RigidTransform([0.88, 0, 0.4]))
 
+    parser.package_map().AddPackageXml(os.path.join(os.path.dirname(os.path.realpath(__file__)), "models/package.xml"))
+    parser.AddModelFromFile(
+        "src/python/models/meshes/004_sugar_box.sdf")
+    plant.SetDefaultFreeBodyPose(plant.GetBodyByName("base_link_sugar"), RigidTransform([0.88, 0, 1.4]))
+    # add free body #
+    #parser.AddModelFromFile(FindResource("models/061_foam_brick_w_visual_contact_spheres.sdf"))
+    #plant.SetDefaultFreeBodyPose(plant.GetBodyByName("base_link"), RigidTransform([0.88, 0, 1.4]))
+
+    plant.Finalize()
+
+    internal_model = make_internal_model()
+    internal_context = internal_model.CreateDefaultContext()
+    internal_plant = internal_model.GetSubsystemByName("plant")
+    internal_scene_graph = internal_model.GetSubsystemByName("scene_graph")
+
+    nu = plant.num_actuated_dofs(iiwa)
+    u0 = np.zeros(nu)
+    constant = builder.AddSystem(ConstantVectorSource(u0))
+    builder.Connect(
+        constant.get_output_port(0),
+        plant.get_actuation_input_port(iiwa))
+    visualizer = MeshcatVisualizer.AddToBuilder(
+        builder, scene_graph, meshcat,
+        MeshcatVisualizerParams(role=Role.kIllustration))
+
+    diagram = builder.Build()
+    simulator = Simulator(diagram)
+    context = diagram.CreateDefaultContext()
+
+    trajectory = trajopt(internal_plant, internal_context, X_WStart, X_WGoal)
+    #PublishPositionTrajectory(trajectory, context, plant, visualizer)
+
+    run_trajectory(simulator, trajectory, context, plant, visualizer)
+    #run_simulation(simulator, visualizer)
+
+    
 trajopt_shelves_demo()
 
 
