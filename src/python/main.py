@@ -10,7 +10,7 @@ from pydrake.all import (AbstractValue, AddMultibodyPlantSceneGraph, AngleAxis,
                          PiecewisePolynomial, PiecewisePose, PointCloud,
                          PortSwitch, RandomGenerator, RigidTransform,
                          RollPitchYaw, Simulator, StartMeshcat,
-                         UniformlyRandomRotationMatrix, Sphere, Rgba, RotationMatrix)
+                         UniformlyRandomRotationMatrix, Sphere, Rgba, RotationMatrix, PlanarJoint)
 
 from manipulation import FindResource, running_as_notebook
 from manipulation.clutter import GenerateAntipodalGraspCandidate
@@ -44,7 +44,7 @@ def make_internal_model():
 
     
     parser.AddModels(
-        "src/python/models/clutter_planning.dmd.yaml") # (Duzelttim) Bunun içindeki two_bins yaml'ini local yerine manipulationdan al diye setledim boku yemis olabilir
+        "src/python/models/clutter_planning.dmd.yaml")
     plant.Finalize()
     return builder.Build()
 
@@ -421,6 +421,7 @@ MAX_TIME = 160  # max duration after which the simulation is forced to end (reco
 def clutter_clearing_demo():
     meshcat.Delete()
     builder = DiagramBuilder()
+    # plant, scene_graph = AddMultibodyPlantSceneGraph(builder, time_step=0.001)
 
     model_directives = """
 directives:
@@ -447,6 +448,10 @@ directives:
                                     package_xmls=[os.path.join(os.path.dirname(
                                        os.path.realpath(__file__)), "models/package.xml")]))
     plant = station.GetSubsystemByName("plant")
+    
+    # bottom = plant.GetBodyByName("iiwa_link_0")
+    # world = plant.GetBodyByName("world")
+    # mobile_base = plant.AddJoint(PlanarJoint(name="mobile_base", frame_on_parent=plant.world_frame(), frame_on_child=bottom.body_frame()))
 
     # point cloud cropbox points
     cropPointA = [-.28, -.72, 0.36]
