@@ -2,6 +2,7 @@
 This file contains a number of helper utilities to set up our various
 experiments with less code.
 """
+from copy import deepcopy
 import os
 import sys
 import warnings
@@ -38,7 +39,7 @@ def AddIiwa(plant, collision_model="no_collision"):
 
     parser = Parser(plant)
     iiwa = parser.AddModelFromFile(sdf_path)
-    plant.WeldFrames(plant.world_frame(), plant.GetFrameByName("iiwa_link_0"))
+    #plant.WeldFrames(plant.world_frame(), plant.GetFrameByName("iiwa_link_0"))
 
     # Set default positions:
     q0 = [0.0, 0.1, 0, -1.2, 0, 1.6, 0]
@@ -552,7 +553,7 @@ def MakeManipulationStation(model_directives=None,
 
     bottom = plant.GetBodyByName("iiwa_link_0")
     mobile_base = plant.AddJoint(PlanarJoint(name="mobile_base", frame_on_parent=plant.world_frame(), frame_on_child=bottom.body_frame()))
-
+    
     plant.Finalize()
 
     print("EFFFFFFFFFFFFFFEEEEEEEEEEEEEEEEEE", plant.num_positions())
@@ -585,16 +586,20 @@ def MakeManipulationStation(model_directives=None,
 
             # Make the plant for the iiwa controller to use.
             controller_plant = MultibodyPlant(time_step=time_step)
+
             # TODO: Add the correct IIWA model (introspected from MBP)
             if plant.num_positions(model_instance) == 3:
                 controller_iiwa = AddPlanarIiwa(controller_plant)
             else:
                 controller_iiwa = AddIiwa(controller_plant)
+            
             AddWsg(controller_plant, controller_iiwa, welded=True)
+
+            bottom = controller_plant.GetBodyByName("iiwa_link_0")
+            mobile_base = controller_plant.AddJoint(PlanarJoint(name="mobile_base", frame_on_parent=controller_plant.world_frame(), frame_on_child=bottom.body_frame()))
 
             controller_plant.Finalize()
 
-            print("EEEEEEEEEEEEEEEEEEEEFEEEEEEEEEEEEEEEEEEEEEEEEEE",31)
             # Add the iiwa controller
             iiwa_controller = builder.AddSystem(
                 InverseDynamicsController(controller_plant,
