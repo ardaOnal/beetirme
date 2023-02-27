@@ -1,4 +1,4 @@
-import logging
+import logging  
 from copy import copy
 from enum import Enum
 
@@ -10,7 +10,7 @@ from pydrake.all import (AbstractValue, AddMultibodyPlantSceneGraph, AngleAxis,
                          PiecewisePolynomial, PiecewisePose, PointCloud,
                          PortSwitch, RandomGenerator, RigidTransform,
                          RollPitchYaw, Simulator, StartMeshcat,
-                         UniformlyRandomRotationMatrix, Sphere, Rgba, RotationMatrix)
+                         UniformlyRandomRotationMatrix, Sphere, Rgba, RotationMatrix, PlanarJoint)
 
 from manipulation import FindResource, running_as_notebook
 from manipulation.clutter import GenerateAntipodalGraspCandidate
@@ -44,7 +44,7 @@ def make_internal_model():
 
     
     parser.AddModels(
-        "src/python/models/clutter_planning.dmd.yaml") # (Duzelttim) Bunun içindeki two_bins yaml'ini local yerine manipulationdan al diye setledim boku yemis olabilir
+        "src/python/models/clutter_planning.dmd.yaml")
     plant.Finalize()
     return builder.Build()
 
@@ -421,6 +421,7 @@ MAX_TIME = 160  # max duration after which the simulation is forced to end (reco
 def clutter_clearing_demo():
     meshcat.Delete()
     builder = DiagramBuilder()
+    # plant, scene_graph = AddMultibodyPlantSceneGraph(builder, time_step=0.001)
 
     model_directives = """
 directives:
