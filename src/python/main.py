@@ -448,10 +448,6 @@ directives:
                                     package_xmls=[os.path.join(os.path.dirname(
                                        os.path.realpath(__file__)), "models/package.xml")]))
     plant = station.GetSubsystemByName("plant")
-    
-    # bottom = plant.GetBodyByName("iiwa_link_0")
-    # world = plant.GetBodyByName("world")
-    # mobile_base = plant.AddJoint(PlanarJoint(name="mobile_base", frame_on_parent=plant.world_frame(), frame_on_child=bottom.body_frame()))
 
     # point cloud cropbox points
     cropPointA = [-.28, -.72, 0.36]
