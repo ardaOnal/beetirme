@@ -17,8 +17,10 @@ from manipulation.clutter import GenerateAntipodalGraspCandidate
 from manipulation.meshcat_utils import AddMeshcatTriad
 from manipulation.pick import (MakeGripperCommandTrajectory, #MakeGripperFrames,
                                MakeGripperPoseTrajectory)
-from manipulation.scenarios import (AddIiwaDifferentialIK, AddPackagePaths,
-                                    MakeManipulationStation, ycb)
+from manipulation.scenarios import (AddIiwaDifferentialIK, AddPackagePaths, ycb)
+                                    #MakeManipulationStation
+                                    
+import scenarios
 import pick
 
 
@@ -443,7 +445,7 @@ directives:
         i += 1
 
     station = builder.AddSystem(
-        MakeManipulationStation(model_directives, time_step=0.001,
+        scenarios.MakeManipulationStation(model_directives, time_step=0.001,
                                     package_xmls=[os.path.join(os.path.dirname(
                                        os.path.realpath(__file__)), "models/package.xml")]))
     plant = station.GetSubsystemByName("plant")
