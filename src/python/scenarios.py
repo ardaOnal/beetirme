@@ -38,11 +38,12 @@ def AddIiwa(plant, collision_model="no_collision"):
         f"iiwa7_{collision_model}.sdf")
 
     parser = Parser(plant)
-    iiwa = parser.AddModelFromFile(sdf_path)
+    parser.package_map().AddPackageXml(os.path.join(os.path.dirname(os.path.realpath(__file__)), "models/package.xml"))
+    iiwa = parser.AddModelFromFile("src/python/models/iiwa7/iiwa7_no_collision.sdf")
     #plant.WeldFrames(plant.world_frame(), plant.GetFrameByName("iiwa_link_0"))
 
     # Set default positions:
-    q0 = [0.0, 0.1, 0, -1.2, 0, 1.6, 0]
+    q0 = [0, 0.0, 0.1, 0, -1.2, 0, 1.6, 0]
     index = 0
     for joint_index in plant.GetJointIndices(iiwa):
         joint = plant.get_mutable_joint(joint_index)
@@ -471,10 +472,10 @@ def AddIiwaDifferentialIK(builder, plant, frame=None):
         params.set_end_effector_velocity_flag(
             [True, False, False, True, False, True])
     else:
-        iiwa14_velocity_limits = np.array([1.4, 1.4, 1.7, 1.3, 2.2, 2.3, 2.3])
+        iiwa14_velocity_limits = np.array([1.4, 1.4, 1.4, 1.7, 1.3, 2.2, 2.3, 2.3])
         params.set_joint_velocity_limits(
             (-iiwa14_velocity_limits, iiwa14_velocity_limits))
-        params.set_joint_centering_gain(10 * np.eye(7))
+        params.set_joint_centering_gain(10 * np.eye(8))
     if frame is None:
         frame = plant.GetFrameByName("body")
     differential_ik = builder.AddSystem(
@@ -551,11 +552,10 @@ def MakeManipulationStation(model_directives=None,
     if prefinalize_callback:
         prefinalize_callback(plant)
 
-    bottom = plant.GetBodyByName("iiwa_link_0")
-    mobile_base = plant.AddJoint(PlanarJoint(name="mobile_base", frame_on_parent=plant.world_frame(), frame_on_child=bottom.body_frame()))
-    
+    #mobile_base = plant.AddJoint(PlanarJoint(name="mobile_base", frame_on_parent=plant.world_frame(), frame_on_child=plant.GetFrameByName("iiwa_link_0")))
     plant.Finalize()
 
+    print("plant:", plant.num_actuators())
     for i in range(plant.num_model_instances()):
         model_instance = ModelInstanceIndex(i)
         model_instance_name = plant.GetModelInstanceName(model_instance)
@@ -593,11 +593,11 @@ def MakeManipulationStation(model_directives=None,
             
             AddWsg(controller_plant, controller_iiwa, welded=True)
 
-            bottom = controller_plant.GetBodyByName("iiwa_link_0")
-            mobile_base = controller_plant.AddJoint(PlanarJoint(name="mobile_base", frame_on_parent=controller_plant.world_frame(), frame_on_child=bottom.body_frame()))
-
+            #mobile_base = controller_plant.AddJoint(PlanarJoint(name="mobile_base", frame_on_parent=controller_plant.world_frame(), frame_on_child=controller_plant.GetFrameByName("iiwa_link_0")))
+            #controller_plant.AddJointActuator("asd", mobile_base)
             controller_plant.Finalize()
 
+            print("controller:", controller_plant.num_actuators())
             # Add the iiwa controller
             iiwa_controller = builder.AddSystem(
                 InverseDynamicsController(controller_plant,

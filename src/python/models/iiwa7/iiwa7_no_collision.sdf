@@ -29,6 +29,25 @@
       <velocity_decay/>
       <self_collide>0</self_collide>
     </link>
+    <joint name="iiwa_joint_0" type="revolute">
+      <child>iiwa_link_0</child>
+      <parent>world</parent>
+      <axis>
+        <xyz expressed_in="__model__">0 0 1</xyz>
+        <limit>
+          <lower>-2.96706</lower>
+          <upper>2.96706</upper>
+          <effort>300</effort>
+          <velocity>10</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.0</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
     <link name="iiwa_link_1">
       <pose>0 0 0.1575 0 0 0</pose>
       <inertial>

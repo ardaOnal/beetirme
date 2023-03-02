@@ -17,7 +17,7 @@ from manipulation.clutter import GenerateAntipodalGraspCandidate
 from manipulation.meshcat_utils import AddMeshcatTriad
 from manipulation.pick import (MakeGripperCommandTrajectory, #MakeGripperFrames,
                                MakeGripperPoseTrajectory)
-from manipulation.scenarios import (AddIiwaDifferentialIK, AddPackagePaths, ycb)
+from manipulation.scenarios import (AddPackagePaths, ycb)
                                     #MakeManipulationStation
                                     
 import scenarios
@@ -158,7 +158,7 @@ class Planner(LeafSystem):
         self.DeclareVectorOutputPort("wsg_position", 1, self.CalcWsgPosition)
 
         # For GoHome mode.
-        num_positions = 7
+        num_positions = 8
         self._iiwa_position_index = self.DeclareVectorInputPort(
             "iiwa_position", num_positions).get_index()
         self.DeclareAbstractOutputPort(
@@ -489,7 +489,7 @@ directives:
         "iiwa_controller").get_multibody_plant_for_control()
 
     # Set up differential inverse kinematics.
-    diff_ik = AddIiwaDifferentialIK(builder, robot)
+    diff_ik = scenarios.AddIiwaDifferentialIK(builder, robot)
     builder.Connect(planner.GetOutputPort("X_WG"),
                     diff_ik.get_input_port(0))
     builder.Connect(station.GetOutputPort("iiwa_state_estimated"),
@@ -501,7 +501,7 @@ directives:
                     station.GetInputPort("wsg_position"))
 
     # The DiffIK and the direct position-control modes go through a PortSwitch
-    switch = builder.AddSystem(PortSwitch(7))
+    switch = builder.AddSystem(PortSwitch(8))
     builder.Connect(diff_ik.get_output_port(),
                     switch.DeclareInputPort("diff_ik"))
     builder.Connect(planner.GetOutputPort("iiwa_position_command"),
