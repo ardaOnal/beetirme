@@ -556,8 +556,6 @@ def MakeManipulationStation(model_directives=None,
     
     plant.Finalize()
 
-    print("EFFFFFFFFFFFFFFEEEEEEEEEEEEEEEEEE", plant.num_positions())
-
     for i in range(plant.num_model_instances()):
         model_instance = ModelInstanceIndex(i)
         model_instance_name = plant.GetModelInstanceName(model_instance)
@@ -607,7 +605,6 @@ def MakeManipulationStation(model_directives=None,
                                           ki=[1] * num_iiwa_positions,
                                           kd=[20] * num_iiwa_positions,
                                           has_reference_acceleration=False))
-            print("EEEEEEEEEEEEEEEEEEEEFEEEEEEEEEEEEEEEEEEEEEEEEEE",32)
             iiwa_controller.set_name(model_instance_name + "_controller")
             builder.Connect(plant.get_state_output_port(model_instance),
                             iiwa_controller.get_input_port_estimated_state())
