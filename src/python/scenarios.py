@@ -31,6 +31,7 @@ ycb = [
     "006_mustard_bottle.sdf", "009_gelatin_box.sdf", "010_potted_meat_can.sdf"
 ]
 
+joint_count = 9
 
 def AddIiwa(plant, collision_model="no_collision"):
     sdf_path = FindResourceOrThrow(
@@ -472,10 +473,10 @@ def AddIiwaDifferentialIK(builder, plant, frame=None):
         params.set_end_effector_velocity_flag(
             [True, False, False, True, False, True])
     else:
-        iiwa14_velocity_limits = np.array([1.4, 1.4, 1.4, 1.7, 1.3, 2.2, 2.3, 2.3])
+        iiwa14_velocity_limits = np.array([1.4, 1.4, 1.4, 1.4, 1.7, 1.3, 2.2, 2.3, 2.3]) # burayi 9 yaptik
         params.set_joint_velocity_limits(
             (-iiwa14_velocity_limits, iiwa14_velocity_limits))
-        params.set_joint_centering_gain(10 * np.eye(8))
+        params.set_joint_centering_gain(10 * np.eye(joint_count))
     if frame is None:
         frame = plant.GetFrameByName("body")
     differential_ik = builder.AddSystem(

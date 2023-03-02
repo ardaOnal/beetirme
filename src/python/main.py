@@ -19,6 +19,7 @@ from manipulation.pick import (MakeGripperCommandTrajectory, #MakeGripperFrames,
                                MakeGripperPoseTrajectory)
 from manipulation.scenarios import (AddPackagePaths, ycb)
                                     #MakeManipulationStation
+from manipulation.meshcat_utils import MeshcatPoseSliders, WsgButton
                                     
 import scenarios
 import pick
@@ -34,6 +35,8 @@ logging.getLogger("drake").addFilter(NoDiffIKWarnings())
 meshcat = StartMeshcat()
 
 rs = np.random.RandomState()
+
+joint_count = 9
 
 # Another diagram for the objects the robot "knows about": gripper, cameras, bins.  Think of this as the model in the robot's head.
 def make_internal_model():
@@ -158,7 +161,7 @@ class Planner(LeafSystem):
         self.DeclareVectorOutputPort("wsg_position", 1, self.CalcWsgPosition)
 
         # For GoHome mode.
-        num_positions = 8
+        num_positions = joint_count
         self._iiwa_position_index = self.DeclareVectorInputPort(
             "iiwa_position", num_positions).get_index()
         self.DeclareAbstractOutputPort(
@@ -501,7 +504,7 @@ directives:
                     station.GetInputPort("wsg_position"))
 
     # The DiffIK and the direct position-control modes go through a PortSwitch
-    switch = builder.AddSystem(PortSwitch(8))
+    switch = builder.AddSystem(PortSwitch(joint_count))
     builder.Connect(diff_ik.get_output_port(),
                     switch.DeclareInputPort("diff_ik"))
     builder.Connect(planner.GetOutputPort("iiwa_position_command"),
@@ -513,6 +516,33 @@ directives:
 
     visualizer = MeshcatVisualizer.AddToBuilder(
         builder, station.GetOutputPort("query_object"), meshcat)
+    
+
+    # Set up teleop widgets.
+    teleop = builder.AddSystem(
+        MeshcatPoseSliders(
+            meshcat,
+            min_range=MeshcatPoseSliders.MinRange(roll=0,
+                                                  pitch=-0.5,
+                                                  yaw=-np.pi,
+                                                  x=-0.6,
+                                                  y=-0.8,
+                                                  z=0.0),
+            max_range=MeshcatPoseSliders.MaxRange(roll=2 * np.pi,
+                                                  pitch=np.pi,
+                                                  yaw=np.pi,
+                                                  x=0.8,
+                                                  y=0.3,
+                                                  z=1.1),
+            body_index=plant.GetBodyByName("iiwa_link_7").index()))
+    # builder.Connect(teleop.get_output_port(0),
+    #                 diff_ik.get_input_port(0))
+    # builder.Connect(station.GetOutputPort("body_poses"),
+    #                 teleop.GetInputPort("body_poses"))
+    # wsg_teleop = builder.AddSystem(WsgButton(meshcat))
+    # builder.Connect(wsg_teleop.get_output_port(0),
+    #                 station.GetInputPort("wsg_position"))
+    
     diagram = builder.Build()
 
     simulator = Simulator(diagram)
