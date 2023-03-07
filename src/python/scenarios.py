@@ -31,7 +31,7 @@ ycb = [
     "006_mustard_bottle.sdf", "009_gelatin_box.sdf", "010_potted_meat_can.sdf"
 ]
 
-joint_count = 9
+joint_count = 8
 
 def AddIiwa(plant, collision_model="no_collision"):
     sdf_path = FindResourceOrThrow(
@@ -44,7 +44,7 @@ def AddIiwa(plant, collision_model="no_collision"):
     #plant.WeldFrames(plant.world_frame(), plant.GetFrameByName("iiwa_link_0"))
 
     # Set default positions:
-    q0 = [0, 0.0, 0.1, 0, -1.2, 0, 1.6, 0]
+    q0 = [-1.57, 0.1, 0.0, -1.4, 0, 1.6, 0, 0]
     index = 0
     for joint_index in plant.GetJointIndices(iiwa):
         joint = plant.get_mutable_joint(joint_index)
@@ -473,7 +473,7 @@ def AddIiwaDifferentialIK(builder, plant, frame=None):
         params.set_end_effector_velocity_flag(
             [True, False, False, True, False, True])
     else:
-        iiwa14_velocity_limits = np.array([1.4, 1.4, 1.4, 1.4, 1.7, 1.3, 2.2, 2.3, 2.3]) # burayi 9 yaptik
+        iiwa14_velocity_limits = np.array([1.4, 1.4, 1.4, 1.7, 1.3, 2.2, 2.3, 2.3]) # burayi 9 yaptik
         params.set_joint_velocity_limits(
             (-iiwa14_velocity_limits, iiwa14_velocity_limits))
         params.set_joint_centering_gain(10 * np.eye(joint_count))

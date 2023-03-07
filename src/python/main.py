@@ -36,7 +36,7 @@ meshcat = StartMeshcat()
 
 rs = np.random.RandomState()
 
-joint_count = 9
+joint_count = 8
 
 # Another diagram for the objects the robot "knows about": gripper, cameras, bins.  Think of this as the model in the robot's head.
 def make_internal_model():
@@ -471,51 +471,34 @@ directives:
                               plant.GetModelInstanceByName("camera2"))[0]
                       ], cropPointA=cropPointA, cropPointB=cropPointB))
     builder.Connect(station.GetOutputPort("camera0_point_cloud"),x_bin_grasp_selector.get_input_port(0))
-    builder.Connect(station.GetOutputPort("camera1_point_cloud"),
-                    x_bin_grasp_selector.get_input_port(1))
-    builder.Connect(station.GetOutputPort("camera2_point_cloud"),
-                    x_bin_grasp_selector.get_input_port(2))
-    builder.Connect(station.GetOutputPort("body_poses"),
-                    x_bin_grasp_selector.GetInputPort("body_poses"))
+    builder.Connect(station.GetOutputPort("camera1_point_cloud"), x_bin_grasp_selector.get_input_port(1))
+    builder.Connect(station.GetOutputPort("camera2_point_cloud"), x_bin_grasp_selector.get_input_port(2))
+    builder.Connect(station.GetOutputPort("body_poses"), x_bin_grasp_selector.GetInputPort("body_poses"))
 
     planner = builder.AddSystem(Planner(plant))
-    builder.Connect(station.GetOutputPort("body_poses"),
-                    planner.GetInputPort("body_poses"))
-    builder.Connect(x_bin_grasp_selector.get_output_port(),
-                    planner.GetInputPort("x_bin_grasp"))
-    builder.Connect(station.GetOutputPort("wsg_state_measured"),
-                    planner.GetInputPort("wsg_state"))
-    builder.Connect(station.GetOutputPort("iiwa_position_measured"),
-                    planner.GetInputPort("iiwa_position"))
+    builder.Connect(station.GetOutputPort("body_poses"), planner.GetInputPort("body_poses"))
+    builder.Connect(x_bin_grasp_selector.get_output_port(), planner.GetInputPort("x_bin_grasp"))
+    builder.Connect(station.GetOutputPort("wsg_state_measured"), planner.GetInputPort("wsg_state"))
+    builder.Connect(station.GetOutputPort("iiwa_position_measured"), planner.GetInputPort("iiwa_position"))
 
-    robot = station.GetSubsystemByName(
-        "iiwa_controller").get_multibody_plant_for_control()
+    robot = station.GetSubsystemByName("iiwa_controller").get_multibody_plant_for_control()
 
     # Set up differential inverse kinematics.
     diff_ik = scenarios.AddIiwaDifferentialIK(builder, robot)
-    builder.Connect(planner.GetOutputPort("X_WG"),
-                    diff_ik.get_input_port(0))
-    builder.Connect(station.GetOutputPort("iiwa_state_estimated"),
-                    diff_ik.GetInputPort("robot_state"))
-    builder.Connect(planner.GetOutputPort("reset_diff_ik"),
-                    diff_ik.GetInputPort("use_robot_state"))
+    builder.Connect(planner.GetOutputPort("X_WG"), diff_ik.get_input_port(0))
+    builder.Connect(station.GetOutputPort("iiwa_state_estimated"), diff_ik.GetInputPort("robot_state"))
+    builder.Connect(planner.GetOutputPort("reset_diff_ik"), diff_ik.GetInputPort("use_robot_state"))
 
-    builder.Connect(planner.GetOutputPort("wsg_position"),
-                    station.GetInputPort("wsg_position"))
+    builder.Connect(planner.GetOutputPort("wsg_position"), station.GetInputPort("wsg_position"))
 
     # The DiffIK and the direct position-control modes go through a PortSwitch
     switch = builder.AddSystem(PortSwitch(joint_count))
-    builder.Connect(diff_ik.get_output_port(),
-                    switch.DeclareInputPort("diff_ik"))
-    builder.Connect(planner.GetOutputPort("iiwa_position_command"),
-                    switch.DeclareInputPort("position"))
-    builder.Connect(switch.get_output_port(),
-                    station.GetInputPort("iiwa_position"))
-    builder.Connect(planner.GetOutputPort("control_mode"),
-                    switch.get_port_selector_input_port())
+    builder.Connect(diff_ik.get_output_port(), switch.DeclareInputPort("diff_ik"))
+    builder.Connect(planner.GetOutputPort("iiwa_position_command"), switch.DeclareInputPort("position"))
+    builder.Connect(switch.get_output_port(), station.GetInputPort("iiwa_position"))
+    builder.Connect(planner.GetOutputPort("control_mode"), switch.get_port_selector_input_port())
 
-    visualizer = MeshcatVisualizer.AddToBuilder(
-        builder, station.GetOutputPort("query_object"), meshcat)
+    visualizer = MeshcatVisualizer.AddToBuilder(builder, station.GetOutputPort("query_object"), meshcat)
     
 
     # Set up teleop widgets.
@@ -535,10 +518,9 @@ directives:
                                                   y=0.3,
                                                   z=1.1),
             body_index=plant.GetBodyByName("iiwa_link_7").index()))
-    # builder.Connect(teleop.get_output_port(0),
-    #                 diff_ik.get_input_port(0))
-    # builder.Connect(station.GetOutputPort("body_poses"),
-    #                 teleop.GetInputPort("body_poses"))
+    
+    # builder.Connect(teleop.get_output_port(0), diff_ik.get_input_port(0))
+    # builder.Connect(station.GetOutputPort("body_poses"), teleop.GetInputPort("body_poses"))
     # wsg_teleop = builder.AddSystem(WsgButton(meshcat))
     # builder.Connect(wsg_teleop.get_output_port(0),
     #                 station.GetInputPort("wsg_position"))
@@ -556,7 +538,7 @@ directives:
 
     # if running_as_notebook:
     if True:
-        visualizer.StartRecording(False)
+        visualizer.StartRecording(True)
         meshcat.AddButton("Stop Simulation", "Escape")
         while not planner._simulation_done and simulator.get_context().get_time() < MAX_TIME and meshcat.GetButtonClicks("Stop Simulation") < 1:
             simulator.AdvanceTo(simulator.get_context().get_time() + 2.0)

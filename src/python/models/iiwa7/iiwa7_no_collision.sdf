@@ -385,7 +385,7 @@
         </dynamics>
       </axis>
     </joint>
-    <link name="prismatic_link">
+    <!-- <link name="prismatic_link">
       <pose>0 0 0 0 0 0</pose>
       <inertial>
         <pose>0 0 0.0294 0 0 0</pose>
@@ -413,19 +413,20 @@
       <gravity>1</gravity>
       <velocity_decay/>
       <self_collide>0</self_collide>
-    </link>
-    <joint name="prismatic_joint" type="prismatic">
-      <child>prismatic_link</child>
-      <parent>iiwa_link_0</parent>
+    </link> -->
+    <!-- <joint name="prismatic_joint" type="prismatic">
+      <child>iiwa_link_0</child>
+      <parent>world</parent>
       <axis>
         <xyz>0 0 1</xyz>
         <limit>
-          <lower>-0.1</lower>
-          <upper>0.1</upper>
+          <lower>-5</lower>
+          <upper>5</upper>
+          <effort>10</effort>
         </limit>
       </axis>
       <pose>0 0 0 0 0 0</pose>
-    </joint>
+    </joint> -->
     <static>0</static>
     <plugin name="gazebo_ros_controller" filename="libgazebo_ros_control.so">
       <robotNamespace>/iiwa</robotNamespace>
