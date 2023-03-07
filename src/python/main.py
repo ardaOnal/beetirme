@@ -29,6 +29,7 @@ MAX_TIME = 160  # max duration after which the simulation is forced to end (reco
 def clutter_clearing_demo():
     meshcat.Delete()
     builder = DiagramBuilder()
+    # plant, scene_graph = AddMultibodyPlantSceneGraph(builder, time_step=0.001)
 
     model_directives = """
 directives:
