@@ -8,11 +8,7 @@ directives:
 
 - add_model:
     name: bin1
-    file: package://drake/examples/manipulation_station/models/bin.sdf
-
-- add_weld:
-    parent: bin1_origin
-    child: bin1::bin_base
+    file: package://grocery/robotiq_box.urdf
 
 - add_model:
     name: table_top
