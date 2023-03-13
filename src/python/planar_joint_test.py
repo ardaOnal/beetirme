@@ -1,9 +1,12 @@
 from pydrake.all import (DiagramBuilder, StartMeshcat, LoadModelDirectivesFromString, 
-                         AddMultibodyPlantSceneGraph, Parser, ProcessModelDirectives, Simulator, MeshcatVisualizer)
+                         AddMultibodyPlantSceneGraph, Parser, ProcessModelDirectives, Simulator, 
+                         MeshcatVisualizer, PlanarJoint, PidController)
 
+from manipulation.meshcat_utils import MeshcatPoseSliders
 from manipulation.utils import AddPackagePaths
 
 import os
+import numpy as np
 
 MAX_TIME = 300
 
@@ -34,7 +37,44 @@ diagram = builder.Build() #makemanipstation'un returnledigi sey
 builder = DiagramBuilder()
 station = builder.AddSystem(diagram)
 
+# Add a revolute joint
+joint = plant.GetJointByName("planar_joint")
+
+# Define a PID controller
+kp, ki, kd = 100.0, 10.0, 1.0
+controller = PidController(kp=[100.0]*3, ki=[10.0]*3, kd=[1.0]*3)
+
+# Connect the controller to the joint
+builder.AddSystem(controller)
+builder.Connect(plant.get_state_output_port(0), controller.get_input_port())
+builder.Connect(controller.get_output_port(), joint.get_tau_output_port())
+
 visualizer = MeshcatVisualizer.AddToBuilder(builder, station.GetOutputPort("query_object"), meshcat)
+
+# # Set up teleop widgets.
+# teleop = builder.AddSystem(
+#     MeshcatPoseSliders(
+#         meshcat,
+#         min_range=MeshcatPoseSliders.MinRange(roll=0,
+#                                                 pitch=-0.5,
+#                                                 yaw=-np.pi,
+#                                                 x=-0.6,
+#                                                 y=-0.8,
+#                                                 z=0.0),
+#         max_range=MeshcatPoseSliders.MaxRange(roll=2 * np.pi,
+#                                                 pitch=np.pi,
+#                                                 yaw=np.pi,
+#                                                 x=0.8,
+#                                                 y=0.3,
+#                                                 z=1.1),
+#         body_index=plant.GetBodyByName("box_hand_1").index()))
+
+# builder.Connect(teleop.get_output_port(0), station.get_input_port(0))
+# builder.Connect(station.GetOutputPort("body_poses"), teleop.GetInputPort("body_poses"))
+# wsg_teleop = builder.AddSystem(WsgButton(meshcat))
+# builder.Connect(wsg_teleop.get_output_port(0),
+#                 station.GetInputPort("wsg_position"))
+
 
 diagram = builder.Build()
 simulator = Simulator(diagram)

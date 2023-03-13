@@ -5,7 +5,9 @@
       <!-- Total mass of robotiq hand from the associated urdf -->
       <mass value="2.3"/>
       <origin xyz="0 0 0"/>
-      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+      <!-- <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/> -->
+      <!-- <inertia ixx="0.01" ixy="0.01" ixz="0.01" iyy="0.01" iyz="0.01" izz="0.01"/> -->
+      <inertia ixx="0.011253" ixy="0" ixz="0" iyy="0.036203" iyz="0" izz="0.042673"/>
     </inertial>
     <visual>
       <geometry>
@@ -16,5 +18,16 @@
       </material>
       <origin rpy="0 0 0" xyz="0 0 0"/>
     </visual>
+    <collision name="collision">
+      <pose>0 0 0 0 0 0</pose>
+      <geometry>
+        <box size="0.1 0.1 0.1"/>
+      </geometry>
+    </collision>
   </link>
+  <joint name="planar_joint" type="planar">
+    <parent link="world"/>
+    <child link="box_hand_1"/>
+    <axis xyz="0 1 0"/>
+  </joint>
 </robot>
