@@ -7,7 +7,7 @@ from pydrake.all import (AddMultibodyPlantSceneGraph, BsplineTrajectory,
                          MeshcatVisualizer, MeshcatVisualizerParams,
                          MinimumDistanceConstraint, Parser, PositionConstraint,
                          Rgba, RigidTransform, Role, Solve, Sphere,
-                         StartMeshcat, JointIndex, Simulator, RotationMatrix)
+                         StartMeshcat, JointIndex, Simulator, RotationMatrix, PiecewisePolynomial)
 
 import pydrake.systems.framework
 from pydrake.systems.primitives import ConstantVectorSource
@@ -217,7 +217,62 @@ def trajopt_shelves_demo():
     run_trajectory(simulator, trajectory, context, plant, visualizer)
     #run_simulation(simulator, visualizer)
 
-trajopt_shelves_demo()
+#trajopt_shelves_demo()
 
+def trajopt_shelves_demo2():
+    meshcat.Delete()
+
+    # set start & goal
+    #X_WStart = RigidTransform([0, -0.8, 0.59])  # top
+    #X_WStart = RigidTransform([0, -0.8, 0.33])  # middle
+    X_WStart = RigidTransform([0, -0.8, 0.07])  # bottom
+    meshcat.SetObject("start", Sphere(0.02), rgba=Rgba(.9, .1, .1, 1))
+    meshcat.SetTransform("start", X_WStart)
+    X_WGoal = RigidTransform([0.6, 0.1, 0.1])
+    meshcat.SetObject("goal", Sphere(0.02), rgba=Rgba(.1, .9, .1, 1))
+    meshcat.SetTransform("goal", X_WGoal)
+
+    # create actual system
+    builder = DiagramBuilder()
+
+    model_directives = """
+    directives:
+    - add_directives:
+        file: package://grocery/iiwa_and_wsg_with_collision.dmd.yaml
+    - add_directives:
+        file: package://grocery/kinematic.dmd.yaml
+    """
+    station = builder.AddSystem(
+        MakeManipulationStation(model_directives, time_step=0.001,
+                                    package_xmls=[os.path.join(os.path.dirname(
+                                       os.path.realpath(__file__)), "models/package.xml")]))
+    plant = station.GetSubsystemByName("plant")
+
+    #parser.AddModelFromFile("src/python/models/meshes/005_tomato_soup_can.sdf")
+    #plant.SetDefaultFreeBodyPose(plant.GetBodyByName("base_link_soup"), 
+    #                             X_WStart @ RigidTransform(RotationMatrix.MakeXRotation(np.pi / 2)))
+
+    # create an internal model
+    internal_model = make_internal_model()
+    internal_context = internal_model.CreateDefaultContext()
+    internal_plant = internal_model.GetSubsystemByName("plant")
+    internal_scene_graph = internal_model.GetSubsystemByName("scene_graph")
+
+    # trajectory optimization
+    traj = trajopt(internal_plant, internal_context, X_WStart, X_WGoal)
+
+
+    visualizer = MeshcatVisualizer.AddToBuilder(
+        builder, station.GetOutputPort("query_object"), meshcat)
+
+    diagram = builder.Build()
+    simulator = Simulator(diagram)
+    context = diagram.CreateDefaultContext()
+
+    # run simulation
+    traj_pp = PiecewisePolynomial.CubicFromBezier(traj)
+
+
+trajopt_shelves_demo2()
 
 while True: pass
