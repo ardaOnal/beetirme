@@ -9,6 +9,7 @@ from manipulation.scenarios import  ycb
 from manipulation.meshcat_utils import MeshcatPoseSliders
                                     
 import scenarios
+from scenarios import JOINT_COUNT
 import grasp_selector
 import nodiffik_warnings
 import planner as planner_class
@@ -21,7 +22,6 @@ meshcat = StartMeshcat()
 
 rs = np.random.RandomState()
 
-JOINT_COUNT = 8
 PREPICK_DISTANCE = 0.12
 ITEM_COUNT = 5  # number of items to be generated
 MAX_TIME = 160  # max duration after which the simulation is forced to end (recommended: ITEM_COUNT * 31)
@@ -101,32 +101,7 @@ directives:
     builder.Connect(switch.get_output_port(), station.GetInputPort("iiwa_position"))
     builder.Connect(planner.GetOutputPort("control_mode"), switch.get_port_selector_input_port())
 
-    visualizer = MeshcatVisualizer.AddToBuilder(builder, station.GetOutputPort("query_object"), meshcat)
-    
-    # Set up teleop widgets.
-    teleop = builder.AddSystem(
-        MeshcatPoseSliders(
-            meshcat,
-            min_range=MeshcatPoseSliders.MinRange(roll=0,
-                                                  pitch=-0.5,
-                                                  yaw=-np.pi,
-                                                  x=-0.6,
-                                                  y=-0.8,
-                                                  z=0.0),
-            max_range=MeshcatPoseSliders.MaxRange(roll=2 * np.pi,
-                                                  pitch=np.pi,
-                                                  yaw=np.pi,
-                                                  x=0.8,
-                                                  y=0.3,
-                                                  z=1.1),
-            body_index=plant.GetBodyByName("iiwa_link_7").index()))
-    
-    # builder.Connect(teleop.get_output_port(0), diff_ik.get_input_port(0))
-    # builder.Connect(station.GetOutputPort("body_poses"), teleop.GetInputPort("body_poses"))
-    # wsg_teleop = builder.AddSystem(WsgButton(meshcat))
-    # builder.Connect(wsg_teleop.get_output_port(0),
-    #                 station.GetInputPort("wsg_position"))
-    
+    visualizer = MeshcatVisualizer.AddToBuilder(builder, station.GetOutputPort("query_object"), meshcat)    
     diagram = builder.Build()
 
     simulator = Simulator(diagram)
@@ -135,18 +110,16 @@ directives:
     plant_context = plant.GetMyMutableContextFromRoot(context)
     helpers.place_items(plant,plant_context, x=-0.20, y=-0.50, z=0.4)
 
+    # run simulation
     simulator.AdvanceTo(0.1)
     meshcat.Flush()  # Wait for the large object meshes to get to meshcat.
-
-    if True:
-        visualizer.StartRecording(True)
-        meshcat.AddButton("Stop Simulation", "Escape")
-        while not planner._simulation_done and simulator.get_context().get_time() < MAX_TIME and meshcat.GetButtonClicks("Stop Simulation") < 1:
-            simulator.AdvanceTo(simulator.get_context().get_time() + 2.0)
-        visualizer.PublishRecording()
+    visualizer.StartRecording(True)
+    meshcat.AddButton("Stop Simulation", "Escape")
+    while not planner._simulation_done and simulator.get_context().get_time() < MAX_TIME and meshcat.GetButtonClicks("Stop Simulation") < 1:
+        simulator.AdvanceTo(simulator.get_context().get_time() + 2.0)
+    visualizer.PublishRecording()
 
 clutter_clearing_demo()
 
-while True:
-    pass
+while True: pass
 
