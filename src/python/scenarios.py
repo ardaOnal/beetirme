@@ -31,7 +31,7 @@ ycb = [
     "006_mustard_bottle.sdf", "009_gelatin_box.sdf", "010_potted_meat_can.sdf"
 ]
 
-JOINT_COUNT = 10
+JOINT_COUNT = 9
 
 def AddIiwa(plant, collision_model="no_collision"):
     sdf_path = FindResourceOrThrow(
@@ -463,7 +463,7 @@ def AddIiwaDifferentialIK(builder, plant, frame=None):
     params.set_end_effector_translational_velocity_limits([-2, -2, -2],
                                                           [2, 2, 2])
 
-    iiwa14_velocity_limits = np.array([0.6, 0.6, 1.4, 1.4, 1.4, 1.7, 1.3, 2.2, 2.3, 2.3]) # 10 joints
+    iiwa14_velocity_limits = np.array([0.6, 0.6, 1.4, 1.4, 1.7, 1.3, 2.2, 2.3, 2.3]) # 10 joints
     assert (
             len(iiwa14_velocity_limits) == JOINT_COUNT
         ), "Joint count does not match the size of velocity limits"
