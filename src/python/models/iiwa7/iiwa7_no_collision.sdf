@@ -23,7 +23,8 @@
         <limit>
           <lower>-1</lower>
           <upper>1</upper>
-          <effort>300</effort>
+          <effort>80</effort>
+          <stiffness>15000</stiffness>
           <velocity>0.001</velocity>
         </limit>
         <dynamics>
@@ -70,7 +71,8 @@
         <limit>
           <lower>-1</lower>
           <upper>1</upper>
-          <effort>300</effort>
+          <effort>80</effort>
+          <stiffness>15000</stiffness>
           <velocity>0.001</velocity>
         </limit>
         <dynamics>
