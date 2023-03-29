@@ -7,9 +7,15 @@ from manipulation.clutter import GenerateAntipodalGraspCandidate
 
 import helpers
 
+import segmentation
+
+import torchvision.transforms.functional as Tf
+import matplotlib.pyplot as plt
+from matplotlib.pyplot import plot, draw, show, ion
+
 # Takes 3 point clouds (in world coordinates) as input, and outputs and estimated pose for the items.
 class GraspSelector(LeafSystem):
-    def __init__(self, plant, shelf_instance, camera_body_indices, cropPointA, cropPointB, meshcat, running_as_notebook):
+    def __init__(self, plant, shelf_instance, camera_body_indices, cropPointA, cropPointB, meshcat, running_as_notebook, diag):
         LeafSystem.__init__(self)
         model_point_cloud = AbstractValue.Make(PointCloud(0))
         self.DeclareAbstractInputPort("cloud0_W", model_point_cloud)
@@ -30,6 +36,17 @@ class GraspSelector(LeafSystem):
         #b = X_B.multiply([0.26, -.47, 0.57])
         a = X_B.multiply(cropPointA)
         b = X_B.multiply(cropPointB)
+
+        cntxt31 = diag.CreateDefaultContext()
+        rgb_im = diag.GetOutputPort('camera{}_rgb_image'.format(1)).Eval(cntxt31).data
+
+        num_classes = 7
+        model, device = segmentation.setup_model(num_classes)
+
+        res = model([Tf.to_tensor(rgb_im[:, :, :3]).to(device)])
+
+        print(res[0].keys())
+
         
         if True: # corners of the crop box
             meshcat.SetObject("pick1", Sphere(0.01), rgba=Rgba(.9, .1, .1, 1))

@@ -1,7 +1,8 @@
 import logging
 import numpy as np
 import os
-
+import matplotlib.pyplot as plt
+from matplotlib.pyplot import plot, draw, show, ion
 from pydrake.all import (DiagramBuilder, MeshcatVisualizer, PortSwitch, Simulator, StartMeshcat)
 
 from manipulation import running_as_notebook
@@ -50,11 +51,10 @@ directives:
     file: package://grocery/meshes/{ycb[object_num]}
 """
         i += 1
-
-    station = builder.AddSystem(
-        scenarios.MakeManipulationStation(model_directives, time_step=0.001,
+    diag = scenarios.MakeManipulationStation(model_directives, time_step=0.001,
                                     package_xmls=[os.path.join(os.path.dirname(
-                                       os.path.realpath(__file__)), "models/package.xml")]))
+                                       os.path.realpath(__file__)), "models/package.xml")])
+    station = builder.AddSystem(diag)
     plant = station.GetSubsystemByName("plant")
 
     # point cloud cropbox points
@@ -72,7 +72,7 @@ directives:
                               plant.GetModelInstanceByName("camera1"))[0],
                           plant.GetBodyIndices(
                               plant.GetModelInstanceByName("camera2"))[0]
-                      ], cropPointA=cropPointA, cropPointB=cropPointB, meshcat=meshcat, running_as_notebook=running_as_notebook))
+                      ], cropPointA=cropPointA, cropPointB=cropPointB, meshcat=meshcat, running_as_notebook=running_as_notebook, diag=diag))
     builder.Connect(station.GetOutputPort("camera0_point_cloud"),x_bin_grasp_selector.get_input_port(0))
     builder.Connect(station.GetOutputPort("camera1_point_cloud"), x_bin_grasp_selector.get_input_port(1))
     builder.Connect(station.GetOutputPort("camera2_point_cloud"), x_bin_grasp_selector.get_input_port(2))
@@ -104,9 +104,15 @@ directives:
     visualizer = MeshcatVisualizer.AddToBuilder(builder, station.GetOutputPort("query_object"), meshcat)    
     diagram = builder.Build()
 
+
     simulator = Simulator(diagram)
     context = simulator.get_context()
 
+    # read image
+    # cntxt31 = diag.CreateDefaultContext()
+    # rgb_im = diag.GetOutputPort('camera{}_rgb_image'.format(1)).Eval(cntxt31).data
+    
+  
     plant_context = plant.GetMyMutableContextFromRoot(context)
     helpers.place_items(plant,plant_context, x=-0.20, y=-0.50, z=0.4)
 
