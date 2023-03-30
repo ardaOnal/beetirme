@@ -22,7 +22,7 @@
           </mesh>
         </geometry>
         <material>
-          <diffuse>0.4 0.4 0.4 1.0</diffuse>
+          <diffuse>0.0 0.0 0.0 1.0</diffuse>
         </material>
       </visual>
       <gravity>1</gravity>
@@ -51,7 +51,7 @@
           </mesh>
         </geometry>
         <material>
-          <diffuse>0.4 0.4 0.4 1.0</diffuse>
+          <diffuse>1.0 1.0 0.0 1.0</diffuse>
         </material>
       </visual>
       <gravity>1</gravity>
@@ -99,7 +99,7 @@
           </mesh>
         </geometry>
         <material>
-          <diffuse>1.0 0.423529411765 0.0392156862745 1.0</diffuse>
+          <diffuse>0.0 0.0 0.0 1.0</diffuse>
         </material>
       </visual>
       <gravity>1</gravity>
@@ -147,7 +147,7 @@
           </mesh>
         </geometry>
         <material>
-          <diffuse>0.4 0.4 0.4 1.0</diffuse>
+          <diffuse>1.0 1.0 0.0 1.0</diffuse>
         </material>
       </visual>
       <gravity>1</gravity>
@@ -195,7 +195,7 @@
           </mesh>
         </geometry>
         <material>
-          <diffuse>1.0 0.423529411765 0.0392156862745 1.0</diffuse>
+          <diffuse>0.0 0.0 0.0 1.0</diffuse>
         </material>
       </visual>
       <gravity>1</gravity>
@@ -243,7 +243,7 @@
           </mesh>
         </geometry>
         <material>
-          <diffuse>0.4 0.4 0.4 1.0</diffuse>
+          <diffuse>1.0 1.0 0.0 1.0</diffuse>
         </material>
       </visual>
       <gravity>1</gravity>
@@ -292,7 +292,7 @@
           </mesh>
         </geometry>
         <material>
-          <diffuse>1.0 0.423529411765 0.0392156862745 1.0</diffuse>
+          <diffuse>0.0 0.0 0.0 1.0</diffuse>
         </material>
       </visual>
       <gravity>1</gravity>
@@ -340,7 +340,7 @@
           </mesh>
         </geometry>
         <material>
-          <diffuse>0.4 0.4 0.4 1.0</diffuse>
+          <diffuse>1.0 1.0 0.0 1.0</diffuse>
         </material>
       </visual>
       <gravity>1</gravity>
