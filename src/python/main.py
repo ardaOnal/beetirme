@@ -72,11 +72,12 @@ directives:
                               plant.GetModelInstanceByName("camera1"))[0],
                           plant.GetBodyIndices(
                               plant.GetModelInstanceByName("camera2"))[0]
-                      ], cropPointA=cropPointA, cropPointB=cropPointB, meshcat=meshcat, running_as_notebook=running_as_notebook, diag=diag))
+                      ], cropPointA=cropPointA, cropPointB=cropPointB, meshcat=meshcat, running_as_notebook=running_as_notebook, diag=diag, station=station))
     builder.Connect(station.GetOutputPort("camera0_point_cloud"),x_bin_grasp_selector.get_input_port(0))
     builder.Connect(station.GetOutputPort("camera1_point_cloud"), x_bin_grasp_selector.get_input_port(1))
     builder.Connect(station.GetOutputPort("camera2_point_cloud"), x_bin_grasp_selector.get_input_port(2))
     builder.Connect(station.GetOutputPort("body_poses"), x_bin_grasp_selector.GetInputPort("body_poses"))
+    builder.Connect(station.GetOutputPort("camera1_rgb_image"), x_bin_grasp_selector.get_input_port(4))
 
     planner = builder.AddSystem(planner_class.Planner(plant, JOINT_COUNT, meshcat, rs, PREPICK_DISTANCE))
     builder.Connect(station.GetOutputPort("body_poses"), planner.GetInputPort("body_poses"))

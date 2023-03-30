@@ -1,7 +1,7 @@
 import numpy as np
 
 from pydrake.all import (AbstractValue, Concatenate, LeafSystem, PointCloud, RigidTransform, 
-                         RollPitchYaw, Sphere, Rgba)
+                         RollPitchYaw, Sphere, Rgba, Image, ImageRgba8U)
 
 from manipulation.clutter import GenerateAntipodalGraspCandidate
 
@@ -15,9 +15,11 @@ from matplotlib.pyplot import plot, draw, show, ion
 
 # Takes 3 point clouds (in world coordinates) as input, and outputs and estimated pose for the items.
 class GraspSelector(LeafSystem):
-    def __init__(self, plant, shelf_instance, camera_body_indices, cropPointA, cropPointB, meshcat, running_as_notebook, diag):
+    def __init__(self, plant, shelf_instance, camera_body_indices, cropPointA, cropPointB, meshcat, running_as_notebook, diag, station):
         LeafSystem.__init__(self)
         model_point_cloud = AbstractValue.Make(PointCloud(0))
+        cntxt31 = diag.CreateDefaultContext()
+        rgb_im = station.GetOutputPort('camera{}_rgb_image'.format(1)).Eval(cntxt31).data
         self.DeclareAbstractInputPort("cloud0_W", model_point_cloud)
         self.DeclareAbstractInputPort("cloud1_W", model_point_cloud)
         self.DeclareAbstractInputPort("cloud2_W", model_point_cloud)
@@ -27,6 +29,7 @@ class GraspSelector(LeafSystem):
         port = self.DeclareAbstractOutputPort(
             "grasp_selection", lambda: AbstractValue.Make(
                 (np.inf, RigidTransform())), self.SelectGrasp)
+        self.DeclareAbstractInputPort("rgb1", AbstractValue.Make(Image(31,31)))
         port.disable_caching_by_default()
 
         # Compute crop box.
@@ -37,15 +40,23 @@ class GraspSelector(LeafSystem):
         a = X_B.multiply(cropPointA)
         b = X_B.multiply(cropPointB)
 
-        cntxt31 = diag.CreateDefaultContext()
-        rgb_im = diag.GetOutputPort('camera{}_rgb_image'.format(1)).Eval(cntxt31).data
+        self.station = station
+        self.diag = diag
+        self.cntxt31 = diag.CreateDefaultContext()
 
-        num_classes = 7
-        model, device = segmentation.setup_model(num_classes)
+        self.num_classes = 7
+        self.model, self.device = segmentation.setup_model(self.num_classes)
 
-        res = model([Tf.to_tensor(rgb_im[:, :, :3]).to(device)])
+        # cntxt31 = diag.CreateDefaultContext()
+        # rgb_im = diag.GetOutputPort('camera{}_rgb_image'.format(1)).Eval(cntxt31).data
+        
 
-        print(res[0].keys())
+        # res = model([Tf.to_tensor(rgb_im[:, :, :3]).to(device)])
+
+        # print(res[0].keys())
+        # print(res[0]["masks"])
+        # print(res[0]["labels"])
+        # print(res[0]["scores"])
 
         
         if True: # corners of the crop box
@@ -64,6 +75,42 @@ class GraspSelector(LeafSystem):
         self.running_as_notebook = running_as_notebook
 
     def SelectGrasp(self, context, output):
+    
+        rgb_im = self.get_input_port(4).Eval(context).data
+        plt.imshow(rgb_im)
+        plt.show()
+        # rgb_im = self.station.GetOutputPort('camera{}_rgb_image'.format(1)).Eval(self.cntxt31).data
+        # rgb_im = self.station.GetOutputPort('camera{}_rgb_image'.format(1))
+        # print(type(rgb_im))
+
+        # res = self.model([Tf.to_tensor(rgb_im[:, :, :3]).to(self.device)])
+
+        # print(res[0].keys())
+        # print(res[0]["masks"])
+        # print(res[0]["labels"])
+        # print(res[0]["scores"])
+
+        # plt.imshow(rgb_im)
+        # plt.show()
+
+
+        # for k in res[0].keys():
+        #     if k == "masks":
+        #         res[0][k] = res[0][k].mul(
+        #             255).byte().cpu().numpy()
+        #     else:
+        #         res[0][k] = res[0][k].cpu().numpy()
+
+        # mustard_ycb_idx = 3
+        # mask_idx = np.argmax(res[0]['labels'] == mustard_ycb_idx)
+        # mask = res[0]['masks'][mask_idx,0]
+
+        # plt.imshow(mask)
+        # plt.title("Mask from Camera " + str(i))
+        # plt.colorbar()
+        # plt.show()
+
+
         body_poses = self.get_input_port(3).Eval(context)
         pcd = []
         for i in range(3):
