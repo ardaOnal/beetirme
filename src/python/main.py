@@ -1,6 +1,8 @@
 import logging
 import numpy as np
 import os
+import pydot
+from IPython.display import HTML, SVG, display
 
 from pydrake.all import (DiagramBuilder, MeshcatVisualizer, PortSwitch, Simulator, StartMeshcat)
 
@@ -103,6 +105,10 @@ directives:
 
     visualizer = MeshcatVisualizer.AddToBuilder(builder, station.GetOutputPort("query_object"), meshcat)    
     diagram = builder.Build()
+
+    svg = SVG(pydot.graph_from_dot_data(diagram.GetGraphvizString())[0].create_svg())
+    with open('diagram.svg', 'w') as f:
+        f.write(svg.data)
 
     simulator = Simulator(diagram)
     context = simulator.get_context()
