@@ -682,8 +682,15 @@ def MakeManipulationStation(model_directives=None,
             plant.SetDefaultPositions(controller_base, [0, 0])
             # create a discrete trajectory of joint positions and velocities
             times = np.arange(0, 20, 0.001)
-            positions = np.column_stack([[0, 0] for i in range(len(times))])
-            p_traj = PiecewisePolynomial.FirstOrderHold(times, positions)
+            posx = 0
+            posy = 0
+            increment_factor = 0.01
+            # positions = [[0, 0] for i in range(100)] 
+            positions = [[posx + increment_factor * i, 0] for i in range(int(len(times) / 2))] 
+            positions += [[0, posy + increment_factor * i] for i in range(int(len(times) / 2))]
+            # positions += [[0,0] for i in range(len(times) - 300)]
+            pos = np.column_stack(positions)
+            p_traj = PiecewisePolynomial.FirstOrderHold(times, pos)
             v_traj = p_traj.derivative()
 
             # add a multiplexer to concat the desired position and velocity inputs
