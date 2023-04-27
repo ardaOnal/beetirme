@@ -24,6 +24,7 @@ meshcat = StartMeshcat()
 
 rs = np.random.RandomState()
 
+SAVE_DIAGRAM_SVG = False
 PREPICK_DISTANCE = 0.12
 ITEM_COUNT = 5  # number of items to be generated
 MAX_TIME = 160  # max duration after which the simulation is forced to end (recommended: ITEM_COUNT * 31)
@@ -85,6 +86,7 @@ directives:
     builder.Connect(x_bin_grasp_selector.get_output_port(), planner.GetInputPort("x_bin_grasp"))
     builder.Connect(station.GetOutputPort("wsg_state_measured"), planner.GetInputPort("wsg_state"))
     builder.Connect(station.GetOutputPort("iiwa_position_measured"), planner.GetInputPort("iiwa_position"))
+    builder.Connect(station.GetOutputPort("mobile_base_position_measured"), planner.GetInputPort("mobile_base_position"))
 
     robot = station.GetSubsystemByName("iiwa_controller").get_multibody_plant_for_control()
 
@@ -95,6 +97,7 @@ directives:
     builder.Connect(planner.GetOutputPort("reset_diff_ik"), diff_ik.GetInputPort("use_robot_state"))
 
     builder.Connect(planner.GetOutputPort("wsg_position"), station.GetInputPort("wsg_position"))
+    builder.Connect(planner.GetOutputPort("mobile_base_position_command"), station.GetInputPort("mobile_base_position"))
 
     # The DiffIK and the direct position-control modes go through a PortSwitch
     switch = builder.AddSystem(PortSwitch(JOINT_COUNT))
@@ -106,9 +109,13 @@ directives:
     visualizer = MeshcatVisualizer.AddToBuilder(builder, station.GetOutputPort("query_object"), meshcat)    
     diagram = builder.Build()
 
-    svg = SVG(pydot.graph_from_dot_data(diagram.GetGraphvizString())[0].create_svg())
-    with open('diagram.svg', 'w') as f:
-        f.write(svg.data)
+    mobile_base = plant.GetModelInstanceByName("mobile_base")
+    plant.SetDefaultPositions(mobile_base, [0, 0.5])
+
+    if SAVE_DIAGRAM_SVG:
+        svg = SVG(pydot.graph_from_dot_data(diagram.GetGraphvizString())[0].create_svg())
+        with open('diagram.svg', 'w') as f:
+            f.write(svg.data)
 
     simulator = Simulator(diagram)
     context = simulator.get_context()

@@ -676,46 +676,52 @@ def MakeManipulationStation(model_directives=None,
                                  model_instance_name + "_force_measured")
         
         elif model_instance_name == "mobile_base":
+            mobile_base_position = builder.AddSystem(PassThrough(num_iiwa_positions))
+            builder.ExportInput(mobile_base_position.get_input_port(),
+                                model_instance_name + "_position")
+            
+            # Export the mobile base "state" outputs.
+            demux = builder.AddSystem(
+                Demultiplexer(2 * num_iiwa_positions, num_iiwa_positions))
+            builder.Connect(plant.get_state_output_port(model_instance),
+                            demux.get_input_port())
+            builder.ExportOutput(demux.get_output_port(0),
+                                 model_instance_name + "_position_measured")
+            builder.ExportOutput(demux.get_output_port(1),
+                                 model_instance_name + "_velocity_estimated")
+            builder.ExportOutput(plant.get_state_output_port(model_instance),
+                                 model_instance_name + "_state_estimated")
+            
             controller_plant = MultibodyPlant(time_step=time_step)
             controller_base = AddMobileBase(controller_plant)
             controller_plant.Finalize()
-            plant.SetDefaultPositions(controller_base, [0, 0])
-            # create a discrete trajectory of joint positions and velocities
-            times = np.arange(0, 20, 0.001)
-            posx = 0
-            posy = 0
-            increment_factor = 0.01
-            # positions = [[0, 0] for i in range(100)] 
-            positions = [[posx + increment_factor * i, 0] for i in range(int(len(times) / 2))] 
-            positions += [[0, posy + increment_factor * i] for i in range(int(len(times) / 2))]
-            # positions += [[0,0] for i in range(len(times) - 300)]
-            pos = np.column_stack(positions)
-            p_traj = PiecewisePolynomial.FirstOrderHold(times, pos)
-            v_traj = p_traj.derivative()
-
-            # add a multiplexer to concat the desired position and velocity inputs
-            p_source = builder.AddSystem(TrajectorySource(p_traj))
-            v_source = builder.AddSystem(TrajectorySource(v_traj))
-            source = builder.AddSystem(
-                Multiplexer([2, 2]))
-            builder.Connect(p_source.get_output_port(),
-                            source.get_input_port(0))
-            builder.Connect(v_source.get_output_port(),
-                            source.get_input_port(1))
+            #plant.SetDefaultPositions(controller_base, [0, 0])
 
             # create a controller to track the trajectory
-            id_controller = builder.AddSystem(
+            mobile_base_controller = builder.AddSystem(
                 InverseDynamicsController(controller_plant,
                                         kp=[100] * num_iiwa_positions,
                                         ki=[1] * num_iiwa_positions,
                                         kd=[20] * num_iiwa_positions,
                                         has_reference_acceleration=False))
+            mobile_base_controller.set_name(model_instance_name + "_controller")
             builder.Connect(plant.get_state_output_port(model_instance),
-                            id_controller.get_input_port_estimated_state())
-            builder.Connect(source.get_output_port(),
-                            id_controller.get_input_port_desired_state())
-            builder.Connect(id_controller.get_output_port(),
+                            mobile_base_controller.get_input_port_estimated_state())
+            builder.Connect(mobile_base_controller.get_output_port(),
                             plant.get_actuation_input_port(model_instance))
+            
+            # Add discrete derivative to command velocities.
+            desired_state_from_position = builder.AddSystem(
+                    StateInterpolatorWithDiscreteDerivative(
+                    num_iiwa_positions,
+                    time_step,
+                    suppress_initial_transient=True))
+            desired_state_from_position.set_name(
+                model_instance_name + "_desired_state_from_position")
+            builder.Connect(mobile_base_position.get_output_port(),
+                            desired_state_from_position.get_input_port())
+            builder.Connect(desired_state_from_position.get_output_port(),
+                            mobile_base_controller.get_input_port_desired_state())
 
     # Cameras.
     AddRgbdSensors(builder,
