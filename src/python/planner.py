@@ -154,9 +154,7 @@ class Planner(LeafSystem):
         for i in range(5):
             cost, X_G["pick"] = self.get_input_port(
                 self._x_bin_grasp_index).Eval(context)
-            
-            #X_G["pick"] = X_G["pick"] @ RigidTransform(RotationMatrix.MakeXRotation(-np.pi / 2))
-            
+                        
             if not np.isinf(cost):
                 break
         

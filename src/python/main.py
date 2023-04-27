@@ -1,19 +1,24 @@
 import logging
 import numpy as np
 import os
+import pydot
+from IPython.display import HTML, SVG, display
 
 from pydrake.all import (DiagramBuilder, MeshcatVisualizer, PortSwitch, Simulator, StartMeshcat)
 
 from manipulation import running_as_notebook
-from manipulation.scenarios import  ycb
+from manipulation.scenarios import  ycb, MakeManipulationStation, AddIiwaDifferentialIK
 from manipulation.meshcat_utils import MeshcatPoseSliders
                                     
-import scenarios
-from scenarios import JOINT_COUNT
+#import scenarios
+#from scenarios import JOINT_COUNT
 import grasp_selector
 import nodiffik_warnings
 import planner as planner_class
 import helpers
+
+JOINT_COUNT = 7
+SAVE_DIAGRAM = True
 
 logging.getLogger("drake").addFilter(nodiffik_warnings.NoDiffIKWarnings())
 
@@ -26,15 +31,14 @@ PREPICK_DISTANCE = 0.12
 ITEM_COUNT = 5  # number of items to be generated
 MAX_TIME = 160  # max duration after which the simulation is forced to end (recommended: ITEM_COUNT * 31)
 
-def clutter_clearing_demo():
-    meshcat.Delete()
-    builder = DiagramBuilder()
-    # plant, scene_graph = AddMultibodyPlantSceneGraph(builder, time_step=0.001)
 
+def generate_environment():
     model_directives = """
 directives:
 - add_directives:
-    file: package://grocery/clutter_w_cameras.dmd.yaml
+    file: package://grocery/two_bins_w_cameras.dmd.yaml
+- add_directives:
+    file: package://grocery/iiwa_and_wsg_with_collision.dmd.yaml
 """
     i = 0
     # generate ITEM_COUNT items
@@ -46,15 +50,20 @@ directives:
         model_directives += f"""
 - add_model:
     name: ycb{i}
-#    file: package://drake/examples/manipulation_station/models/061_foam_brick.sdf
     file: package://grocery/meshes/{ycb[object_num]}
 """
         i += 1
 
-    station = builder.AddSystem(
-        scenarios.MakeManipulationStation(model_directives, time_step=0.001,
-                                    package_xmls=[os.path.join(os.path.dirname(
-                                       os.path.realpath(__file__)), "models/package.xml")]))
+    diagram = MakeManipulationStation(model_directives, time_step=0.001,
+                                      package_xmls=[os.path.join(os.path.dirname(
+                                          os.path.realpath(__file__)), "models/package.xml")])
+    return diagram
+
+
+def clutter_clearing_demo():
+    meshcat.Delete()
+    builder = DiagramBuilder()
+    station = builder.AddSystem(generate_environment())
     plant = station.GetSubsystemByName("plant")
 
     # point cloud cropbox points
@@ -87,7 +96,7 @@ directives:
     robot = station.GetSubsystemByName("iiwa_controller").get_multibody_plant_for_control()
 
     # Set up differential inverse kinematics.
-    diff_ik = scenarios.AddIiwaDifferentialIK(builder, robot)
+    diff_ik = AddIiwaDifferentialIK(builder, robot)
     builder.Connect(planner.GetOutputPort("X_WG"), diff_ik.get_input_port(0))
     builder.Connect(station.GetOutputPort("iiwa_state_estimated"), diff_ik.GetInputPort("robot_state"))
     builder.Connect(planner.GetOutputPort("reset_diff_ik"), diff_ik.GetInputPort("use_robot_state"))
@@ -103,6 +112,11 @@ directives:
 
     visualizer = MeshcatVisualizer.AddToBuilder(builder, station.GetOutputPort("query_object"), meshcat)    
     diagram = builder.Build()
+
+    if SAVE_DIAGRAM:
+        svg = SVG(pydot.graph_from_dot_data(diagram.GetGraphvizString())[0].create_svg())
+        with open('diagram.svg', 'w') as f:
+            f.write(svg.data)
 
     simulator = Simulator(diagram)
     context = simulator.get_context()
