@@ -67,7 +67,7 @@ directives:
     x_bin_grasp_selector = builder.AddSystem(
         grasp_selector.GraspSelector(plant,
                       #plant.GetModelInstanceByName("shelves1"),
-                      plant.GetFrameByName("shelves1_frame"),
+                      plant.GetFrameByName("shelves1_origin"),
                       camera_body_indices=[
                           plant.GetBodyIndices(
                               plant.GetModelInstanceByName("camera0"))[0],

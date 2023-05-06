@@ -3,8 +3,8 @@ directives:
     name: shelves1_origin
     X_PF:
         base_frame: world
-        translation: [3, 3, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 0]}
+        translation: [-3.3, -.6, 0.6085]
+        rotation: !Rpy { deg: [0, 0, 90]}
 
 - add_model:
     name: shelves1
@@ -18,8 +18,8 @@ directives:
     name: shelves2_origin
     X_PF:
         base_frame: world
-        translation: [-3, 3, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 0]}
+        translation: [-2.1999999999999997, -.6, 0.6085]
+        rotation: !Rpy { deg: [0, 0, 90]}
 
 - add_model:
     name: shelves2
@@ -33,8 +33,8 @@ directives:
     name: shelves3_origin
     X_PF:
         base_frame: world
-        translation: [3, 2, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 0]}
+        translation: [-1.0999999999999996, -.6, 0.6085]
+        rotation: !Rpy { deg: [0, 0, 90]}
 
 - add_model:
     name: shelves3
@@ -48,8 +48,8 @@ directives:
     name: shelves4_origin
     X_PF:
         base_frame: world
-        translation: [-3, 2, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 0]}
+        translation: [4.440892098500626e-16, -.6, 0.6085]
+        rotation: !Rpy { deg: [0, 0, 90]}
 
 - add_model:
     name: shelves4
@@ -63,8 +63,8 @@ directives:
     name: shelves5_origin
     X_PF:
         base_frame: world
-        translation: [3, 1, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 0]}
+        translation: [1.1000000000000005, -.6, 0.6085]
+        rotation: !Rpy { deg: [0, 0, 90]}
 
 - add_model:
     name: shelves5
@@ -78,8 +78,8 @@ directives:
     name: shelves6_origin
     X_PF:
         base_frame: world
-        translation: [-3, 1, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 0]}
+        translation: [2.2000000000000006, -.6, 0.6085]
+        rotation: !Rpy { deg: [0, 0, 90]}
 
 - add_model:
     name: shelves6
@@ -93,8 +93,8 @@ directives:
     name: shelves7_origin
     X_PF:
         base_frame: world
-        translation: [3, 0, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 0]}
+        translation: [3.3000000000000007, -.6, 0.6085]
+        rotation: !Rpy { deg: [0, 0, 90]}
 
 - add_model:
     name: shelves7
@@ -108,8 +108,8 @@ directives:
     name: shelves8_origin
     X_PF:
         base_frame: world
-        translation: [-3, 0, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 0]}
+        translation: [4.4, -.6, 0.6085]
+        rotation: !Rpy { deg: [0, 0, 90]}
 
 - add_model:
     name: shelves8
@@ -123,8 +123,8 @@ directives:
     name: shelves9_origin
     X_PF:
         base_frame: world
-        translation: [3, -1, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 0]}
+        translation: [5.5, -.6, 0.6085]
+        rotation: !Rpy { deg: [0, 0, 90]}
 
 - add_model:
     name: shelves9
@@ -138,8 +138,8 @@ directives:
     name: shelves10_origin
     X_PF:
         base_frame: world
-        translation: [-3, -1, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 0]}
+        translation: [6.6, -.6, 0.6085]
+        rotation: !Rpy { deg: [0, 0, 90]}
 
 - add_model:
     name: shelves10
@@ -153,7 +153,7 @@ directives:
     name: shelves11_origin
     X_PF:
         base_frame: world
-        translation: [3, -2, 0.6085]
+        translation: [7.699999999999999, -.6, 0.6085]
         rotation: !Rpy { deg: [0, 0, 90]}
 
 - add_model:
@@ -163,63 +163,3 @@ directives:
 - add_weld:
     parent: shelves11_origin
     child: shelves11::shelves_body
-
-- add_frame:
-    name: shelves12_origin
-    X_PF:
-        base_frame: world
-        translation: [2, -2, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 90]}
-
-- add_model:
-    name: shelves12
-    file: package://grocery/shelves.sdf
-
-- add_weld:
-    parent: shelves12_origin
-    child: shelves12::shelves_body
-
-- add_frame:
-    name: shelves13_origin
-    X_PF:
-        base_frame: world
-        translation: [1, -2, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 90]}
-
-- add_model:
-    name: shelves13
-    file: package://grocery/shelves.sdf
-
-- add_weld:
-    parent: shelves13_origin
-    child: shelves13::shelves_body
-
-- add_frame:
-    name: shelves14_origin
-    X_PF:
-        base_frame: world
-        translation: [0, -2, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 90]}
-
-- add_model:
-    name: shelves14
-    file: package://grocery/shelves.sdf
-
-- add_weld:
-    parent: shelves14_origin
-    child: shelves14::shelves_body
-
-- add_frame:
-    name: shelves15_origin
-    X_PF:
-        base_frame: world
-        translation: [-1, -2, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 90]}
-
-- add_model:
-    name: shelves15
-    file: package://grocery/shelves.sdf
-
-- add_weld:
-    parent: shelves15_origin
-    child: shelves15::shelves_body
