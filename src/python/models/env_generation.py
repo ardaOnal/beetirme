@@ -3,7 +3,6 @@ def grid(row_count=5, row_start_point=-6.6, row_increment=3.3, shelf_row_count=5
 
     row_no = 1
     shelf_no = 1
-
     model_directives = "directives:"
 
     cur_row = row_start_point
@@ -14,22 +13,49 @@ def grid(row_count=5, row_start_point=-6.6, row_increment=3.3, shelf_row_count=5
         while cur_shelves <= shelf_row_count:
             name = "shelves" + str(shelf_no)
             origin = name + "_origin"
+            
             model_directives += f"""
-    - add_frame:
-        name: {origin}
-        X_PF:
-            base_frame: world
-            translation: [{cur_point}, {cur_row}, 0.6085]
-            rotation: !Rpy {{ deg: [0, 0, 90]}}
+- add_frame:
+    name: {origin}
+    X_PF:
+        base_frame: world
+        translation: [{cur_point}, {cur_row}, 0.6085]
+        rotation: !Rpy {{ deg: [0, 0, 90]}}
 
-    - add_model:
-        name: {name}
-        file: package://grocery/shelves.sdf
+- add_model:
+    name: {name}
+    file: package://grocery/shelves.sdf
 
-    - add_weld:
-        parent: {origin}
-        child: {name}::shelves_body
-    """
+- add_weld:
+    parent: {origin}
+    child: {name}::shelves_body
+
+- add_frame:
+    name: camera0_{shelf_no}_origin
+    X_PF:
+        base_frame: {origin}
+        rotation: !Rpy {{ deg: [-120,0,210]}}
+        translation: [-1,-.1, .2]
+- add_model:
+    name: camera0_{shelf_no}
+    file: package://grocery/camera_box.sdf
+- add_weld:
+    parent: camera0_{shelf_no}_origin
+    child: camera0_{shelf_no}::base
+
+- add_frame:
+    name: camera1_{shelf_no}_origin
+    X_PF:
+        base_frame: {origin}
+        rotation: !Rpy {{ deg: [-110, 0, -25]}}
+        translation: [-1, -.9, .2]
+- add_model:
+    name: camera1_{shelf_no}
+    file: package://grocery/camera_box.sdf
+- add_weld:
+    parent: camera1_{shelf_no}_origin
+    child: camera1_{shelf_no}::base
+"""
             cur_point += shelf_increment
             shelf_no += 1
             cur_shelves += 1
@@ -43,7 +69,7 @@ def grid(row_count=5, row_start_point=-6.6, row_increment=3.3, shelf_row_count=5
 
 
 
-def maze(start=3, side=5, increment=-1):
+def maze(start=3, side=3, increment=-1):
     f = open("src/python/models/shelves.dmd.yaml", "w")
     model_directives = "directives:"
 
@@ -123,4 +149,4 @@ def maze(start=3, side=5, increment=-1):
     f.write(model_directives)
     f.close()
 
-maze()
+grid()

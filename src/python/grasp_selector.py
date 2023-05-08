@@ -9,12 +9,11 @@ import helpers
 
 # Takes 3 point clouds (in world coordinates) as input, and outputs and estimated pose for the items.
 class GraspSelector(LeafSystem):
-    def __init__(self, plant, shelf_instance, camera_body_indices, cropPointA, cropPointB, meshcat, running_as_notebook):
+    def __init__(self, plant, shelf_instance, camera_count, camera_body_indices, cropPointA, cropPointB, meshcat, running_as_notebook):
         LeafSystem.__init__(self)
         model_point_cloud = AbstractValue.Make(PointCloud(0))
-        self.DeclareAbstractInputPort("cloud0_W", model_point_cloud)
-        self.DeclareAbstractInputPort("cloud1_W", model_point_cloud)
-        self.DeclareAbstractInputPort("cloud2_W", model_point_cloud)
+        for i in range(camera_count):
+            self.DeclareAbstractInputPort(f"cloud{i}_W", model_point_cloud)
         self.DeclareAbstractInputPort(
             "body_poses", AbstractValue.Make([RigidTransform()]))
 
@@ -45,9 +44,10 @@ class GraspSelector(LeafSystem):
         self._rng = np.random.default_rng()
         self._camera_body_indices = camera_body_indices
         self.running_as_notebook = running_as_notebook
+        self.camera_count = camera_count
 
     def SelectGrasp(self, context, output):
-        body_poses = self.get_input_port(3).Eval(context)
+        body_poses = self.get_input_port(self.camera_count).Eval(context)
         pcd = []
         for i in range(3):
             cloud = self.get_input_port(i).Eval(context)

@@ -16,6 +16,7 @@ import grasp_selector
 import nodiffik_warnings
 import planner as planner_class
 import helpers
+import models.env_generation as env
 
 logging.getLogger("drake").addFilter(nodiffik_warnings.NoDiffIKWarnings())
 
@@ -33,6 +34,13 @@ def clutter_clearing_demo():
     meshcat.Delete()
     builder = DiagramBuilder()
     # plant, scene_graph = AddMultibodyPlantSceneGraph(builder, time_step=0.001)
+
+    row_count = 5
+    shelf_row_count = 5
+    num_shelves = row_count * shelf_row_count
+    camera_per_shelf = 2
+    camera_count = num_shelves * camera_per_shelf
+    env.grid(row_count=row_count, shelf_row_count=shelf_row_count)
 
     model_directives = """
 directives:
@@ -64,21 +72,26 @@ directives:
     cropPointA = [-.28, -.72, 0.36]
     cropPointB = [0.26, -.47, 0.57]
 
+    lst = []
     x_bin_grasp_selector = builder.AddSystem(
         grasp_selector.GraspSelector(plant,
                       #plant.GetModelInstanceByName("shelves1"),
                       plant.GetFrameByName("shelves1_origin"),
                       camera_body_indices=[
                           plant.GetBodyIndices(
-                              plant.GetModelInstanceByName("camera0"))[0],
-                          plant.GetBodyIndices(
-                              plant.GetModelInstanceByName("camera1"))[0],
-                          plant.GetBodyIndices(
-                              plant.GetModelInstanceByName("camera2"))[0]
-                      ], cropPointA=cropPointA, cropPointB=cropPointB, meshcat=meshcat, running_as_notebook=running_as_notebook))
-    builder.Connect(station.GetOutputPort("camera0_point_cloud"),x_bin_grasp_selector.get_input_port(0))
-    builder.Connect(station.GetOutputPort("camera1_point_cloud"), x_bin_grasp_selector.get_input_port(1))
-    builder.Connect(station.GetOutputPort("camera2_point_cloud"), x_bin_grasp_selector.get_input_port(2))
+                              plant.GetModelInstanceByName(f"camera{camera_no}_{shelf_no}"))[0]
+                              for shelf_no in range(1, num_shelves+1) for camera_no in range(2)
+                      ], cropPointA=cropPointA, cropPointB=cropPointB, meshcat=meshcat, running_as_notebook=running_as_notebook, camera_count=camera_count))
+    
+    #builder.Connect(station.GetOutputPort("camera0_1_point_cloud"),x_bin_grasp_selector.get_input_port(0))
+    #builder.Connect(station.GetOutputPort("camera1_1_point_cloud"), x_bin_grasp_selector.get_input_port(1))
+    index = 0
+    for i in range(1, num_shelves+1):
+        builder.Connect(station.GetOutputPort(f"camera0_{i}_point_cloud"),x_bin_grasp_selector.get_input_port(index))
+        index = index+1
+        builder.Connect(station.GetOutputPort(f"camera1_{i}_point_cloud"), x_bin_grasp_selector.get_input_port(index))
+        index = index+1
+
     builder.Connect(station.GetOutputPort("body_poses"), x_bin_grasp_selector.GetInputPort("body_poses"))
 
     planner = builder.AddSystem(planner_class.Planner(plant, JOINT_COUNT, meshcat, rs, PREPICK_DISTANCE))
