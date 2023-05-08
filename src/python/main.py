@@ -15,10 +15,11 @@ from manipulation.meshcat_utils import MeshcatPoseSliders
 import grasp_selector
 import nodiffik_warnings
 import planner as planner_class
+import trajopt_system
 import helpers
 
 JOINT_COUNT = 7
-SAVE_DIAGRAM = True
+SAVE_DIAGRAM = False
 
 logging.getLogger("drake").addFilter(nodiffik_warnings.NoDiffIKWarnings())
 
@@ -95,11 +96,18 @@ def clutter_clearing_demo():
 
     robot = station.GetSubsystemByName("iiwa_controller").get_multibody_plant_for_control()
 
-    # Set up differential inverse kinematics.
-    diff_ik = AddIiwaDifferentialIK(builder, robot)
-    builder.Connect(planner.GetOutputPort("X_WG"), diff_ik.get_input_port(0))
-    builder.Connect(station.GetOutputPort("iiwa_state_estimated"), diff_ik.GetInputPort("robot_state"))
-    builder.Connect(planner.GetOutputPort("reset_diff_ik"), diff_ik.GetInputPort("use_robot_state"))
+    # Set up kinematic trajectory optimization
+    diff_ik = builder.AddSystem(trajopt_system.KinematicTrajectoryOptimizer(plant, JOINT_COUNT, meshcat, rs, PREPICK_DISTANCE))
+    builder.Connect(planner.GetOutputPort("X_WG_measured"), diff_ik.GetInputPort("X_G_initial"))
+    builder.Connect(planner.GetOutputPort("X_WG"), diff_ik.GetInputPort("X_G_desired"))
+    #builder.Connect(station.GetOutputPort("iiwa_state_estimated"), diff_ik.GetInputPort("robot_state"))
+    builder.Connect(planner.GetOutputPort("reset_diff_ik"), diff_ik.GetInputPort("reset_trajopt"))
+
+    # # Set up differential inverse kinematics.
+    # diff_ik = AddIiwaDifferentialIK(builder, robot)
+    # builder.Connect(planner.GetOutputPort("X_WG"), diff_ik.get_input_port(0))
+    # builder.Connect(station.GetOutputPort("iiwa_state_estimated"), diff_ik.GetInputPort("robot_state"))
+    # builder.Connect(planner.GetOutputPort("reset_diff_ik"), diff_ik.GetInputPort("use_robot_state"))
 
     builder.Connect(planner.GetOutputPort("wsg_position"), station.GetInputPort("wsg_position"))
 

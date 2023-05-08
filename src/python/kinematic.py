@@ -17,14 +17,12 @@ from manipulation.meshcat_utils import PublishPositionTrajectory
 from manipulation.scenarios import AddIiwa, AddShape, AddWsg, AddPackagePaths, MakeManipulationStation
 from manipulation.utils import FindResource
 
-# Start the visualizer.
-meshcat = StartMeshcat()
 
 def create_system_with_station():
     model_directives = """
     directives:
     - add_directives:
-        file: package://grocery/kinematic.dmd.yaml
+        file: package://grocery/two_bins_w_cameras.dmd.yaml
     - add_directives:
         file: package://grocery/iiwa_and_wsg_with_collision.dmd.yaml    
     - add_model:
@@ -38,7 +36,7 @@ def create_system_with_station():
     return diagram
 
 
-def create_system():
+def make_internal_model():
     builder = DiagramBuilder()
     plant, scene_graph = AddMultibodyPlantSceneGraph(builder, time_step=0.001)
     iiwa = AddIiwa(plant, collision_model="with_box_collision")
@@ -49,18 +47,12 @@ def create_system():
     parser.package_map().AddPackageXml(os.path.join(
         os.path.dirname(os.path.realpath(__file__)), "models/package.xml"))
     parser.AddModels(
-        "src/python/models/kinematic.dmd.yaml")
-
-    return builder, parser, plant, scene_graph, iiwa, wsg
-
-
-def make_internal_model():
-    builder, parser, plant, scene_graph, iiwa, wsg = create_system()
+        "src/python/models/two_bins_w_cameras.dmd.yaml")
     plant.Finalize()
     return builder.Build()
 
 
-def MakeGripperCommandTrajectory(times):
+def MakeGripperCommandTrajectory():
     """Constructs a WSG command trajectory from the plan "sketch"."""
     opened = np.array([0.107])
     closed = np.array([0.0])
@@ -132,14 +124,6 @@ def trajopt(plant, context, X_WStart, X_WGoal):
     for s in evaluate_at_s:
         trajopt.AddPathPositionConstraint(collision_constraint, s)
 
-    def PlotPath(control_points):
-        traj = BsplineTrajectory(trajopt.basis(),
-                                 control_points.reshape((3, -1)))
-        meshcat.SetLine('positions_path',
-                        traj.vector_values(np.linspace(0, 1, 50)))
-
-    # prog.AddVisualizationCallback(PlotPath,
-    #                              trajopt.control_points().reshape((-1,)))
     result = Solve(prog)
     if not result.is_success():
         print("Trajectory optimization failed")
@@ -148,46 +132,16 @@ def trajopt(plant, context, X_WStart, X_WGoal):
     return trajopt.ReconstructTrajectory(result)
 
 
-def trajopt_shelves_demo():
-    meshcat.Delete()
-    builder = DiagramBuilder()
-
-    # set start & goal
-    #X_WStart = RigidTransform([0, -0.8, 0.59])  # top
-    X_WStart = RigidTransform([0, -0.8, 0.35])  # middle
-    #X_WStart = RigidTransform([0, -0.8, 0.07])  # bottom
-    #meshcat.SetObject("start", Sphere(0.02), rgba=Rgba(.9, .1, .1, 1))
-    #meshcat.SetTransform("start", X_WStart)
-    X_WGoal = RigidTransform([0.6, 0.1, 0.1])
-    #meshcat.SetObject("goal", Sphere(0.02), rgba=Rgba(.1, .9, .1, 1))
-    #meshcat.SetTransform("goal", X_WGoal)
-
-    # create actual system
-    #builder, parser, plant, scene_graph, iiwa, wsg = create_system()
-    #parser.AddModelFromFile("src/python/models/meshes/005_tomato_soup_can.sdf")
-    #plant.SetDefaultFreeBodyPose(plant.GetBodyByName("base_link_soup"),
-    #                             X_WStart @ RigidTransform(RotationMatrix.MakeXRotation(np.pi / 2)))
-    #plant.Finalize()
-    station = builder.AddSystem(create_system_with_station())
-    plant = station.GetSubsystemByName("plant")
-    iiwa = plant.GetModelInstanceByName("iiwa")
-    wsg = plant.GetModelInstanceByName("wsg")
-    plant.SetDefaultFreeBodyPose(plant.GetBodyByName("base_link"),
-                                X_WStart @ RigidTransform(RotationMatrix.MakeXRotation(np.pi / 2)))
-    plant.SetDefaultPositions(wsg, [-0.055, 0.055])
-
+def run_trajopt(X_WStart, X_WGoal):
     # create an internal model
     internal_model = make_internal_model()
     internal_context = internal_model.CreateDefaultContext()
     internal_plant = internal_model.GetSubsystemByName("plant")
-    #internal_plant = station.GetSubsystemByName(
-    #    "iiwa_controller").get_multibody_plant_for_control()
-    #internal_context = internal_plant.CreateDefaultContext()
 
     # trajectory optimization
     trajectory = trajopt(internal_plant, internal_context, X_WStart, X_WGoal)
-    plant.SetDefaultPositions(iiwa, trajectory.value(0))
-    internal_plant.SetDefaultPositions(trajectory.value(0))
+    #plant.SetDefaultPositions(iiwa, trajectory.value(0))
+    #internal_plant.SetDefaultPositions(trajectory.value(0))
 
     # create a discrete trajectory of joint positions and velocities
     times = np.append(np.arange(trajectory.start_time(), trajectory.end_time(), 0.001),
@@ -196,38 +150,44 @@ def trajopt_shelves_demo():
     pos += [trajectory.value(t) for t in times]
     pos += [trajectory.value(trajectory.end_time()) for i in range(1000)]
     position_stack = np.column_stack(pos)
+    
     p_traj = PiecewisePolynomial.FirstOrderHold(np.arange(trajectory.start_time(), trajectory.end_time() + 2.001, 0.001), position_stack)
+    return p_traj
+
+
+def trajopt_shelves_demo():
+    meshcat = StartMeshcat()
+    meshcat.Delete()
+    builder = DiagramBuilder()
+
+    # set start & goal
+    #X_WStart = RigidTransform([0, -0.8, 0.59])  # top
+    X_WStart = RigidTransform([0, -0.8, 0.35])  # middle
+    #X_WStart = RigidTransform([0, -0.8, 0.07])  # bottom
+
+    X_WStart = RigidTransform([0, -0.5, 0.4])  # middle
+    meshcat.SetObject("start", Sphere(0.02), rgba=Rgba(.9, .1, .1, 1))
+    meshcat.SetTransform("start", X_WStart)
+    X_WGoal = RigidTransform([0.6, 0.1, 0.1])
+    meshcat.SetObject("goal", Sphere(0.02), rgba=Rgba(.1, .9, .1, 1))
+    meshcat.SetTransform("goal", X_WGoal)
+
+    station = builder.AddSystem(create_system_with_station())
+    plant = station.GetSubsystemByName("plant")
+    iiwa = plant.GetModelInstanceByName("iiwa")
+    wsg = plant.GetModelInstanceByName("wsg")
+    plant.SetDefaultFreeBodyPose(plant.GetBodyByName("base_link"),
+                                X_WStart @ RigidTransform(RotationMatrix.MakeXRotation(np.pi / 2)))
+    plant.SetDefaultPositions(wsg, [-0.055, 0.055])
+
+    p_traj = run_trajopt(X_WStart, X_WGoal)
     v_traj = p_traj.derivative()
 
     p_source = builder.AddSystem(TrajectorySource(p_traj))
     builder.Connect(p_source.get_output_port(), station.GetInputPort("iiwa_position"))
-    # # add a multiplexer to concat the desired position and velocity inputs
-    # p_source = builder.AddSystem(TrajectorySource(p_traj))
-    # v_source = builder.AddSystem(TrajectorySource(v_traj))
-    # source = builder.AddSystem(
-    #     Multiplexer([7, 7]))
-    # builder.Connect(p_source.get_output_port(),
-    #                 source.get_input_port(0))
-    # builder.Connect(v_source.get_output_port(),
-    #                 source.get_input_port(1))
-
-    # # create a controller to track the trajectory
-    # num_iiwa_positions = plant.num_positions(iiwa)
-    # id_controller = builder.AddSystem(
-    #     InverseDynamicsController(internal_plant,
-    #                               kp=[100] * num_iiwa_positions,
-    #                               ki=[1] * num_iiwa_positions,
-    #                               kd=[20] * num_iiwa_positions,
-    #                               has_reference_acceleration=False))
-    # builder.Connect(station.GetOutputPort("iiwa_state_estimated"),
-    #                 id_controller.get_input_port_estimated_state())
-    # builder.Connect(source.get_output_port(),
-    #                 id_controller.get_input_port_desired_state())
-    # builder.Connect(id_controller.get_output_port(),
-    #                 plant.get_actuation_input_port(iiwa))
     
     # Wsg controller.
-    traj_wsg_command = MakeGripperCommandTrajectory(times)
+    traj_wsg_command = MakeGripperCommandTrajectory()
     wsg_source = builder.AddSystem(TrajectorySource(traj_wsg_command))
     wsg_source.set_name("wsg_command")
     builder.Connect(wsg_source.get_output_port(),
@@ -241,11 +201,11 @@ def trajopt_shelves_demo():
     diagram = builder.Build()
     simulator = Simulator(diagram)
     visualizer.StartRecording(False)
-    simulator.AdvanceTo(trajectory.end_time() + 2)
+    simulator.AdvanceTo(p_traj.end_time() + 2)
     visualizer.PublishRecording()
 
+if __name__ == "__main__":
+    trajopt_shelves_demo()
 
-trajopt_shelves_demo()
-
-while True:
-    pass
+    while True:
+        pass

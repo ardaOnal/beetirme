@@ -34,6 +34,9 @@ class Planner(LeafSystem):
         self.DeclareAbstractOutputPort(
             "X_WG", lambda: AbstractValue.Make(RigidTransform()),
             self.CalcGripperPose)
+        self.DeclareAbstractOutputPort(
+            "X_WG_measured", lambda: AbstractValue.Make(RigidTransform()),
+            self.CalcGripperPose)
         self.DeclareVectorOutputPort("wsg_position", 1, self.CalcWsgPosition)
 
         # For GoHome mode.
@@ -231,6 +234,10 @@ class Planner(LeafSystem):
         # Command the current position (note: this is not particularly good if the velocity is non-zero)
         output.set_value(self.get_input_port(0).Eval(context)
             [int(self._gripper_body_index)])
+    
+    def MeasureGripperPose(self, context, output):
+        output.set_value(self.get_input_port(0).Eval(context)
+            [int(self._gripper_body_index)])
 
     def CalcWsgPosition(self, context, output):
         mode = context.get_abstract_state(int(self._mode_index)).get_value()
@@ -264,7 +271,7 @@ class Planner(LeafSystem):
 
     def CalcDiffIKReset(self, context, output):
         mode = context.get_abstract_state(int(self._mode_index)).get_value()
-
+        
         if mode == planner_state.PlannerState.GO_HOME:
             output.set_value(True)
         else:
