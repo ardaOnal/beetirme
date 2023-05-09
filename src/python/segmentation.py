@@ -26,7 +26,7 @@ from manipulation.clutter import GenerateAntipodalGraspCandidate
 from manipulation.scenarios import AddRgbdSensors
 from manipulation.utils import AddPackagePaths, LoadDataResource
 
-
+from lang_sam import LangSAM
 
 mustard_ycb_idx = 3
 
@@ -63,6 +63,10 @@ def setup_model(num_classes):
     model.to(device)
 
     return model, device
+
+
+def get_lang_sam(sam_type):
+    return LangSAM(sam_type)
 
 
 

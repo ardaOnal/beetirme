@@ -60,6 +60,10 @@ directives:
     # point cloud cropbox points
     cropPointA = [-.28, -.72, 0.36]
     cropPointB = [0.26, -.47, 0.57]
+    cropPointA = [0.18202094, -0.47112631, 0.45539139]
+    cropPointB = [0.21514061, -0.52862136,  0.37475978]
+    cropPointA = [0.157020942185328, -0.553621358846587, 0.349759780950789]
+    cropPointB = [0.24014060528532993, -0.44612630542428905, 0.48039139159501026]
 
     x_bin_grasp_selector = builder.AddSystem(
         grasp_selector.GraspSelector(plant,
@@ -78,6 +82,7 @@ directives:
     builder.Connect(station.GetOutputPort("camera2_point_cloud"), x_bin_grasp_selector.get_input_port(2))
     builder.Connect(station.GetOutputPort("body_poses"), x_bin_grasp_selector.GetInputPort("body_poses"))
     builder.Connect(station.GetOutputPort("camera1_rgb_image"), x_bin_grasp_selector.get_input_port(4))
+    builder.Connect(station.GetOutputPort("camera1_depth_image"), x_bin_grasp_selector.get_input_port(5))
 
     planner = builder.AddSystem(planner_class.Planner(plant, JOINT_COUNT, meshcat, rs, PREPICK_DISTANCE))
     builder.Connect(station.GetOutputPort("body_poses"), planner.GetInputPort("body_poses"))

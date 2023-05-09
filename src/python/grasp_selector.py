@@ -1,13 +1,15 @@
 import numpy as np
 
 from pydrake.all import (AbstractValue, Concatenate, LeafSystem, PointCloud, RigidTransform, 
-                         RollPitchYaw, Sphere, Rgba, Image, ImageRgba8U)
+                         RollPitchYaw, Sphere, Rgba, Image, ImageRgba8U, ImageDepth16U, ImageDepth32F)
 
 from manipulation.clutter import GenerateAntipodalGraspCandidate
 
 import helpers
 
 import segmentation
+from  PIL import Image as PILImage
+from lang_sam.utils import draw_image
 
 import torchvision.transforms.functional as Tf
 import matplotlib.pyplot as plt
@@ -30,13 +32,12 @@ class GraspSelector(LeafSystem):
             "grasp_selection", lambda: AbstractValue.Make(
                 (np.inf, RigidTransform())), self.SelectGrasp)
         self.DeclareAbstractInputPort("rgb1", AbstractValue.Make(Image(31,31)))
+        self.DeclareAbstractInputPort("depth1", AbstractValue.Make(ImageDepth32F(31,31)))
         port.disable_caching_by_default()
 
         # Compute crop box.
         context = plant.CreateDefaultContext()
         X_B = RigidTransform([0,0,0])
-        #a = X_B.multiply([-.28, -.72, 0.36])
-        #b = X_B.multiply([0.26, -.47, 0.57])
         a = X_B.multiply(cropPointA)
         b = X_B.multiply(cropPointB)
 
@@ -44,8 +45,8 @@ class GraspSelector(LeafSystem):
         self.diag = diag
         self.cntxt31 = diag.CreateDefaultContext()
 
-        self.num_classes = 7
-        self.model, self.device = segmentation.setup_model(self.num_classes)
+        #self.num_classes = 7
+        #self.model, self.device = segmentation.setup_model(self.num_classes)
 
         # cntxt31 = diag.CreateDefaultContext()
         # rgb_im = diag.GetOutputPort('camera{}_rgb_image'.format(1)).Eval(cntxt31).data
@@ -74,14 +75,105 @@ class GraspSelector(LeafSystem):
         self._camera_body_indices = camera_body_indices
         self.running_as_notebook = running_as_notebook
 
+        self.lang_sam_model = segmentation.get_lang_sam("vit_b")
+
+
+        cam1 = diag.GetSubsystemByName("camera1")
+        self.cam_info = cam1.depth_camera_info()
+        print("CAM INFO", self.cam_info)
+
+        cam1_context = cam1.GetMyMutableContextFromRoot(cntxt31)
+        self.X_WC_Cam1 = cam1.body_pose_in_world_output_port().Eval(cam1_context)
+
+    def project_depth_to_pC(self, depth_pixel, uv=None):
+        """
+        project depth pixels to points in camera frame
+        using pinhole camera model
+        Input:
+            depth_pixels: numpy array of (nx3) or (3,)
+        Output:
+            pC: 3D point in camera frame, numpy array of (nx3)
+        """
+        # switch u,v due to python convention
+        v = depth_pixel[:, 0]
+        u = depth_pixel[:, 1]
+        Z = depth_pixel[:, 2]
+        # read camera intrinsics
+        cx = self.cam_info.center_x()
+        cy = self.cam_info.center_y()
+        fx = self.cam_info.focal_x()
+        fy = self.cam_info.focal_y()
+        X = (u - cx) * Z / fx
+        Y = (v - cy) * Z / fy
+        pC = np.c_[X, Y, Z]
+        return pC
+
     def SelectGrasp(self, context, output):
     
         rgb_im = self.get_input_port(4).Eval(context).data
         plt.imshow(rgb_im)
         plt.show()
-        # rgb_im = self.station.GetOutputPort('camera{}_rgb_image'.format(1)).Eval(self.cntxt31).data
-        # rgb_im = self.station.GetOutputPort('camera{}_rgb_image'.format(1))
-        # print(type(rgb_im))
+
+        #image_pil = Image.open(rgb_im).convert("RGB")
+        image_pil = PILImage.fromarray(rgb_im).convert("RGB")
+        plt.imshow(image_pil)
+        plt.show()
+        text_prompt = 'canned tomato'
+        masks, boxes, phrases, logits = self.lang_sam_model.predict(image_pil, text_prompt)
+        print("masks", masks)
+        print("masks shape", masks.shape)
+        print("boxes", boxes)
+        print("phrases", phrases)
+        print("logits", logits)
+
+        smallest_sum = [2**30,0,0] # value and coordinates
+        largest_sum = [0,0,0]
+
+        for x in range(masks[0].shape[0]):
+            for y in range(masks[0].shape[1]):
+                if masks[0][x][y] == True and x + y > largest_sum[0]:
+                    largest_sum = [x+y, x, y]
+                if masks[0][x][y] == True and x + y < smallest_sum[0]:
+                    smallest_sum = [x+y, x, y]
+
+        print("smallest sum", smallest_sum)
+        print("largest sum", largest_sum)
+
+        np_image = np.array(image_pil)
+        result = draw_image(np_image, masks, boxes, phrases)
+        plt.imshow(result)
+        plt.show()
+
+        
+
+                    
+
+
+        #rgb_im = self.station.GetOutputPort('camera{}_rgb_image'.format(1)).Eval(self.cntxt31).data
+        #rgb_im = self.station.GetOutputPort('camera{}_rgb_image'.format(1))
+        #print(type(rgb_im))
+
+        depth_im = self.get_input_port(5).Eval(context).data.squeeze()
+        #depth_im[depth_im == np.inf] = 50.0
+        print("DEPTH IMAGE", depth_im)
+        print("DEPTH SHAPE", depth_im.shape)
+
+        img_h, img_w = depth_im.shape
+        v_range = np.arange(img_h)
+        u_range = np.arange(img_w)
+        depth_u, depth_v = np.meshgrid(u_range, v_range)
+        depth_pnts = np.dstack([depth_v, depth_u, depth_im])
+        depth_pnts = depth_pnts.reshape([img_h * img_w, 3])
+        # point poses in camera frame
+        pC = self.project_depth_to_pC(depth_pnts)
+        print("PC", pC)
+        print("PC SHAPE", pC.shape)
+        pC = np.reshape(pC,(480,640,3))
+        print("PC", pC)
+        print("PC SHAPE", pC.shape)
+
+
+
 
         # res = self.model([Tf.to_tensor(rgb_im[:, :, :3]).to(self.device)])
 
@@ -110,12 +202,53 @@ class GraspSelector(LeafSystem):
         # plt.colorbar()
         # plt.show()
 
+        print("CROP POINTS", pC[smallest_sum[1]][smallest_sum[2]], pC[largest_sum[1]][largest_sum[2]])
+
+        X_Crop1 = self.X_WC_Cam1 @ RigidTransform(pC[smallest_sum[1]][smallest_sum[2]])
+        print("CROPPED FRAME1", X_Crop1)
+        X_Crop2 = self.X_WC_Cam1 @ RigidTransform(pC[largest_sum[1]][largest_sum[2]])
+        print("CROPPED FRAME2", X_Crop2)
+
+        # Solves: Failure at perception/point_cloud.cc:350 in Crop(): condition '(lower_xyz.array() <= upper_xyz.array()).all()' failed.
+        X_Crop1_Array = [X_Crop1.translation()[0], X_Crop1.translation()[1], X_Crop1.translation()[2]]
+        X_Crop2_Array = [X_Crop2.translation()[0], X_Crop2.translation()[1], X_Crop2.translation()[2]]
+
+        print(type(X_Crop1_Array))
+        print(X_Crop1_Array)
+        print(X_Crop2_Array)
+
+        if X_Crop1_Array[0] > X_Crop2_Array[0]:
+            tmp = X_Crop2_Array[0]
+            X_Crop2_Array[0] = X_Crop1_Array[0]
+            X_Crop1_Array[0] = tmp
+        if X_Crop1_Array[1] > X_Crop2_Array[1]:
+            tmp = X_Crop2_Array[1]
+            X_Crop2_Array[1] = X_Crop1_Array[1]
+            X_Crop1_Array[1] = tmp
+        if X_Crop1_Array[2] > X_Crop2_Array[2]:
+            tmp = X_Crop2_Array[2]
+            X_Crop2_Array[2] = X_Crop1_Array[2]
+            X_Crop1_Array[2] = tmp
+
+        print(X_Crop1_Array)
+        print(X_Crop2_Array)
+        X_Crop1_Array[0] = X_Crop1_Array[0] - 0.025
+        X_Crop1_Array[1] = X_Crop1_Array[1] - 0.025
+        X_Crop1_Array[2] = X_Crop1_Array[2] - 0.025
+
+        X_Crop2_Array[0] = X_Crop2_Array[0] + 0.025
+        X_Crop2_Array[1] = X_Crop2_Array[1] + 0.025
+        X_Crop2_Array[2] = X_Crop2_Array[2] + 0.025
+
+        print(X_Crop1_Array)
+        print(X_Crop2_Array)
 
         body_poses = self.get_input_port(3).Eval(context)
         pcd = []
         for i in range(3):
             cloud = self.get_input_port(i).Eval(context)
-            pcd.append(cloud.Crop(self._crop_lower, self._crop_upper))
+            #pcd.append(cloud.Crop(self._crop_lower, self._crop_upper))
+            pcd.append(cloud.Crop(np.array(X_Crop1_Array), np.array(X_Crop2_Array)))
             pcd[i].EstimateNormals(radius=0.1, num_closest=30)
 
             # Flip normals toward camera
@@ -138,9 +271,12 @@ class GraspSelector(LeafSystem):
 
         if len(costs) == 0:
             # Didn't find a viable grasp candidate
+            print("Didn't find a viable grasp candidate")
             X_WG = RigidTransform(RollPitchYaw(-np.pi / 2, 0, np.pi / 2),
                                   [0.5, 0, 0.22])
             output.set_value((np.inf, X_WG))
         else:
             best = np.argmin(costs)
             output.set_value((costs[best], X_Gs[best]))
+
+

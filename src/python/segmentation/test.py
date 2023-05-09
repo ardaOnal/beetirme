@@ -6,7 +6,7 @@ import numpy as np
 model = LangSAM(sam_type="vit_b")
 image_pil = Image.open('src/python/segmentation/grocery_tomato.png').convert("RGB")
 np_image = np.array(Image.open('src/python/segmentation/grocery_tomato.png'))
-text_prompt = 'red jello pudding box'
+text_prompt = 'canned tomato'
 masks, boxes, phrases, logits = model.predict(image_pil, text_prompt)
 
 print("Masks", masks)
