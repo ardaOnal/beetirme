@@ -40,7 +40,7 @@ def AddIiwa(plant, collision_model="no_collision"):
 
     parser = Parser(plant)
     parser.package_map().AddPackageXml(os.path.join(os.path.dirname(os.path.realpath(__file__)), "models/package.xml"))
-    iiwa = parser.AddModelFromFile("src/python/models/iiwa7/iiwa7_no_collision.sdf")
+    iiwa = parser.AddModelFromFile("src/python/models/iiwa7/mobile_iiwa7_with_box_collision.sdf")
     #plant.WeldFrames(plant.world_frame(), plant.GetFrameByName("iiwa_link_0"))
 
     # Set default positions:

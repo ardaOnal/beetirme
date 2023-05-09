@@ -20,7 +20,7 @@ directives:
     X_PF:
         base_frame: shelves1_frame
         rotation: !Rpy { deg: [-120,0,210]} # z 165di
-        translation: [-0.35,-.2,0.65] # x=0.25'di
+        translation: [-0.35,-.2,3.65] # x=0.25'di
 - add_model:
     name: camera0
     file: package://grocery/camera_box.sdf

@@ -14,8 +14,11 @@ import pydrake.systems.framework
 from pydrake.systems.primitives import ConstantVectorSource
 
 from manipulation.meshcat_utils import PublishPositionTrajectory
+from manipulation.scenarios import AddPackagePaths
 from manipulation.scenarios import AddIiwa, AddShape, AddWsg, AddPackagePaths, MakeManipulationStation
 from manipulation.utils import FindResource
+
+#from scenarios import MakeManipulationStation, AddIiwa
 
 
 def create_system_with_station():
@@ -23,8 +26,10 @@ def create_system_with_station():
     directives:
     - add_directives:
         file: package://grocery/two_bins_w_cameras.dmd.yaml
+        #file: package://grocery/kinematic.dmd.yaml
     - add_directives:
-        file: package://grocery/iiwa_and_wsg_with_collision.dmd.yaml    
+        #file: package://grocery/iiwa_and_wsg_with_collision.dmd.yaml
+        file: package://grocery/mobile_iiwa_with_collision.dmd.yaml    
     - add_model:
         name: foam_brick
         file: package://drake/examples/manipulation_station/models/061_foam_brick.sdf
@@ -48,6 +53,8 @@ def make_internal_model():
         os.path.dirname(os.path.realpath(__file__)), "models/package.xml"))
     parser.AddModels(
         "src/python/models/two_bins_w_cameras.dmd.yaml")
+    #parser.AddModels(
+    #    "src/python/models/kinematic.dmd.yaml")
     plant.Finalize()
     return builder.Build()
 
@@ -66,7 +73,7 @@ def MakeGripperCommandTrajectory():
     return traj_wsg_command
 
 
-def trajopt(plant, context, X_WStart, X_WGoal):
+def trajopt(plant, context, X_WStart, X_WGoal, duration=None):
     plant_context = plant.GetMyContextFromRoot(context)
 
     num_q = plant.num_positions()
@@ -83,7 +90,10 @@ def trajopt(plant, context, X_WStart, X_WGoal):
     trajopt.AddVelocityBounds(plant.GetVelocityLowerLimits(),
                               plant.GetVelocityUpperLimits())
 
-    trajopt.AddDurationConstraint(.5, 50)
+    if duration:
+        trajopt.AddDurationConstraint(duration, duration)
+    else:
+        trajopt.AddDurationConstraint(.5, 50)
 
     # start constraint
     start_constraint = PositionConstraint(plant, plant.world_frame(),
@@ -132,26 +142,27 @@ def trajopt(plant, context, X_WStart, X_WGoal):
     return trajopt.ReconstructTrajectory(result)
 
 
-def run_trajopt(X_WStart, X_WGoal):
+def run_trajopt(X_WStart, X_WGoal, start_time=0, duration=None):
     # create an internal model
     internal_model = make_internal_model()
     internal_context = internal_model.CreateDefaultContext()
     internal_plant = internal_model.GetSubsystemByName("plant")
 
     # trajectory optimization
-    trajectory = trajopt(internal_plant, internal_context, X_WStart, X_WGoal)
+    trajectory = trajopt(internal_plant, internal_context, X_WStart, X_WGoal, duration)
     #plant.SetDefaultPositions(iiwa, trajectory.value(0))
     #internal_plant.SetDefaultPositions(trajectory.value(0))
 
     # create a discrete trajectory of joint positions and velocities
     times = np.append(np.arange(trajectory.start_time(), trajectory.end_time(), 0.001),
                       trajectory.end_time())
-    pos = [trajectory.value(trajectory.start_time()) for i in range(1000)]
-    pos += [trajectory.value(t) for t in times]
-    pos += [trajectory.value(trajectory.end_time()) for i in range(1000)]
+    #pos = [trajectory.value(trajectory.start_time()) for i in range(1000)]
+    pos = [trajectory.value(t) for t in times]
+    #pos += [trajectory.value(trajectory.end_time()) for i in range(1000)]
     position_stack = np.column_stack(pos)
     
-    p_traj = PiecewisePolynomial.FirstOrderHold(np.arange(trajectory.start_time(), trajectory.end_time() + 2.001, 0.001), position_stack)
+    real_times = times + start_time
+    p_traj = PiecewisePolynomial.FirstOrderHold(real_times, position_stack)
     return p_traj
 
 
@@ -162,10 +173,11 @@ def trajopt_shelves_demo():
 
     # set start & goal
     #X_WStart = RigidTransform([0, -0.8, 0.59])  # top
-    X_WStart = RigidTransform([0, -0.8, 0.35])  # middle
+    #X_WStart = RigidTransform([0, -0.8, 0.35])  # middle
     #X_WStart = RigidTransform([0, -0.8, 0.07])  # bottom
 
     X_WStart = RigidTransform([0, -0.5, 0.4])  # middle
+
     meshcat.SetObject("start", Sphere(0.02), rgba=Rgba(.9, .1, .1, 1))
     meshcat.SetTransform("start", X_WStart)
     X_WGoal = RigidTransform([0.6, 0.1, 0.1])
@@ -178,10 +190,12 @@ def trajopt_shelves_demo():
     wsg = plant.GetModelInstanceByName("wsg")
     plant.SetDefaultFreeBodyPose(plant.GetBodyByName("base_link"),
                                 X_WStart @ RigidTransform(RotationMatrix.MakeXRotation(np.pi / 2)))
-    plant.SetDefaultPositions(wsg, [-0.055, 0.055])
 
     p_traj = run_trajopt(X_WStart, X_WGoal)
     v_traj = p_traj.derivative()
+
+    plant.SetDefaultPositions(iiwa, p_traj.value(0))
+    plant.SetDefaultPositions(wsg, [-0.055, 0.055])
 
     p_source = builder.AddSystem(TrajectorySource(p_traj))
     builder.Connect(p_source.get_output_port(), station.GetInputPort("iiwa_position"))
@@ -201,7 +215,7 @@ def trajopt_shelves_demo():
     diagram = builder.Build()
     simulator = Simulator(diagram)
     visualizer.StartRecording(False)
-    simulator.AdvanceTo(p_traj.end_time() + 2)
+    simulator.AdvanceTo(p_traj.end_time())
     visualizer.PublishRecording()
 
 if __name__ == "__main__":

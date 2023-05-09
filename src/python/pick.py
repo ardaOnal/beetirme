@@ -67,3 +67,18 @@ def MakeGripperFrames(X_G, t0=0, prepick_distance=0.2):
     X_G["postplace"] = X_G["preplace"]
 
     return X_G, times
+
+def RecomputeTimes(times, pick_duration, place_duration):
+    times["prepare"] = times["initial"] + pick_duration / 2
+    times["prepick"] = times["prepare"] + pick_duration / 2
+    # Allow some time for the gripper to close.
+    times["pick_start"] = times["prepick"] + 2.0
+    times["pick_end"] = times["pick_start"] + 2.0
+    times["postpick"] = times["pick_end"] + 2.0
+
+    times["clearance"] = times["postpick"] + place_duration / 2
+    times["preplace"] = times["clearance"] + place_duration / 2
+    times["place_start"] = times["preplace"] + 2.0
+    times["place_end"] = times["place_start"] + 2.0
+    times["postplace"] = times["place_end"] + 2.0
+    return times
