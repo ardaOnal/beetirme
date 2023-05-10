@@ -60,10 +60,6 @@ directives:
     # point cloud cropbox points
     cropPointA = [-.28, -.72, 0.36]
     cropPointB = [0.26, -.47, 0.57]
-    cropPointA = [0.18202094, -0.47112631, 0.45539139]
-    cropPointB = [0.21514061, -0.52862136,  0.37475978]
-    cropPointA = [0.157020942185328, -0.553621358846587, 0.349759780950789]
-    cropPointB = [0.24014060528532993, -0.44612630542428905, 0.48039139159501026]
 
     x_bin_grasp_selector = builder.AddSystem(
         grasp_selector.GraspSelector(plant,
