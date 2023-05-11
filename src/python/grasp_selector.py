@@ -24,9 +24,12 @@ class GraspSelector(LeafSystem):
         LeafSystem.__init__(self)
         model_point_cloud = AbstractValue.Make(PointCloud(0))
         cntxt31 = diag.CreateDefaultContext()
-        rgb_im = station.GetOutputPort('camera{}_rgb_image'.format(1)).Eval(cntxt31).data
+        # rgb_im = station.GetOutputPort('camera1_{}_rgb_image'.format(1)).Eval(cntxt31).data
         for i in range(camera_count):
             self.DeclareAbstractInputPort(f"cloud{i}_W", model_point_cloud)
+            if i % 2 == 0:
+                self.DeclareAbstractInputPort(f"rgb1_{i}", AbstractValue.Make(Image(31,31)))
+                self.DeclareAbstractInputPort(f"depth1_{i}", AbstractValue.Make(ImageDepth32F(31,31)))
 
         self.DeclareAbstractInputPort(
             "body_poses", AbstractValue.Make([RigidTransform()]))
@@ -34,8 +37,7 @@ class GraspSelector(LeafSystem):
         port = self.DeclareAbstractOutputPort(
             "grasp_selection", lambda: AbstractValue.Make(
                 (np.inf, RigidTransform())), self.SelectGrasp)
-        self.DeclareAbstractInputPort("rgb1", AbstractValue.Make(Image(31,31)))
-        self.DeclareAbstractInputPort("depth1", AbstractValue.Make(ImageDepth32F(31,31)))
+
         port.disable_caching_by_default()
 
         # Compute crop box.
@@ -68,7 +70,7 @@ class GraspSelector(LeafSystem):
         self.lang_sam_model = segmentation.get_lang_sam("vit_b")
 
 
-        cam1 = diag.GetSubsystemByName("camera1")
+        cam1 = diag.GetSubsystemByName("camera0_1")
         self.cam_info = cam1.depth_camera_info()
 
         cam1_context = cam1.GetMyMutableContextFromRoot(cntxt31)
@@ -98,8 +100,9 @@ class GraspSelector(LeafSystem):
         pC = np.c_[X, Y, Z]
         return pC
 
+    # MAKE DYNAMIC
     def SelectGrasp(self, context, output):
-        rgb_im = self.get_input_port(4).Eval(context).data
+        rgb_im = self.get_input_port(1).Eval(context).data # TO DO make dynamic
         image_pil = PILImage.fromarray(rgb_im).convert("RGB")
         plt.imshow(image_pil)
         plt.show()
@@ -133,7 +136,7 @@ class GraspSelector(LeafSystem):
             plt.imshow(result)
             plt.show()
 
-            depth_im = self.get_input_port(5).Eval(context).data.squeeze()
+            depth_im = self.get_input_port(2).Eval(context).data.squeeze() # todo
             print("DEPTH IMAGE", depth_im)
             print("DEPTH SHAPE", depth_im.shape)
 
@@ -196,10 +199,13 @@ class GraspSelector(LeafSystem):
             self.meshcat.SetObject("pick2", Sphere(0.01), rgba=Rgba(.1, .9, .1, 1))
             self.meshcat.SetTransform("pick2", RigidTransform(b))
 
-            body_poses = self.get_input_port(3).Eval(context)
+            body_poses = self.get_input_port(36).Eval(context) # TO DO
             pcd = []
-            for i in range(3):
-                cloud = self.get_input_port(i).Eval(context)
+            for i in range(2): # TO
+                if i == 0:
+                    cloud = self.get_input_port(i).Eval(context) # TO DO
+                else:
+                    cloud = self.get_input_port(3).Eval(context) # TO DO
                 #pcd.append(cloud.Crop(self._crop_lower, self._crop_upper))
                 pcd.append(cloud.Crop(np.array(X_Crop1_Array), np.array(X_Crop2_Array)))
                 pcd[i].EstimateNormals(radius=0.1, num_closest=30)

@@ -74,7 +74,6 @@ directives:
     cropPointA = [-.28, -.72, 0.36]
     cropPointB = [0.26, -.47, 0.57]
 
-    lst = []
     x_bin_grasp_selector = builder.AddSystem(
         grasp_selector.GraspSelector(plant,
                       #plant.GetModelInstanceByName("shelves1"),
@@ -83,20 +82,24 @@ directives:
                           plant.GetBodyIndices(
                               plant.GetModelInstanceByName(f"camera{camera_no}_{shelf_no}"))[0]
                               for shelf_no in range(1, num_shelves+1) for camera_no in range(2)
-                      ], cropPointA=cropPointA, cropPointB=cropPointB, meshcat=meshcat, running_as_notebook=running_as_notebook, camera_count=camera_count))
+                      ], cropPointA=cropPointA, cropPointB=cropPointB, meshcat=meshcat, running_as_notebook=running_as_notebook, camera_count=camera_count,
+                        diag=diag, station=station))
     
-    #builder.Connect(station.GetOutputPort("camera0_1_point_cloud"),x_bin_grasp_selector.get_input_port(0))
-    #builder.Connect(station.GetOutputPort("camera1_1_point_cloud"), x_bin_grasp_selector.get_input_port(1))
     index = 0
     for i in range(1, num_shelves+1):
         builder.Connect(station.GetOutputPort(f"camera0_{i}_point_cloud"),x_bin_grasp_selector.get_input_port(index))
         index = index+1
+        builder.Connect(station.GetOutputPort(f"camera0_{i}_rgb_image"), x_bin_grasp_selector.get_input_port(index))
+        index = index+1
+        builder.Connect(station.GetOutputPort(f"camera0_{i}_depth_image"), x_bin_grasp_selector.get_input_port(index))
+        index = index+1
         builder.Connect(station.GetOutputPort(f"camera1_{i}_point_cloud"), x_bin_grasp_selector.get_input_port(index))
         index = index+1
-
+        
+    
+    print("INDEX: ", index)
     builder.Connect(station.GetOutputPort("body_poses"), x_bin_grasp_selector.GetInputPort("body_poses"))
-    builder.Connect(station.GetOutputPort("camera1_rgb_image"), x_bin_grasp_selector.get_input_port(4)) #to do
-    builder.Connect(station.GetOutputPort("camera1_depth_image"), x_bin_grasp_selector.get_input_port(5))
+
 
     planner = builder.AddSystem(planner_class.Planner(plant, JOINT_COUNT, meshcat, rs, PREPICK_DISTANCE))
     builder.Connect(station.GetOutputPort("body_poses"), planner.GetInputPort("body_poses"))
