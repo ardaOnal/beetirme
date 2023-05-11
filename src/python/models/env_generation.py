@@ -34,8 +34,8 @@ def grid(row_count=5, row_start_point=-6.6, row_increment=3.3, shelf_row_count=5
     name: camera0_{shelf_no}_origin
     X_PF:
         base_frame: {origin}
-        rotation: !Rpy {{ deg: [-120,0,210]}}
-        translation: [-1,-.1, .2]
+        rotation: !Rpy {{ deg: [-120,0,240]}}
+        translation: [-0.35,.25,0.05]
 - add_model:
     name: camera0_{shelf_no}
     file: package://grocery/camera_box.sdf
@@ -47,8 +47,8 @@ def grid(row_count=5, row_start_point=-6.6, row_increment=3.3, shelf_row_count=5
     name: camera1_{shelf_no}_origin
     X_PF:
         base_frame: {origin}
-        rotation: !Rpy {{ deg: [-110, 0, -25]}}
-        translation: [-1, -.9, .2]
+        rotation: !Rpy {{ deg: [-120, 0, -55]}}
+        translation: [-.3, -.33, 0.05]
 - add_model:
     name: camera1_{shelf_no}
     file: package://grocery/camera_box.sdf

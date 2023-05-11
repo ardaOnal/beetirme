@@ -3,7 +3,7 @@ directives:
     name: shelves1_origin
     X_PF:
         base_frame: world
-        translation: [-2.2, -6.6, 0.6085]
+        translation: [0, -0.6, 0.6085]
         rotation: !Rpy { deg: [0, 0, 90]}
 
 - add_model:
@@ -18,8 +18,8 @@ directives:
     name: camera0_1_origin
     X_PF:
         base_frame: shelves1_origin
-        rotation: !Rpy { deg: [-120,0,210]}
-        translation: [-1,-.1, .2]
+        rotation: !Rpy { deg: [-120,0,240]}
+        translation: [-0.35,.25,0.05]
 - add_model:
     name: camera0_1
     file: package://grocery/camera_box.sdf
@@ -31,8 +31,8 @@ directives:
     name: camera1_1_origin
     X_PF:
         base_frame: shelves1_origin
-        rotation: !Rpy { deg: [-110, 0, -25]}
-        translation: [-1, -.9, .2]
+        rotation: !Rpy { deg: [-120, 0, -55]}
+        translation: [-.3, -.33, 0.05]
 - add_model:
     name: camera1_1
     file: package://grocery/camera_box.sdf
@@ -44,7 +44,7 @@ directives:
     name: shelves2_origin
     X_PF:
         base_frame: world
-        translation: [-1.1, -6.6, 0.6085]
+        translation: [1.1, -0.6, 0.6085]
         rotation: !Rpy { deg: [0, 0, 90]}
 
 - add_model:
@@ -59,8 +59,8 @@ directives:
     name: camera0_2_origin
     X_PF:
         base_frame: shelves2_origin
-        rotation: !Rpy { deg: [-120,0,210]}
-        translation: [-1,-.1, .2]
+        rotation: !Rpy { deg: [-120,0,240]}
+        translation: [-0.35,.25,0.05]
 - add_model:
     name: camera0_2
     file: package://grocery/camera_box.sdf
@@ -72,8 +72,8 @@ directives:
     name: camera1_2_origin
     X_PF:
         base_frame: shelves2_origin
-        rotation: !Rpy { deg: [-110, 0, -25]}
-        translation: [-1, -.9, .2]
+        rotation: !Rpy { deg: [-120, 0, -55]}
+        translation: [-.3, -.33, 0.05]
 - add_model:
     name: camera1_2
     file: package://grocery/camera_box.sdf
@@ -85,7 +85,7 @@ directives:
     name: shelves3_origin
     X_PF:
         base_frame: world
-        translation: [0.0, -6.6, 0.6085]
+        translation: [2.2, -0.6, 0.6085]
         rotation: !Rpy { deg: [0, 0, 90]}
 
 - add_model:
@@ -100,8 +100,8 @@ directives:
     name: camera0_3_origin
     X_PF:
         base_frame: shelves3_origin
-        rotation: !Rpy { deg: [-120,0,210]}
-        translation: [-1,-.1, .2]
+        rotation: !Rpy { deg: [-120,0,240]}
+        translation: [-0.35,.25,0.05]
 - add_model:
     name: camera0_3
     file: package://grocery/camera_box.sdf
@@ -113,8 +113,8 @@ directives:
     name: camera1_3_origin
     X_PF:
         base_frame: shelves3_origin
-        rotation: !Rpy { deg: [-110, 0, -25]}
-        translation: [-1, -.9, .2]
+        rotation: !Rpy { deg: [-120, 0, -55]}
+        translation: [-.3, -.33, 0.05]
 - add_model:
     name: camera1_3
     file: package://grocery/camera_box.sdf
@@ -126,7 +126,7 @@ directives:
     name: shelves4_origin
     X_PF:
         base_frame: world
-        translation: [1.1, -6.6, 0.6085]
+        translation: [0, 2.6999999999999997, 0.6085]
         rotation: !Rpy { deg: [0, 0, 90]}
 
 - add_model:
@@ -141,8 +141,8 @@ directives:
     name: camera0_4_origin
     X_PF:
         base_frame: shelves4_origin
-        rotation: !Rpy { deg: [-120,0,210]}
-        translation: [-1,-.1, .2]
+        rotation: !Rpy { deg: [-120,0,240]}
+        translation: [-0.35,.25,0.05]
 - add_model:
     name: camera0_4
     file: package://grocery/camera_box.sdf
@@ -154,8 +154,8 @@ directives:
     name: camera1_4_origin
     X_PF:
         base_frame: shelves4_origin
-        rotation: !Rpy { deg: [-110, 0, -25]}
-        translation: [-1, -.9, .2]
+        rotation: !Rpy { deg: [-120, 0, -55]}
+        translation: [-.3, -.33, 0.05]
 - add_model:
     name: camera1_4
     file: package://grocery/camera_box.sdf
@@ -167,7 +167,7 @@ directives:
     name: shelves5_origin
     X_PF:
         base_frame: world
-        translation: [2.2, -6.6, 0.6085]
+        translation: [1.1, 2.6999999999999997, 0.6085]
         rotation: !Rpy { deg: [0, 0, 90]}
 
 - add_model:
@@ -182,8 +182,8 @@ directives:
     name: camera0_5_origin
     X_PF:
         base_frame: shelves5_origin
-        rotation: !Rpy { deg: [-120,0,210]}
-        translation: [-1,-.1, .2]
+        rotation: !Rpy { deg: [-120,0,240]}
+        translation: [-0.35,.25,0.05]
 - add_model:
     name: camera0_5
     file: package://grocery/camera_box.sdf
@@ -195,8 +195,8 @@ directives:
     name: camera1_5_origin
     X_PF:
         base_frame: shelves5_origin
-        rotation: !Rpy { deg: [-110, 0, -25]}
-        translation: [-1, -.9, .2]
+        rotation: !Rpy { deg: [-120, 0, -55]}
+        translation: [-.3, -.33, 0.05]
 - add_model:
     name: camera1_5
     file: package://grocery/camera_box.sdf
@@ -208,7 +208,7 @@ directives:
     name: shelves6_origin
     X_PF:
         base_frame: world
-        translation: [-2.2, -3.3, 0.6085]
+        translation: [2.2, 2.6999999999999997, 0.6085]
         rotation: !Rpy { deg: [0, 0, 90]}
 
 - add_model:
@@ -223,8 +223,8 @@ directives:
     name: camera0_6_origin
     X_PF:
         base_frame: shelves6_origin
-        rotation: !Rpy { deg: [-120,0,210]}
-        translation: [-1,-.1, .2]
+        rotation: !Rpy { deg: [-120,0,240]}
+        translation: [-0.35,.25,0.05]
 - add_model:
     name: camera0_6
     file: package://grocery/camera_box.sdf
@@ -236,8 +236,8 @@ directives:
     name: camera1_6_origin
     X_PF:
         base_frame: shelves6_origin
-        rotation: !Rpy { deg: [-110, 0, -25]}
-        translation: [-1, -.9, .2]
+        rotation: !Rpy { deg: [-120, 0, -55]}
+        translation: [-.3, -.33, 0.05]
 - add_model:
     name: camera1_6
     file: package://grocery/camera_box.sdf
@@ -249,7 +249,7 @@ directives:
     name: shelves7_origin
     X_PF:
         base_frame: world
-        translation: [-1.1, -3.3, 0.6085]
+        translation: [0, 6.0, 0.6085]
         rotation: !Rpy { deg: [0, 0, 90]}
 
 - add_model:
@@ -264,8 +264,8 @@ directives:
     name: camera0_7_origin
     X_PF:
         base_frame: shelves7_origin
-        rotation: !Rpy { deg: [-120,0,210]}
-        translation: [-1,-.1, .2]
+        rotation: !Rpy { deg: [-120,0,240]}
+        translation: [-0.35,.25,0.05]
 - add_model:
     name: camera0_7
     file: package://grocery/camera_box.sdf
@@ -277,8 +277,8 @@ directives:
     name: camera1_7_origin
     X_PF:
         base_frame: shelves7_origin
-        rotation: !Rpy { deg: [-110, 0, -25]}
-        translation: [-1, -.9, .2]
+        rotation: !Rpy { deg: [-120, 0, -55]}
+        translation: [-.3, -.33, 0.05]
 - add_model:
     name: camera1_7
     file: package://grocery/camera_box.sdf
@@ -290,7 +290,7 @@ directives:
     name: shelves8_origin
     X_PF:
         base_frame: world
-        translation: [0.0, -3.3, 0.6085]
+        translation: [1.1, 6.0, 0.6085]
         rotation: !Rpy { deg: [0, 0, 90]}
 
 - add_model:
@@ -305,8 +305,8 @@ directives:
     name: camera0_8_origin
     X_PF:
         base_frame: shelves8_origin
-        rotation: !Rpy { deg: [-120,0,210]}
-        translation: [-1,-.1, .2]
+        rotation: !Rpy { deg: [-120,0,240]}
+        translation: [-0.35,.25,0.05]
 - add_model:
     name: camera0_8
     file: package://grocery/camera_box.sdf
@@ -318,8 +318,8 @@ directives:
     name: camera1_8_origin
     X_PF:
         base_frame: shelves8_origin
-        rotation: !Rpy { deg: [-110, 0, -25]}
-        translation: [-1, -.9, .2]
+        rotation: !Rpy { deg: [-120, 0, -55]}
+        translation: [-.3, -.33, 0.05]
 - add_model:
     name: camera1_8
     file: package://grocery/camera_box.sdf
@@ -331,7 +331,7 @@ directives:
     name: shelves9_origin
     X_PF:
         base_frame: world
-        translation: [1.1, -3.3, 0.6085]
+        translation: [2.2, 6.0, 0.6085]
         rotation: !Rpy { deg: [0, 0, 90]}
 
 - add_model:
@@ -346,8 +346,8 @@ directives:
     name: camera0_9_origin
     X_PF:
         base_frame: shelves9_origin
-        rotation: !Rpy { deg: [-120,0,210]}
-        translation: [-1,-.1, .2]
+        rotation: !Rpy { deg: [-120,0,240]}
+        translation: [-0.35,.25,0.05]
 - add_model:
     name: camera0_9
     file: package://grocery/camera_box.sdf
@@ -359,667 +359,11 @@ directives:
     name: camera1_9_origin
     X_PF:
         base_frame: shelves9_origin
-        rotation: !Rpy { deg: [-110, 0, -25]}
-        translation: [-1, -.9, .2]
+        rotation: !Rpy { deg: [-120, 0, -55]}
+        translation: [-.3, -.33, 0.05]
 - add_model:
     name: camera1_9
     file: package://grocery/camera_box.sdf
 - add_weld:
     parent: camera1_9_origin
     child: camera1_9::base
-
-- add_frame:
-    name: shelves10_origin
-    X_PF:
-        base_frame: world
-        translation: [2.2, -3.3, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 90]}
-
-- add_model:
-    name: shelves10
-    file: package://grocery/shelves.sdf
-
-- add_weld:
-    parent: shelves10_origin
-    child: shelves10::shelves_body
-
-- add_frame:
-    name: camera0_10_origin
-    X_PF:
-        base_frame: shelves10_origin
-        rotation: !Rpy { deg: [-120,0,210]}
-        translation: [-1,-.1, .2]
-- add_model:
-    name: camera0_10
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera0_10_origin
-    child: camera0_10::base
-
-- add_frame:
-    name: camera1_10_origin
-    X_PF:
-        base_frame: shelves10_origin
-        rotation: !Rpy { deg: [-110, 0, -25]}
-        translation: [-1, -.9, .2]
-- add_model:
-    name: camera1_10
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera1_10_origin
-    child: camera1_10::base
-
-- add_frame:
-    name: shelves11_origin
-    X_PF:
-        base_frame: world
-        translation: [-2.2, 0.0, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 90]}
-
-- add_model:
-    name: shelves11
-    file: package://grocery/shelves.sdf
-
-- add_weld:
-    parent: shelves11_origin
-    child: shelves11::shelves_body
-
-- add_frame:
-    name: camera0_11_origin
-    X_PF:
-        base_frame: shelves11_origin
-        rotation: !Rpy { deg: [-120,0,210]}
-        translation: [-1,-.1, .2]
-- add_model:
-    name: camera0_11
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera0_11_origin
-    child: camera0_11::base
-
-- add_frame:
-    name: camera1_11_origin
-    X_PF:
-        base_frame: shelves11_origin
-        rotation: !Rpy { deg: [-110, 0, -25]}
-        translation: [-1, -.9, .2]
-- add_model:
-    name: camera1_11
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera1_11_origin
-    child: camera1_11::base
-
-- add_frame:
-    name: shelves12_origin
-    X_PF:
-        base_frame: world
-        translation: [-1.1, 0.0, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 90]}
-
-- add_model:
-    name: shelves12
-    file: package://grocery/shelves.sdf
-
-- add_weld:
-    parent: shelves12_origin
-    child: shelves12::shelves_body
-
-- add_frame:
-    name: camera0_12_origin
-    X_PF:
-        base_frame: shelves12_origin
-        rotation: !Rpy { deg: [-120,0,210]}
-        translation: [-1,-.1, .2]
-- add_model:
-    name: camera0_12
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera0_12_origin
-    child: camera0_12::base
-
-- add_frame:
-    name: camera1_12_origin
-    X_PF:
-        base_frame: shelves12_origin
-        rotation: !Rpy { deg: [-110, 0, -25]}
-        translation: [-1, -.9, .2]
-- add_model:
-    name: camera1_12
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera1_12_origin
-    child: camera1_12::base
-
-- add_frame:
-    name: shelves13_origin
-    X_PF:
-        base_frame: world
-        translation: [0.0, 0.0, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 90]}
-
-- add_model:
-    name: shelves13
-    file: package://grocery/shelves.sdf
-
-- add_weld:
-    parent: shelves13_origin
-    child: shelves13::shelves_body
-
-- add_frame:
-    name: camera0_13_origin
-    X_PF:
-        base_frame: shelves13_origin
-        rotation: !Rpy { deg: [-120,0,210]}
-        translation: [-1,-.1, .2]
-- add_model:
-    name: camera0_13
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera0_13_origin
-    child: camera0_13::base
-
-- add_frame:
-    name: camera1_13_origin
-    X_PF:
-        base_frame: shelves13_origin
-        rotation: !Rpy { deg: [-110, 0, -25]}
-        translation: [-1, -.9, .2]
-- add_model:
-    name: camera1_13
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera1_13_origin
-    child: camera1_13::base
-
-- add_frame:
-    name: shelves14_origin
-    X_PF:
-        base_frame: world
-        translation: [1.1, 0.0, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 90]}
-
-- add_model:
-    name: shelves14
-    file: package://grocery/shelves.sdf
-
-- add_weld:
-    parent: shelves14_origin
-    child: shelves14::shelves_body
-
-- add_frame:
-    name: camera0_14_origin
-    X_PF:
-        base_frame: shelves14_origin
-        rotation: !Rpy { deg: [-120,0,210]}
-        translation: [-1,-.1, .2]
-- add_model:
-    name: camera0_14
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera0_14_origin
-    child: camera0_14::base
-
-- add_frame:
-    name: camera1_14_origin
-    X_PF:
-        base_frame: shelves14_origin
-        rotation: !Rpy { deg: [-110, 0, -25]}
-        translation: [-1, -.9, .2]
-- add_model:
-    name: camera1_14
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera1_14_origin
-    child: camera1_14::base
-
-- add_frame:
-    name: shelves15_origin
-    X_PF:
-        base_frame: world
-        translation: [2.2, 0.0, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 90]}
-
-- add_model:
-    name: shelves15
-    file: package://grocery/shelves.sdf
-
-- add_weld:
-    parent: shelves15_origin
-    child: shelves15::shelves_body
-
-- add_frame:
-    name: camera0_15_origin
-    X_PF:
-        base_frame: shelves15_origin
-        rotation: !Rpy { deg: [-120,0,210]}
-        translation: [-1,-.1, .2]
-- add_model:
-    name: camera0_15
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera0_15_origin
-    child: camera0_15::base
-
-- add_frame:
-    name: camera1_15_origin
-    X_PF:
-        base_frame: shelves15_origin
-        rotation: !Rpy { deg: [-110, 0, -25]}
-        translation: [-1, -.9, .2]
-- add_model:
-    name: camera1_15
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera1_15_origin
-    child: camera1_15::base
-
-- add_frame:
-    name: shelves16_origin
-    X_PF:
-        base_frame: world
-        translation: [-2.2, 3.3, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 90]}
-
-- add_model:
-    name: shelves16
-    file: package://grocery/shelves.sdf
-
-- add_weld:
-    parent: shelves16_origin
-    child: shelves16::shelves_body
-
-- add_frame:
-    name: camera0_16_origin
-    X_PF:
-        base_frame: shelves16_origin
-        rotation: !Rpy { deg: [-120,0,210]}
-        translation: [-1,-.1, .2]
-- add_model:
-    name: camera0_16
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera0_16_origin
-    child: camera0_16::base
-
-- add_frame:
-    name: camera1_16_origin
-    X_PF:
-        base_frame: shelves16_origin
-        rotation: !Rpy { deg: [-110, 0, -25]}
-        translation: [-1, -.9, .2]
-- add_model:
-    name: camera1_16
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera1_16_origin
-    child: camera1_16::base
-
-- add_frame:
-    name: shelves17_origin
-    X_PF:
-        base_frame: world
-        translation: [-1.1, 3.3, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 90]}
-
-- add_model:
-    name: shelves17
-    file: package://grocery/shelves.sdf
-
-- add_weld:
-    parent: shelves17_origin
-    child: shelves17::shelves_body
-
-- add_frame:
-    name: camera0_17_origin
-    X_PF:
-        base_frame: shelves17_origin
-        rotation: !Rpy { deg: [-120,0,210]}
-        translation: [-1,-.1, .2]
-- add_model:
-    name: camera0_17
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera0_17_origin
-    child: camera0_17::base
-
-- add_frame:
-    name: camera1_17_origin
-    X_PF:
-        base_frame: shelves17_origin
-        rotation: !Rpy { deg: [-110, 0, -25]}
-        translation: [-1, -.9, .2]
-- add_model:
-    name: camera1_17
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera1_17_origin
-    child: camera1_17::base
-
-- add_frame:
-    name: shelves18_origin
-    X_PF:
-        base_frame: world
-        translation: [0.0, 3.3, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 90]}
-
-- add_model:
-    name: shelves18
-    file: package://grocery/shelves.sdf
-
-- add_weld:
-    parent: shelves18_origin
-    child: shelves18::shelves_body
-
-- add_frame:
-    name: camera0_18_origin
-    X_PF:
-        base_frame: shelves18_origin
-        rotation: !Rpy { deg: [-120,0,210]}
-        translation: [-1,-.1, .2]
-- add_model:
-    name: camera0_18
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera0_18_origin
-    child: camera0_18::base
-
-- add_frame:
-    name: camera1_18_origin
-    X_PF:
-        base_frame: shelves18_origin
-        rotation: !Rpy { deg: [-110, 0, -25]}
-        translation: [-1, -.9, .2]
-- add_model:
-    name: camera1_18
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera1_18_origin
-    child: camera1_18::base
-
-- add_frame:
-    name: shelves19_origin
-    X_PF:
-        base_frame: world
-        translation: [1.1, 3.3, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 90]}
-
-- add_model:
-    name: shelves19
-    file: package://grocery/shelves.sdf
-
-- add_weld:
-    parent: shelves19_origin
-    child: shelves19::shelves_body
-
-- add_frame:
-    name: camera0_19_origin
-    X_PF:
-        base_frame: shelves19_origin
-        rotation: !Rpy { deg: [-120,0,210]}
-        translation: [-1,-.1, .2]
-- add_model:
-    name: camera0_19
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera0_19_origin
-    child: camera0_19::base
-
-- add_frame:
-    name: camera1_19_origin
-    X_PF:
-        base_frame: shelves19_origin
-        rotation: !Rpy { deg: [-110, 0, -25]}
-        translation: [-1, -.9, .2]
-- add_model:
-    name: camera1_19
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera1_19_origin
-    child: camera1_19::base
-
-- add_frame:
-    name: shelves20_origin
-    X_PF:
-        base_frame: world
-        translation: [2.2, 3.3, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 90]}
-
-- add_model:
-    name: shelves20
-    file: package://grocery/shelves.sdf
-
-- add_weld:
-    parent: shelves20_origin
-    child: shelves20::shelves_body
-
-- add_frame:
-    name: camera0_20_origin
-    X_PF:
-        base_frame: shelves20_origin
-        rotation: !Rpy { deg: [-120,0,210]}
-        translation: [-1,-.1, .2]
-- add_model:
-    name: camera0_20
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera0_20_origin
-    child: camera0_20::base
-
-- add_frame:
-    name: camera1_20_origin
-    X_PF:
-        base_frame: shelves20_origin
-        rotation: !Rpy { deg: [-110, 0, -25]}
-        translation: [-1, -.9, .2]
-- add_model:
-    name: camera1_20
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera1_20_origin
-    child: camera1_20::base
-
-- add_frame:
-    name: shelves21_origin
-    X_PF:
-        base_frame: world
-        translation: [-2.2, 6.6, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 90]}
-
-- add_model:
-    name: shelves21
-    file: package://grocery/shelves.sdf
-
-- add_weld:
-    parent: shelves21_origin
-    child: shelves21::shelves_body
-
-- add_frame:
-    name: camera0_21_origin
-    X_PF:
-        base_frame: shelves21_origin
-        rotation: !Rpy { deg: [-120,0,210]}
-        translation: [-1,-.1, .2]
-- add_model:
-    name: camera0_21
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera0_21_origin
-    child: camera0_21::base
-
-- add_frame:
-    name: camera1_21_origin
-    X_PF:
-        base_frame: shelves21_origin
-        rotation: !Rpy { deg: [-110, 0, -25]}
-        translation: [-1, -.9, .2]
-- add_model:
-    name: camera1_21
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera1_21_origin
-    child: camera1_21::base
-
-- add_frame:
-    name: shelves22_origin
-    X_PF:
-        base_frame: world
-        translation: [-1.1, 6.6, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 90]}
-
-- add_model:
-    name: shelves22
-    file: package://grocery/shelves.sdf
-
-- add_weld:
-    parent: shelves22_origin
-    child: shelves22::shelves_body
-
-- add_frame:
-    name: camera0_22_origin
-    X_PF:
-        base_frame: shelves22_origin
-        rotation: !Rpy { deg: [-120,0,210]}
-        translation: [-1,-.1, .2]
-- add_model:
-    name: camera0_22
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera0_22_origin
-    child: camera0_22::base
-
-- add_frame:
-    name: camera1_22_origin
-    X_PF:
-        base_frame: shelves22_origin
-        rotation: !Rpy { deg: [-110, 0, -25]}
-        translation: [-1, -.9, .2]
-- add_model:
-    name: camera1_22
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera1_22_origin
-    child: camera1_22::base
-
-- add_frame:
-    name: shelves23_origin
-    X_PF:
-        base_frame: world
-        translation: [0.0, 6.6, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 90]}
-
-- add_model:
-    name: shelves23
-    file: package://grocery/shelves.sdf
-
-- add_weld:
-    parent: shelves23_origin
-    child: shelves23::shelves_body
-
-- add_frame:
-    name: camera0_23_origin
-    X_PF:
-        base_frame: shelves23_origin
-        rotation: !Rpy { deg: [-120,0,210]}
-        translation: [-1,-.1, .2]
-- add_model:
-    name: camera0_23
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera0_23_origin
-    child: camera0_23::base
-
-- add_frame:
-    name: camera1_23_origin
-    X_PF:
-        base_frame: shelves23_origin
-        rotation: !Rpy { deg: [-110, 0, -25]}
-        translation: [-1, -.9, .2]
-- add_model:
-    name: camera1_23
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera1_23_origin
-    child: camera1_23::base
-
-- add_frame:
-    name: shelves24_origin
-    X_PF:
-        base_frame: world
-        translation: [1.1, 6.6, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 90]}
-
-- add_model:
-    name: shelves24
-    file: package://grocery/shelves.sdf
-
-- add_weld:
-    parent: shelves24_origin
-    child: shelves24::shelves_body
-
-- add_frame:
-    name: camera0_24_origin
-    X_PF:
-        base_frame: shelves24_origin
-        rotation: !Rpy { deg: [-120,0,210]}
-        translation: [-1,-.1, .2]
-- add_model:
-    name: camera0_24
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera0_24_origin
-    child: camera0_24::base
-
-- add_frame:
-    name: camera1_24_origin
-    X_PF:
-        base_frame: shelves24_origin
-        rotation: !Rpy { deg: [-110, 0, -25]}
-        translation: [-1, -.9, .2]
-- add_model:
-    name: camera1_24
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera1_24_origin
-    child: camera1_24::base
-
-- add_frame:
-    name: shelves25_origin
-    X_PF:
-        base_frame: world
-        translation: [2.2, 6.6, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 90]}
-
-- add_model:
-    name: shelves25
-    file: package://grocery/shelves.sdf
-
-- add_weld:
-    parent: shelves25_origin
-    child: shelves25::shelves_body
-
-- add_frame:
-    name: camera0_25_origin
-    X_PF:
-        base_frame: shelves25_origin
-        rotation: !Rpy { deg: [-120,0,210]}
-        translation: [-1,-.1, .2]
-- add_model:
-    name: camera0_25
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera0_25_origin
-    child: camera0_25::base
-
-- add_frame:
-    name: camera1_25_origin
-    X_PF:
-        base_frame: shelves25_origin
-        rotation: !Rpy { deg: [-110, 0, -25]}
-        translation: [-1, -.9, .2]
-- add_model:
-    name: camera1_25
-    file: package://grocery/camera_box.sdf
-- add_weld:
-    parent: camera1_25_origin
-    child: camera1_25::base

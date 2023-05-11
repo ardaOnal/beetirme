@@ -35,12 +35,12 @@ def clutter_clearing_demo():
     builder = DiagramBuilder()
     # plant, scene_graph = AddMultibodyPlantSceneGraph(builder, time_step=0.001)
 
-    row_count = 5
-    shelf_row_count = 5
+    row_count = 3
+    shelf_row_count = 3
     num_shelves = row_count * shelf_row_count
     camera_per_shelf = 2
     camera_count = num_shelves * camera_per_shelf
-    env.grid(row_count=row_count, shelf_row_count=shelf_row_count)
+    env.grid(row_start_point=-.6, row_count=row_count, shelf_row_count=shelf_row_count, shelf_start_point=0)
 
     model_directives = """
 directives:
