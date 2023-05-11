@@ -1,6 +1,9 @@
 import logging
 import numpy as np
 import os
+
+import matplotlib.pyplot as plt
+from matplotlib.pyplot import plot, draw, show, ion
 import pydot
 from IPython.display import HTML, SVG, display
 
@@ -61,11 +64,10 @@ directives:
     file: package://grocery/meshes/{ycb[object_num]}
 """
         i += 1
-
-    station = builder.AddSystem(
-        scenarios.MakeManipulationStation(model_directives, time_step=0.001,
+    diag = scenarios.MakeManipulationStation(model_directives, time_step=0.001,
                                     package_xmls=[os.path.join(os.path.dirname(
-                                       os.path.realpath(__file__)), "models/package.xml")]))
+                                       os.path.realpath(__file__)), "models/package.xml")])
+    station = builder.AddSystem(diag)
     plant = station.GetSubsystemByName("plant")
 
     # point cloud cropbox points
@@ -93,6 +95,8 @@ directives:
         index = index+1
 
     builder.Connect(station.GetOutputPort("body_poses"), x_bin_grasp_selector.GetInputPort("body_poses"))
+    builder.Connect(station.GetOutputPort("camera1_rgb_image"), x_bin_grasp_selector.get_input_port(4)) #to do
+    builder.Connect(station.GetOutputPort("camera1_depth_image"), x_bin_grasp_selector.get_input_port(5))
 
     planner = builder.AddSystem(planner_class.Planner(plant, JOINT_COUNT, meshcat, rs, PREPICK_DISTANCE))
     builder.Connect(station.GetOutputPort("body_poses"), planner.GetInputPort("body_poses"))
@@ -133,6 +137,11 @@ directives:
     simulator = Simulator(diagram)
     context = simulator.get_context()
 
+    # read image
+    # cntxt31 = diag.CreateDefaultContext()
+    # rgb_im = diag.GetOutputPort('camera{}_rgb_image'.format(1)).Eval(cntxt31).data
+    
+  
     plant_context = plant.GetMyMutableContextFromRoot(context)
     helpers.place_items(plant,plant_context, x=-0.20, y=-0.50, z=0.4)
 
