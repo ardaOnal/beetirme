@@ -19,7 +19,7 @@ from pydrake.all import (
     PassThrough, PrismaticJoint, ProcessModelDirectives, RenderCameraCore,
     RenderEngineVtkParams, RevoluteJoint, Rgba, RgbdSensor, RigidTransform,
     RollPitchYaw, RotationMatrix, SchunkWsgPositionController, SpatialInertia,
-    Sphere, StateInterpolatorWithDiscreteDerivative, UnitInertia, PlanarJoint)
+    Sphere, StateInterpolatorWithDiscreteDerivative, UnitInertia, PlanarJoint, PiecewisePolynomial, Trajectory, TrajectorySource, Multiplexer)
 from pydrake.manipulation.planner import (
     DifferentialInverseKinematicsIntegrator,
     DifferentialInverseKinematicsParameters)
@@ -31,7 +31,7 @@ ycb = [
     "006_mustard_bottle.sdf", "009_gelatin_box.sdf", "010_potted_meat_can.sdf"
 ]
 
-JOINT_COUNT = 10
+JOINT_COUNT = 7
 
 def AddIiwa(plant, collision_model="no_collision"):
     sdf_path = FindResourceOrThrow(
@@ -41,10 +41,10 @@ def AddIiwa(plant, collision_model="no_collision"):
     parser = Parser(plant)
     parser.package_map().AddPackageXml(os.path.join(os.path.dirname(os.path.realpath(__file__)), "models/package.xml"))
     iiwa = parser.AddModelFromFile("src/python/models/iiwa7/iiwa7_no_collision.sdf")
-    #plant.WeldFrames(plant.world_frame(), plant.GetFrameByName("iiwa_link_0"))
+    plant.WeldFrames(plant.world_frame(), plant.GetFrameByName("iiwa_link_0"))
 
     # Set default positions:
-    q0 = [0, -1.57, 0.1, 0.0, -1.4, 0, 1.6, 0]
+    q0 = [-1.57, 0.1, 0.0, -1.4, 0, 1.6, 0]
     index = 0
     for joint_index in plant.GetJointIndices(iiwa):
         joint = plant.get_mutable_joint(joint_index)
@@ -52,6 +52,8 @@ def AddIiwa(plant, collision_model="no_collision"):
             joint.set_default_angle(q0[index])
             index += 1
 
+    #mobile_base = parser.AddModelFromFile("src/python/models/mobile_base.sdf")
+    #plant.WeldFrames(plant.GetFrameByName("mobile_base_link_1", mobile_base), plant.GetFrameByName("iiwa_link_0", iiwa), RigidTransform())
     return iiwa
 
 
@@ -121,6 +123,11 @@ def AddWsg(plant,
                      plant.GetFrameByName("body", gripper), X_7G)
     return gripper
 
+def AddMobileBase(plant):
+    parser = Parser(plant)
+    parser.package_map().AddPackageXml(os.path.join(os.path.dirname(os.path.realpath(__file__)), "models/package.xml"))
+    base = parser.AddModelFromFile("src/python/models/mobile_base.sdf")
+    return base
 
 def AddFloatingXyzJoint(plant, frame, instance, actuators=False):
     inertia = UnitInertia.SolidSphere(1.0)
@@ -461,9 +468,13 @@ def AddIiwaDifferentialIK(builder, plant, frame=None):
     params.set_nominal_joint_position(q0)
     params.set_end_effector_angular_speed_limit(2)
     params.set_end_effector_translational_velocity_limits([-2, -2, -2],
-                                                          [2, 2, 2])
+                                                            [2, 2, 2])
+    
+    #position_lower_limits = np.array([-0.1, -0.1, -2.96706, -2.0944,-2.96706, -2.0944, -2.96706, -2.0944, -3.05433])
+    #position_upper_limits = np.array([0.1, 0.1, 2.96706, 2.0944, 2.96706, 2.0944, 2.96706, 2.0944, 3.05433])
+    #params.set_joint_position_limits((position_lower_limits, position_upper_limits))
 
-    iiwa14_velocity_limits = np.array([0.6, 0.6, 1.4, 1.4, 1.4, 1.7, 1.3, 2.2, 2.3, 2.3]) # 10 joints
+    iiwa14_velocity_limits = np.array([1.4, 1.4, 1.7, 1.3, 2.2, 2.3, 2.3])
     assert (
             len(iiwa14_velocity_limits) == JOINT_COUNT
         ), "Joint count does not match the size of velocity limits"
@@ -554,10 +565,9 @@ def MakeManipulationStation(model_directives=None,
     for i in range(plant.num_model_instances()):
         model_instance = ModelInstanceIndex(i)
         model_instance_name = plant.GetModelInstanceName(model_instance)
+        num_iiwa_positions = plant.num_positions(model_instance)
 
         if model_instance_name.startswith(iiwa_prefix):
-            num_iiwa_positions = plant.num_positions(model_instance)
-
             # I need a PassThrough system so that I can export the input port.
             iiwa_position = builder.AddSystem(PassThrough(num_iiwa_positions))
             builder.ExportInput(iiwa_position.get_input_port(),
@@ -588,9 +598,9 @@ def MakeManipulationStation(model_directives=None,
             
             AddWsg(controller_plant, controller_iiwa, welded=True)
 
-            #mobile_base = controller_plant.AddJoint(PlanarJoint(name="mobile_base", frame_on_parent=controller_plant.world_frame(), frame_on_child=controller_plant.GetFrameByName("iiwa_link_0")))
-            #controller_plant.AddJointActuator("asd", mobile_base)
             controller_plant.Finalize()
+
+            print(controller_plant.num_positions())
 
             print("controller:", controller_plant.num_actuators())
             # Add the iiwa controller
@@ -664,6 +674,54 @@ def MakeManipulationStation(model_directives=None,
                                  model_instance_name + "_state_measured")
             builder.ExportOutput(wsg_controller.get_grip_force_output_port(),
                                  model_instance_name + "_force_measured")
+        
+        elif model_instance_name == "mobile_base":
+            mobile_base_position = builder.AddSystem(PassThrough(num_iiwa_positions))
+            builder.ExportInput(mobile_base_position.get_input_port(),
+                                model_instance_name + "_position")
+            
+            # Export the mobile base "state" outputs.
+            demux = builder.AddSystem(
+                Demultiplexer(2 * num_iiwa_positions, num_iiwa_positions))
+            builder.Connect(plant.get_state_output_port(model_instance),
+                            demux.get_input_port())
+            builder.ExportOutput(demux.get_output_port(0),
+                                 model_instance_name + "_position_measured")
+            builder.ExportOutput(demux.get_output_port(1),
+                                 model_instance_name + "_velocity_estimated")
+            builder.ExportOutput(plant.get_state_output_port(model_instance),
+                                 model_instance_name + "_state_estimated")
+            
+            controller_plant = MultibodyPlant(time_step=time_step)
+            controller_base = AddMobileBase(controller_plant)
+            controller_plant.Finalize()
+            #plant.SetDefaultPositions(controller_base, [0, 0])
+
+            # create a controller to track the trajectory
+            mobile_base_controller = builder.AddSystem(
+                InverseDynamicsController(controller_plant,
+                                        kp=[100] * num_iiwa_positions,
+                                        ki=[1] * num_iiwa_positions,
+                                        kd=[20] * num_iiwa_positions,
+                                        has_reference_acceleration=False))
+            mobile_base_controller.set_name(model_instance_name + "_controller")
+            builder.Connect(plant.get_state_output_port(model_instance),
+                            mobile_base_controller.get_input_port_estimated_state())
+            builder.Connect(mobile_base_controller.get_output_port(),
+                            plant.get_actuation_input_port(model_instance))
+            
+            # Add discrete derivative to command velocities.
+            desired_state_from_position = builder.AddSystem(
+                    StateInterpolatorWithDiscreteDerivative(
+                    num_iiwa_positions,
+                    time_step,
+                    suppress_initial_transient=True))
+            desired_state_from_position.set_name(
+                model_instance_name + "_desired_state_from_position")
+            builder.Connect(mobile_base_position.get_output_port(),
+                            desired_state_from_position.get_input_port())
+            builder.Connect(desired_state_from_position.get_output_port(),
+                            mobile_base_controller.get_input_port_desired_state())
 
     # Cameras.
     AddRgbdSensors(builder,

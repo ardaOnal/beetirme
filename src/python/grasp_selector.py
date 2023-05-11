@@ -20,14 +20,14 @@ SHELF_HEIGHT_LOWER_LIMIT = 0.36
 
 # Takes 3 point clouds (in world coordinates) as input, and outputs and estimated pose for the items.
 class GraspSelector(LeafSystem):
-    def __init__(self, plant, shelf_instance, camera_body_indices, cropPointA, cropPointB, meshcat, running_as_notebook, diag, station):
+    def __init__(self, plant, shelf_instance, camera_count, camera_body_indices, cropPointA, cropPointB, meshcat, running_as_notebook, diag, station):
         LeafSystem.__init__(self)
         model_point_cloud = AbstractValue.Make(PointCloud(0))
         cntxt31 = diag.CreateDefaultContext()
         rgb_im = station.GetOutputPort('camera{}_rgb_image'.format(1)).Eval(cntxt31).data
-        self.DeclareAbstractInputPort("cloud0_W", model_point_cloud)
-        self.DeclareAbstractInputPort("cloud1_W", model_point_cloud)
-        self.DeclareAbstractInputPort("cloud2_W", model_point_cloud)
+        for i in range(camera_count):
+            self.DeclareAbstractInputPort(f"cloud{i}_W", model_point_cloud)
+
         self.DeclareAbstractInputPort(
             "body_poses", AbstractValue.Make([RigidTransform()]))
 
@@ -63,6 +63,7 @@ class GraspSelector(LeafSystem):
         self._rng = np.random.default_rng()
         self._camera_body_indices = camera_body_indices
         self.running_as_notebook = running_as_notebook
+        self.camera_count = camera_count
 
         self.lang_sam_model = segmentation.get_lang_sam("vit_b")
 
@@ -98,7 +99,6 @@ class GraspSelector(LeafSystem):
         return pC
 
     def SelectGrasp(self, context, output):
-    
         rgb_im = self.get_input_port(4).Eval(context).data
         image_pil = PILImage.fromarray(rgb_im).convert("RGB")
         plt.imshow(image_pil)

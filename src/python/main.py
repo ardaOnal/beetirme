@@ -1,8 +1,12 @@
 import logging
 import numpy as np
 import os
+
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import plot, draw, show, ion
+import pydot
+from IPython.display import HTML, SVG, display
+
 from pydrake.all import (DiagramBuilder, MeshcatVisualizer, PortSwitch, Simulator, StartMeshcat)
 
 from manipulation import running_as_notebook
@@ -15,6 +19,7 @@ import grasp_selector
 import nodiffik_warnings
 import planner as planner_class
 import helpers
+import models.env_generation as env
 
 logging.getLogger("drake").addFilter(nodiffik_warnings.NoDiffIKWarnings())
 
@@ -23,6 +28,7 @@ meshcat = StartMeshcat()
 
 rs = np.random.RandomState()
 
+SAVE_DIAGRAM_SVG = False
 PREPICK_DISTANCE = 0.12
 ITEM_COUNT = 5  # number of items to be generated
 MAX_TIME = 160  # max duration after which the simulation is forced to end (recommended: ITEM_COUNT * 31)
@@ -31,6 +37,13 @@ def clutter_clearing_demo():
     meshcat.Delete()
     builder = DiagramBuilder()
     # plant, scene_graph = AddMultibodyPlantSceneGraph(builder, time_step=0.001)
+
+    row_count = 3
+    shelf_row_count = 3
+    num_shelves = row_count * shelf_row_count
+    camera_per_shelf = 2
+    camera_count = num_shelves * camera_per_shelf
+    env.grid(row_start_point=-.6, row_count=row_count, shelf_row_count=shelf_row_count, shelf_start_point=0)
 
     model_directives = """
 directives:
@@ -61,23 +74,28 @@ directives:
     cropPointA = [-.28, -.72, 0.36]
     cropPointB = [0.26, -.47, 0.57]
 
+    lst = []
     x_bin_grasp_selector = builder.AddSystem(
         grasp_selector.GraspSelector(plant,
                       #plant.GetModelInstanceByName("shelves1"),
-                      plant.GetFrameByName("shelves1_frame"),
+                      plant.GetFrameByName("shelves1_origin"),
                       camera_body_indices=[
                           plant.GetBodyIndices(
-                              plant.GetModelInstanceByName("camera0"))[0],
-                          plant.GetBodyIndices(
-                              plant.GetModelInstanceByName("camera1"))[0],
-                          plant.GetBodyIndices(
-                              plant.GetModelInstanceByName("camera2"))[0]
-                      ], cropPointA=cropPointA, cropPointB=cropPointB, meshcat=meshcat, running_as_notebook=running_as_notebook, diag=diag, station=station))
-    builder.Connect(station.GetOutputPort("camera0_point_cloud"),x_bin_grasp_selector.get_input_port(0))
-    builder.Connect(station.GetOutputPort("camera1_point_cloud"), x_bin_grasp_selector.get_input_port(1))
-    builder.Connect(station.GetOutputPort("camera2_point_cloud"), x_bin_grasp_selector.get_input_port(2))
+                              plant.GetModelInstanceByName(f"camera{camera_no}_{shelf_no}"))[0]
+                              for shelf_no in range(1, num_shelves+1) for camera_no in range(2)
+                      ], cropPointA=cropPointA, cropPointB=cropPointB, meshcat=meshcat, running_as_notebook=running_as_notebook, camera_count=camera_count))
+    
+    #builder.Connect(station.GetOutputPort("camera0_1_point_cloud"),x_bin_grasp_selector.get_input_port(0))
+    #builder.Connect(station.GetOutputPort("camera1_1_point_cloud"), x_bin_grasp_selector.get_input_port(1))
+    index = 0
+    for i in range(1, num_shelves+1):
+        builder.Connect(station.GetOutputPort(f"camera0_{i}_point_cloud"),x_bin_grasp_selector.get_input_port(index))
+        index = index+1
+        builder.Connect(station.GetOutputPort(f"camera1_{i}_point_cloud"), x_bin_grasp_selector.get_input_port(index))
+        index = index+1
+
     builder.Connect(station.GetOutputPort("body_poses"), x_bin_grasp_selector.GetInputPort("body_poses"))
-    builder.Connect(station.GetOutputPort("camera1_rgb_image"), x_bin_grasp_selector.get_input_port(4))
+    builder.Connect(station.GetOutputPort("camera1_rgb_image"), x_bin_grasp_selector.get_input_port(4)) #to do
     builder.Connect(station.GetOutputPort("camera1_depth_image"), x_bin_grasp_selector.get_input_port(5))
 
     planner = builder.AddSystem(planner_class.Planner(plant, JOINT_COUNT, meshcat, rs, PREPICK_DISTANCE))
@@ -85,6 +103,7 @@ directives:
     builder.Connect(x_bin_grasp_selector.get_output_port(), planner.GetInputPort("x_bin_grasp"))
     builder.Connect(station.GetOutputPort("wsg_state_measured"), planner.GetInputPort("wsg_state"))
     builder.Connect(station.GetOutputPort("iiwa_position_measured"), planner.GetInputPort("iiwa_position"))
+    builder.Connect(station.GetOutputPort("mobile_base_position_measured"), planner.GetInputPort("mobile_base_position"))
 
     robot = station.GetSubsystemByName("iiwa_controller").get_multibody_plant_for_control()
 
@@ -95,6 +114,7 @@ directives:
     builder.Connect(planner.GetOutputPort("reset_diff_ik"), diff_ik.GetInputPort("use_robot_state"))
 
     builder.Connect(planner.GetOutputPort("wsg_position"), station.GetInputPort("wsg_position"))
+    builder.Connect(planner.GetOutputPort("mobile_base_position_command"), station.GetInputPort("mobile_base_position"))
 
     # The DiffIK and the direct position-control modes go through a PortSwitch
     switch = builder.AddSystem(PortSwitch(JOINT_COUNT))
@@ -106,6 +126,13 @@ directives:
     visualizer = MeshcatVisualizer.AddToBuilder(builder, station.GetOutputPort("query_object"), meshcat)    
     diagram = builder.Build()
 
+    mobile_base = plant.GetModelInstanceByName("mobile_base")
+    plant.SetDefaultPositions(mobile_base, [0, 0.5])
+
+    if SAVE_DIAGRAM_SVG:
+        svg = SVG(pydot.graph_from_dot_data(diagram.GetGraphvizString())[0].create_svg())
+        with open('diagram.svg', 'w') as f:
+            f.write(svg.data)
 
     simulator = Simulator(diagram)
     context = simulator.get_context()
