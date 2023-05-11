@@ -99,12 +99,12 @@ class Planner(LeafSystem):
         elif mode == PlannerState.PICKING_WITH_TRAJOPT:
             traj_q = context.get_mutable_abstract_state(int(
                 self._traj_q_index)).get_value()
-            if not traj_q.is_time_in_range(current_time):
+            if current_time > traj_q.end_time():
                 # switch to diff ik to pick or place
                 state.get_mutable_abstract_state(int(
                     self._mode_index)).set_value(
                         PlannerState.PICKING_WITH_DIFFIK)
-                print("mode = PICKING_WITH_DIFFIK")
+                print("Switching to diff ik for pick/place")
 
                 return
 
@@ -116,7 +116,7 @@ class Planner(LeafSystem):
             # switch to traj opt to carry the object to the bin
             if mode == PlannerState.PICKING_WITH_DIFFIK:
                 state.get_mutable_abstract_state(int(self._mode_index)).set_value(PlannerState.PICKING_WITH_TRAJOPT)
-                print("mode = PICKING_WITH_TRAJOPT")
+                print("Switching to traj opt to carry the object")
                 X_G = context.get_abstract_state(int(
                     self._X_G_frames_index)).get_value()
                 
@@ -129,6 +129,9 @@ class Planner(LeafSystem):
                     self._traj_q_place_index)).get_value()
                 state.get_mutable_abstract_state(int(
                      self._traj_q_index)).set_value(q_traj)
+                
+                q = self.get_input_port(self._iiwa_position_index).Eval(context)
+                q_new = q_traj.value(current_time)
                 return
 
             # If we are between pick and place and the gripper is closed, then
@@ -147,7 +150,7 @@ class Planner(LeafSystem):
                 state.get_mutable_abstract_state(int(
                     self._mode_index)).set_value(
                         PlannerState.WAIT_FOR_OBJECTS_TO_SETTLE)
-                print("mode = WAIT_FOR_OBJECTS_TO_SETTLE")
+                print("Waiting for objects to settle")
                 times = {"initial": current_time}
                 state.get_mutable_abstract_state(int(
                     self._X_G_frames_index)).set_value({})
@@ -173,11 +176,10 @@ class Planner(LeafSystem):
             self.GoHome(context, state)
 
     def GoHome(self, context, state):
-        print("Replanning due to large tracking error.")
+        print("Replanning due to large tracking error / Going home")
         state.get_mutable_abstract_state(int(
             self._mode_index)).set_value(
                 PlannerState.GO_HOME)
-        print("mode = GO_HOME")
         q = self.get_input_port(self._iiwa_position_index).Eval(context)
         q0 = copy(context.get_discrete_state(self._q0_index).get_value())
         q0[0] = q[0]  # Safer to not reset the first joint.
@@ -190,9 +192,6 @@ class Planner(LeafSystem):
 
 
     def Plan(self, context, state):
-        mode = copy(
-            state.get_mutable_abstract_state(int(self._mode_index)).get_value())
-
         X_G = {
             "initial":
                 self.get_input_port(0).Eval(context)
@@ -201,7 +200,6 @@ class Planner(LeafSystem):
 
         # pick pose calculation
         cost = np.inf
-        mode = PlannerState.PICKING_WITH_TRAJOPT
         for i in range(5):
             cost, X_G["pick"] = self.get_input_port(
                 self._x_bin_grasp_index).Eval(context)
@@ -213,8 +211,9 @@ class Planner(LeafSystem):
             self._simulation_done = True
             print("Could not find a valid grasp in either bin after 5 attempts")
             return
-        state.get_mutable_abstract_state(int(self._mode_index)).set_value(mode)
-        print("mode = PICKING_WITH_TRAJOPT")
+        
+        state.get_mutable_abstract_state(int(self._mode_index)).set_value(PlannerState.PICKING_WITH_TRAJOPT)
+        print("Switching to trajopt to approach pick the object")
 
         # place pose calculation
         x_range = [.35, .65]
@@ -234,7 +233,7 @@ class Planner(LeafSystem):
 
         # plan trajectory
         X_G, times = pick.MakeGripperFrames(X_G, t0=context.get_time(), prepick_distance=self.prepick_distance)
-
+        
         # run trajectory optimization from initial to prepick
         #duration = times["prepick"] - times["initial"]
         q_traj_pick = run_trajopt(X_G["initial"], X_G["prepick"], start_time=times["initial"])
@@ -242,13 +241,15 @@ class Planner(LeafSystem):
             self._traj_q_index)).set_value(q_traj_pick)
         pick_duration = q_traj_pick.end_time() - q_traj_pick.start_time()
 
+        times = pick.RecomputeTimes(times, pick_duration, 0)
+
         q_traj_place = run_trajopt(X_G["postpick"], X_G["preplace"], start_time=times["postpick"])
         state.get_mutable_abstract_state(int(
             self._traj_q_place_index)).set_value(q_traj_place)
         place_duration = q_traj_place.end_time() - q_traj_place.start_time()
-        
-        times = pick.RecomputeTimes(times, pick_duration, place_duration)
 
+        times = pick.RecomputeTimes(times, pick_duration, place_duration)
+        
         print(
             f"t={int(context.get_time())}s - Planned {int(times['postplace'] - times['initial'])} seconds trajectory for picking from the shelf."
         )

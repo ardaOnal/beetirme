@@ -73,13 +73,15 @@ def MakeGripperCommandTrajectory():
     return traj_wsg_command
 
 
-def trajopt(plant, context, X_WStart, X_WGoal, duration=None):
+def trajopt(plant, context, X_WStart, X_WGoal, q=None, duration=None):
     plant_context = plant.GetMyContextFromRoot(context)
 
     num_q = plant.num_positions()
     q0 = plant.GetPositions(plant_context)
     wsg = plant.GetModelInstanceByName("gripper")
     gripper_frame = plant.GetFrameByName("body", wsg)
+    #iiwa = plant.GetModelInstanceByName("iiwa7")
+    #mobile_base_y = plant.GetFrameByName("mobile_base_link", iiwa)
 
     trajopt = KinematicTrajectoryOptimization(plant.num_positions(), 10)
     prog = trajopt.get_mutable_prog()
@@ -96,11 +98,31 @@ def trajopt(plant, context, X_WStart, X_WGoal, duration=None):
         trajopt.AddDurationConstraint(.5, 50)
 
     # start constraint
+    # base_start_constraint = PositionConstraint(plant, plant.world_frame(),
+    #                                             [0, .2, 0],
+    #                                             [0, .2, 0], mobile_base_y,
+    #                                             [0, 0, 0], plant_context)
+
     start_constraint = PositionConstraint(plant, plant.world_frame(),
                                           X_WStart.translation(),
                                           X_WStart.translation(), gripper_frame,
-                                          [0, 0.1, 0], plant_context)
+                                          [0, 0, 0], plant_context)
+    
     trajopt.AddPathPositionConstraint(start_constraint, 0)
+
+    # for i in range(7):
+    #     start_constraint = PositionConstraint(plant, plant.world_frame(),
+    #                                         q[i],
+    #                                         q[i], plant.GetFrameByName(f"iiwa_joint_{i+1}_parent", i+1),
+    #                                         [0, 0, 0], plant_context)
+        
+    #     trajopt.AddPathPositionConstraint(start_constraint, 0)
+
+    #trajopt.AddPathPositionConstraint(base_start_constraint, 0)
+
+    if q:
+        prog.AddBoundingBoxConstraint(q, q, trajopt.control_points()[:, 0])
+
     prog.AddQuadraticErrorCost(np.eye(num_q), q0,
                                trajopt.control_points()[:, 0])
 
@@ -108,7 +130,7 @@ def trajopt(plant, context, X_WStart, X_WGoal, duration=None):
     goal_constraint = PositionConstraint(plant, plant.world_frame(),
                                          X_WGoal.translation(),
                                          X_WGoal.translation(), gripper_frame,
-                                         [0, 0.1, 0], plant_context)
+                                         [0, 0, 0], plant_context)
     trajopt.AddPathPositionConstraint(goal_constraint, 1)
     prog.AddQuadraticErrorCost(np.eye(num_q), q0,
                                trajopt.control_points()[:, -1])
@@ -142,14 +164,14 @@ def trajopt(plant, context, X_WStart, X_WGoal, duration=None):
     return trajopt.ReconstructTrajectory(result)
 
 
-def run_trajopt(X_WStart, X_WGoal, start_time=0, duration=None):
+def run_trajopt(X_WStart, X_WGoal, start_time=0, q=None, duration=None):
     # create an internal model
     internal_model = make_internal_model()
     internal_context = internal_model.CreateDefaultContext()
     internal_plant = internal_model.GetSubsystemByName("plant")
 
     # trajectory optimization
-    trajectory = trajopt(internal_plant, internal_context, X_WStart, X_WGoal, duration)
+    trajectory = trajopt(internal_plant, internal_context, X_WStart, X_WGoal, q, duration)
     #plant.SetDefaultPositions(iiwa, trajectory.value(0))
     #internal_plant.SetDefaultPositions(trajectory.value(0))
 
