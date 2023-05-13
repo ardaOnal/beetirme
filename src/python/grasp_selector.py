@@ -20,16 +20,31 @@ SHELF_HEIGHT_LOWER_LIMIT = 0.36
 
 # Takes 3 point clouds (in world coordinates) as input, and outputs and estimated pose for the items.
 class GraspSelector(LeafSystem):
-    def __init__(self, plant, shelf_instance, camera_count, camera_body_indices, cropPointA, cropPointB, meshcat, running_as_notebook, diag, station):
+    def __init__(self, plant, shelf_instance, camera_count, camera_body_indices, cropPointA, cropPointB, meshcat, running_as_notebook, diag, station, camera_per_shelf, num_shelves):
         LeafSystem.__init__(self)
         model_point_cloud = AbstractValue.Make(PointCloud(0))
         cntxt31 = diag.CreateDefaultContext()
         # rgb_im = station.GetOutputPort('camera1_{}_rgb_image'.format(1)).Eval(cntxt31).data
-        for i in range(camera_count):
-            self.DeclareAbstractInputPort(f"cloud{i}_W", model_point_cloud)
-            if i % 2 == 0:
-                self.DeclareAbstractInputPort(f"rgb1_{i}", AbstractValue.Make(Image(31,31)))
-                self.DeclareAbstractInputPort(f"depth1_{i}", AbstractValue.Make(ImageDepth32F(31,31)))
+
+        index = 0
+        for i in range(1, num_shelves+1):
+            self.DeclareAbstractInputPort(f"cloud{index}_W_{i}", model_point_cloud)
+            self.DeclareAbstractInputPort(f"rgb1_{index}_{i}", AbstractValue.Make(Image(31,31)))
+            self.DeclareAbstractInputPort(f"depth1_{index}_{i}", AbstractValue.Make(ImageDepth32F(31,31)))
+            index = index+1
+            self.DeclareAbstractInputPort(f"cloud{index}_W_{i}", model_point_cloud)
+            index = index+1
+            self.DeclareAbstractInputPort(f"cloud{index}_W_{i}", model_point_cloud)
+            index = index+1
+            self.DeclareAbstractInputPort(f"cloud{index}_W_{i}", model_point_cloud)
+            index = index+1
+
+
+        # for i in range(camera_count):
+        #     self.DeclareAbstractInputPort(f"cloud{i}_W", model_point_cloud)
+        #     if i % camera_per_shelf == 1:
+        #         self.DeclareAbstractInputPort(f"rgb1_{i}", AbstractValue.Make(Image(31,31)))
+        #         self.DeclareAbstractInputPort(f"depth1_{i}", AbstractValue.Make(ImageDepth32F(31,31)))
 
         self.DeclareAbstractInputPort(
             "body_poses", AbstractValue.Make([RigidTransform()]))

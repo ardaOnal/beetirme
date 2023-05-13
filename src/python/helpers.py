@@ -19,18 +19,28 @@ def make_internal_model():
     plant.Finalize()
     return builder.Build()
 
-def place_items(plant, plant_context, x, y, z):
+def place_items(shelf_index, start_index, end_index, shelf_frame, plant, plant_context, x, y, z, items_per_shelf):
     count = 0
-    for body_index in plant.GetFloatingBaseBodies():
+    for body_index in range(start_index, end_index):
+        coordinate_array = [shelf_frame.translation()[0]+x, shelf_frame.translation()[1]+y, shelf_frame.translation()[2]+z]
+        if shelf_index < 6:
+            roll = RollPitchYaw(-np.pi/2, 0, 0)
+        else:
+            roll = RollPitchYaw(-np.pi/2, 0, -np.pi/2)
         tf = RigidTransform(
-                RollPitchYaw(-np.pi/2, 0, 0),
+                #RollPitchYaw(-np.pi/2, 0, 0),
+                roll,
                 #[rs.uniform(-.20,0.23), rs.uniform(-.52, -.65), z])
-                [x,y,z])
+                coordinate_array)
         plant.SetFreeBodyPose(plant_context,
-                              plant.get_body(body_index),
+                              plant.get_body(list(plant.GetFloatingBaseBodies())[body_index]), # TO DO body index bozuyo
                               tf)
         count += 1
-        x += 0.2
-        if count == 3:
-            y -= 0.13
-            x -= 0.5
+        if shelf_index < 6:
+            y -= 0.2
+        else:
+            x -= 0.2
+        if count == items_per_shelf:
+            # y -= 0.13
+            # x -= 0.5
+            break

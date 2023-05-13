@@ -30,7 +30,7 @@ rs = np.random.RandomState()
 
 SAVE_DIAGRAM_SVG = False
 PREPICK_DISTANCE = 0.12
-ITEM_COUNT = 5  # number of items to be generated
+ITEM_COUNT = 3  # number of items to be generated
 MAX_TIME = 160  # max duration after which the simulation is forced to end (recommended: ITEM_COUNT * 31)
 
 def clutter_clearing_demo():
@@ -38,12 +38,36 @@ def clutter_clearing_demo():
     builder = DiagramBuilder()
     # plant, scene_graph = AddMultibodyPlantSceneGraph(builder, time_step=0.001)
 
-    row_count = 3
-    shelf_row_count = 3
-    num_shelves = row_count * shelf_row_count
-    camera_per_shelf = 2
-    camera_count = num_shelves * camera_per_shelf
-    env.grid(row_start_point=-.6, row_count=row_count, shelf_row_count=shelf_row_count, shelf_start_point=0)
+    CONFIG = 1 # 0: row, 1: U shaped shelves
+
+    if CONFIG == 0:
+        row_count = 3
+        shelf_row_count = 2
+        num_shelves = row_count * shelf_row_count
+        camera_per_shelf = 4
+        camera_count = num_shelves * camera_per_shelf
+        row_increment = 3.3
+        shelf_increment = 1.1
+        row_start_point=-.6
+        shelf_start_point = 0
+        env.grid(row_start_point=row_start_point, row_count=row_count, shelf_row_count=shelf_row_count, 
+                shelf_start_point=shelf_start_point, row_increment=row_increment, shelf_increment=shelf_increment)
+
+        items_per_shelf = 3
+        ITEM_COUNT = num_shelves * items_per_shelf
+
+    elif CONFIG == 1:
+        side_shelf_count = 3
+        no_of_sides = 3
+        num_shelves = side_shelf_count * no_of_sides
+        camera_per_shelf = 4
+        camera_count = num_shelves * camera_per_shelf
+        increment = -1
+        shelf_start_point = 3
+        items_per_shelf = 3
+        ITEM_COUNT = num_shelves * items_per_shelf
+        env.maze(start=shelf_start_point,side=side_shelf_count, increment=increment)
+
 
     model_directives = """
 directives:
@@ -51,19 +75,20 @@ directives:
     file: package://grocery/clutter_w_cameras.dmd.yaml
 """
     i = 0
+    object_num = 0
     # generate ITEM_COUNT items
     while i < ITEM_COUNT:
-        object_num = rs.randint(len(ycb))
-        if "cracker_box" in ycb[object_num] or "mustard" in ycb[object_num] or "sugar" in ycb[object_num]:
-            # skip it. it's just too big!
-            continue
+        # if "cracker_box" in ycb[object_num] or "mustard" in ycb[object_num] or "sugar" in ycb[object_num]:
+        #     # skip it. it's just too big!
+        #     continue
         model_directives += f"""
 - add_model:
     name: ycb{i}
-#    file: package://drake/examples/manipulation_station/models/061_foam_brick.sdf
     file: package://grocery/meshes/{ycb[object_num]}
 """
         i += 1
+        if (i % 3 == 0):
+            object_num = (object_num + 1) % len(ycb)
     diag = scenarios.MakeManipulationStation(model_directives, time_step=0.001,
                                     package_xmls=[os.path.join(os.path.dirname(
                                        os.path.realpath(__file__)), "models/package.xml")])
@@ -81,9 +106,9 @@ directives:
                       camera_body_indices=[
                           plant.GetBodyIndices(
                               plant.GetModelInstanceByName(f"camera{camera_no}_{shelf_no}"))[0]
-                              for shelf_no in range(1, num_shelves+1) for camera_no in range(2)
+                              for shelf_no in range(1, num_shelves+1) for camera_no in range(camera_per_shelf)
                       ], cropPointA=cropPointA, cropPointB=cropPointB, meshcat=meshcat, running_as_notebook=running_as_notebook, camera_count=camera_count,
-                        diag=diag, station=station))
+                        diag=diag, station=station, camera_per_shelf=camera_per_shelf, num_shelves=num_shelves))
     
     index = 0
     for i in range(1, num_shelves+1):
@@ -95,6 +120,11 @@ directives:
         index = index+1
         builder.Connect(station.GetOutputPort(f"camera1_{i}_point_cloud"), x_bin_grasp_selector.get_input_port(index))
         index = index+1
+        builder.Connect(station.GetOutputPort(f"camera2_{i}_point_cloud"), x_bin_grasp_selector.get_input_port(index))
+        index = index+1
+        builder.Connect(station.GetOutputPort(f"camera3_{i}_point_cloud"), x_bin_grasp_selector.get_input_port(index))
+        index = index+1
+        
         
     
     print("INDEX: ", index)
@@ -146,12 +176,51 @@ directives:
     
   
     plant_context = plant.GetMyMutableContextFromRoot(context)
-    helpers.place_items(plant,plant_context, x=-0.20, y=-0.50, z=0.4)
+
+    # x = -0.20 
+    # y = -0.6
+    # z = 0.4
+
+    if CONFIG == 0: # row config
+        x = shelf_start_point - 0.2
+        y = row_start_point
+        z = 0.4
+        slice_counter = 0
+        for i in range(row_count):
+            for j in range(num_shelves):
+                items = list(plant.GetFloatingBaseBodies())[slice_counter:slice_counter+items_per_shelf]
+                helpers.place_items(items, plant,plant_context, x=x, y=y, z=z, items_per_shelf=items_per_shelf)
+                x += shelf_increment
+                slice_counter = slice_counter + items_per_shelf
+            y = y + row_increment
+            x = shelf_start_point - 0.2
+    elif CONFIG == 1:
+        x = shelf_start_point - 0.2
+        y = shelf_start_point
+        z = 0.4
+        # x = 0
+        # y = 0.2
+        # z = 3.5
+
+        slice_cnt = 0
+        for shelf_index in range(num_shelves):
+            if shelf_index < 6:
+                x = 0
+                y = 0.23
+                z = -0.1
+            else:
+                x = 0.18
+                y = -0.07
+                z = -0.1
+            X_SHELF = plant.GetFrameByName(f"shelves{shelf_index+1}_origin").CalcPoseInWorld(plant_context)
+            helpers.place_items(shelf_index, slice_cnt, slice_cnt+items_per_shelf, X_SHELF, plant, plant_context, x=x, y=y, z=z, items_per_shelf=items_per_shelf)
+            slice_cnt = slice_cnt + 3
+        
 
     # run simulation
     simulator.AdvanceTo(0.1)
     meshcat.Flush()  # Wait for the large object meshes to get to meshcat.
-    visualizer.StartRecording(True)
+    visualizer.StartRecording(False)
     meshcat.AddButton("Stop Simulation", "Escape")
     while not planner._simulation_done and simulator.get_context().get_time() < MAX_TIME and meshcat.GetButtonClicks("Stop Simulation") < 1:
         simulator.AdvanceTo(simulator.get_context().get_time() + 2.0)
