@@ -463,11 +463,11 @@ def AddIiwaDifferentialIK(builder, plant, frame=None):
     params.set_end_effector_translational_velocity_limits([-2, -2, -2],
                                                             [2, 2, 2])
     
-    position_lower_limits = np.array([-0.1, -0.1, -2.96706, -2.0944,-2.96706, -2.0944, -2.96706, -2.0944, -3.05433])
-    position_upper_limits = np.array([0.1, 0.1, 2.96706, 2.0944, 2.96706, 2.0944, 2.96706, 2.0944, 3.05433])
+    position_lower_limits = np.array([-1, -0.1, -2.96706, -2.0944,-2.96706, -2.0944, -2.96706, -2.0944, -3.05433])
+    position_upper_limits = np.array([0.1, 1, 2.96706, 2.0944, 2.96706, 2.0944, 2.96706, 2.0944, 3.05433])
     params.set_joint_position_limits((position_lower_limits, position_upper_limits))
 
-    iiwa14_velocity_limits = np.array([0.05, 0.05, 1.4, 1.4, 1.7, 1.3, 2.2, 2.3, 2.3])
+    iiwa14_velocity_limits = np.array([1, 1, 1.4, 1.4, 1.7, 1.3, 2.2, 2.3, 2.3])
     assert (
             len(iiwa14_velocity_limits) == JOINT_COUNT
         ), "Joint count does not match the size of velocity limits"

@@ -23,7 +23,7 @@ meshcat = StartMeshcat()
 rs = np.random.RandomState()
 
 PREPICK_DISTANCE = 0.12
-ITEM_COUNT = 5  # number of items to be generated
+ITEM_COUNT = 3  # number of items to be generated
 MAX_TIME = 160  # max duration after which the simulation is forced to end (recommended: ITEM_COUNT * 31)
 
 def clutter_clearing_demo():
@@ -116,6 +116,7 @@ directives:
     visualizer.StartRecording(True)
     meshcat.AddButton("Stop Simulation", "Escape")
     while not planner._simulation_done and simulator.get_context().get_time() < MAX_TIME and meshcat.GetButtonClicks("Stop Simulation") < 1:
+        #print(switch.get_output_port(0).Eval(switch.GetMyMutableContextFromRoot(context)))
         simulator.AdvanceTo(simulator.get_context().get_time() + 2.0)
     visualizer.PublishRecording()
 

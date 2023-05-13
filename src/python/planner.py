@@ -129,7 +129,7 @@ class Planner(LeafSystem):
                 planner_state.PlannerState.GO_HOME)
         q = self.get_input_port(self._iiwa_position_index).Eval(context)
         q0 = copy(context.get_discrete_state(self._q0_index).get_value())
-        q0[0] = q[0]  # Safer to not reset the first joint.
+        #q0[2] = q[2]  # Safer to not reset the first joint.
 
         current_time = context.get_time()
         q_traj = PiecewisePolynomial.FirstOrderHold(

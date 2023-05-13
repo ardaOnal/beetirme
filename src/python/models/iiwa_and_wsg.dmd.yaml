@@ -6,6 +6,8 @@ directives:
     # file: package://drake/manipulation/models/iiwa_description/urdf/iiwa14_no_collision.urdf
     # file: package://grocery/iiwa7_urdf/iiwa7.urdf
     default_joint_positions:
+        mobile_base_joint_x: [-1]
+        mobile_base_joint_y: [1]
         iiwa_joint_1: [-1.57]
         iiwa_joint_2: [0.1] # default: 0.1
         iiwa_joint_3: [0]
