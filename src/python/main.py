@@ -220,7 +220,7 @@ directives:
     # run simulation
     simulator.AdvanceTo(0.1)
     meshcat.Flush()  # Wait for the large object meshes to get to meshcat.
-    visualizer.StartRecording(False)
+    visualizer.StartRecording(True)
     meshcat.AddButton("Stop Simulation", "Escape")
     while not planner._simulation_done and simulator.get_context().get_time() < MAX_TIME and meshcat.GetButtonClicks("Stop Simulation") < 1:
         simulator.AdvanceTo(simulator.get_context().get_time() + 2.0)

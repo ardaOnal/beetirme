@@ -84,12 +84,15 @@ class GraspSelector(LeafSystem):
 
         self.lang_sam_model = segmentation.get_lang_sam("vit_b")
 
+        self.cam_info = []
+        self.X_WC_Cam1 = []
+        for i in range(1, num_shelves+1): 
+            cam1 = diag.GetSubsystemByName(f"camera0_{i}")
+            self.cam_info.append(cam1.depth_camera_info())
 
-        cam1 = diag.GetSubsystemByName("camera0_1")
-        self.cam_info = cam1.depth_camera_info()
+            cam1_context = cam1.GetMyMutableContextFromRoot(cntxt31)
+            self.X_WC_Cam1.append(cam1.body_pose_in_world_output_port().Eval(cam1_context))
 
-        cam1_context = cam1.GetMyMutableContextFromRoot(cntxt31)
-        self.X_WC_Cam1 = cam1.body_pose_in_world_output_port().Eval(cam1_context)
         self.meshcat = meshcat
 
     def project_depth_to_pC(self, depth_pixel, uv=None):
