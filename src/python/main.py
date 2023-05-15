@@ -87,7 +87,7 @@ directives:
     file: package://grocery/meshes/{ycb[object_num]}
 """
         i += 1
-        if (i % 3 == 0):
+        if (i % items_per_shelf == 0):
             object_num = (object_num + 1) % len(ycb)
     diag = scenarios.MakeManipulationStation(model_directives, time_step=0.001,
                                     package_xmls=[os.path.join(os.path.dirname(
@@ -214,7 +214,7 @@ directives:
                 z = -0.1
             X_SHELF = plant.GetFrameByName(f"shelves{shelf_index+1}_origin").CalcPoseInWorld(plant_context)
             helpers.place_items(shelf_index, slice_cnt, slice_cnt+items_per_shelf, X_SHELF, plant, plant_context, x=x, y=y, z=z, items_per_shelf=items_per_shelf)
-            slice_cnt = slice_cnt + 3
+            slice_cnt = slice_cnt + items_per_shelf
         
 
     # run simulation

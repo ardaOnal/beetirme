@@ -33,7 +33,7 @@ def place_items(shelf_index, start_index, end_index, shelf_frame, plant, plant_c
                 #[rs.uniform(-.20,0.23), rs.uniform(-.52, -.65), z])
                 coordinate_array)
         plant.SetFreeBodyPose(plant_context,
-                              plant.get_body(list(plant.GetFloatingBaseBodies())[body_index]), # TO DO body index bozuyo
+                              plant.get_body(sorted(list(plant.GetFloatingBaseBodies()))[body_index]), # TO DO body index bozuyo
                               tf)
         count += 1
         if shelf_index < 6:
