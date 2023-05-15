@@ -2,7 +2,7 @@ import logging
 import numpy as np
 import os
 
-from pydrake.all import (DiagramBuilder, MeshcatVisualizer, PortSwitch, Simulator, StartMeshcat)
+from pydrake.all import (DiagramBuilder, MeshcatVisualizer, PortSwitch, Simulator, StartMeshcat, MultibodyPlant, Multiplexer, Demultiplexer)
 
 from manipulation import running_as_notebook
 from manipulation.scenarios import  ycb
@@ -15,12 +15,18 @@ import nodiffik_warnings
 import planner as planner_class
 import helpers
 
+import pydot
+from IPython.display import HTML, SVG, display
+
 logging.getLogger("drake").addFilter(nodiffik_warnings.NoDiffIKWarnings())
+logging.getLogger("drake").addFilter(nodiffik_warnings.NoSDFWarnings())
 
 # Start the visualizer.
 meshcat = StartMeshcat()
 
 rs = np.random.RandomState()
+
+SAVE_DIAGRAM_SVG = False
 
 PREPICK_DISTANCE = 0.12
 ITEM_COUNT = 3  # number of items to be generated
@@ -78,31 +84,75 @@ directives:
     builder.Connect(station.GetOutputPort("camera2_point_cloud"), x_bin_grasp_selector.get_input_port(2))
     builder.Connect(station.GetOutputPort("body_poses"), x_bin_grasp_selector.GetInputPort("body_poses"))
 
+    # Add planner
     planner = builder.AddSystem(planner_class.Planner(plant, JOINT_COUNT, meshcat, rs, PREPICK_DISTANCE))
     builder.Connect(station.GetOutputPort("body_poses"), planner.GetInputPort("body_poses"))
     builder.Connect(x_bin_grasp_selector.get_output_port(), planner.GetInputPort("x_bin_grasp"))
     builder.Connect(station.GetOutputPort("wsg_state_measured"), planner.GetInputPort("wsg_state"))
     builder.Connect(station.GetOutputPort("iiwa_position_measured"), planner.GetInputPort("iiwa_position"))
 
-    robot = station.GetSubsystemByName("iiwa_controller").get_multibody_plant_for_control()
+    # The DiffIK and the direct position-control modes go through a PortSwitch
+    switch = builder.AddSystem(PortSwitch(JOINT_COUNT))
 
-    # Set up differential inverse kinematics.
-    diff_ik = scenarios.AddIiwaDifferentialIK(builder, robot)
-    builder.Connect(planner.GetOutputPort("X_WG"), diff_ik.get_input_port(0))
-    builder.Connect(station.GetOutputPort("iiwa_state_estimated"), diff_ik.GetInputPort("robot_state"))
-    builder.Connect(planner.GetOutputPort("reset_diff_ik"), diff_ik.GetInputPort("use_robot_state"))
+    if False:
+        # Set up mobile base differential inverse kinematics.
+        robot = station.GetSubsystemByName("iiwa_controller").get_multibody_plant_for_control()
+        diff_ik = scenarios.AddIiwaDifferentialIK(builder, robot)
+
+        builder.Connect(planner.GetOutputPort("X_WG"), diff_ik.get_input_port(0))
+        builder.Connect(station.GetOutputPort("iiwa_state_estimated"), diff_ik.GetInputPort("robot_state"))
+        builder.Connect(planner.GetOutputPort("reset_diff_ik"), diff_ik.GetInputPort("use_robot_state"))
+
+        builder.Connect(diff_ik.get_output_port(), switch.DeclareInputPort("diff_ik"))
+    else:
+        # Set up fixed base differential inverse kinematics.
+        # create fixed plant
+        fixed_plant = MultibodyPlant(time_step=0.001)
+        controller_iiwa = scenarios.AddIiwa(fixed_plant, fixed=True)
+        scenarios.AddWsg(fixed_plant, controller_iiwa, welded=True)
+        fixed_plant.Finalize()
+
+        diff_ik = scenarios.AddIiwaDifferentialIK(builder, fixed_plant)
+
+        iiwa_state_demux = builder.AddSystem(
+            Demultiplexer([2, 7, 2, 7]))
+        iiwa_state_mux = builder.AddSystem(
+                    Multiplexer([7, 7]))
+        builder.Connect(station.GetOutputPort("iiwa_state_estimated"),
+                        iiwa_state_demux.get_input_port())
+        builder.Connect(iiwa_state_demux.get_output_port(1),
+                        iiwa_state_mux.get_input_port(0))
+        builder.Connect(iiwa_state_demux.get_output_port(3),
+                        iiwa_state_mux.get_input_port(1))
+    
+        builder.Connect(planner.GetOutputPort("X_WG"), diff_ik.get_input_port(0))
+        #builder.Connect(iiwa_state_mux.get_output_port(), diff_ik.GetInputPort("robot_state"))
+        builder.Connect(station.GetOutputPort("iiwa_state_estimated"), diff_ik.GetInputPort("robot_state"))
+        builder.Connect(planner.GetOutputPort("reset_diff_ik"), diff_ik.GetInputPort("use_robot_state"))
+
+        # mux = builder.AddSystem(Multiplexer([2, 7]))
+        # builder.Connect(planner.GetOutputPort("base_position"),
+        #                 mux.get_input_port(0))
+        # builder.Connect(diff_ik.get_output_port(),
+        #                 mux.get_input_port(1))
+        # builder.Connect(mux.get_output_port(), switch.DeclareInputPort("diff_ik"))
+        builder.Connect(diff_ik.get_output_port(), switch.DeclareInputPort("diff_ik"))
+        
 
     builder.Connect(planner.GetOutputPort("wsg_position"), station.GetInputPort("wsg_position"))
 
-    # The DiffIK and the direct position-control modes go through a PortSwitch
-    switch = builder.AddSystem(PortSwitch(JOINT_COUNT))
-    builder.Connect(diff_ik.get_output_port(), switch.DeclareInputPort("diff_ik"))
+
     builder.Connect(planner.GetOutputPort("iiwa_position_command"), switch.DeclareInputPort("position"))
     builder.Connect(switch.get_output_port(), station.GetInputPort("iiwa_position"))
     builder.Connect(planner.GetOutputPort("control_mode"), switch.get_port_selector_input_port())
 
     visualizer = MeshcatVisualizer.AddToBuilder(builder, station.GetOutputPort("query_object"), meshcat)    
     diagram = builder.Build()
+
+    if SAVE_DIAGRAM_SVG:
+        svg = SVG(pydot.graph_from_dot_data(diagram.GetGraphvizString())[0].create_svg())
+        with open('diagram.svg', 'w') as f:
+            f.write(svg.data)
 
     simulator = Simulator(diagram)
     context = simulator.get_context()

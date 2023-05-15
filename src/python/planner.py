@@ -10,6 +10,8 @@ import numpy as np
 import planner_state
 import pick
 
+SHELF_1 = (0, 0)
+
 class Planner(LeafSystem):
     def __init__(self, plant, joint_count, meshcat, rs, prepick_distance):
         LeafSystem.__init__(self)
@@ -35,6 +37,7 @@ class Planner(LeafSystem):
             "X_WG", lambda: AbstractValue.Make(RigidTransform()),
             self.CalcGripperPose)
         self.DeclareVectorOutputPort("wsg_position", 1, self.CalcWsgPosition)
+        #self.DeclareVectorOutputPort("base_position", 2, self.CalcBasePosition)
 
         # For GoHome mode.
         num_positions = joint_count
@@ -73,13 +76,18 @@ class Planner(LeafSystem):
         if mode == planner_state.PlannerState.WAIT_FOR_OBJECTS_TO_SETTLE:
             if context.get_time() - times["initial"] > 1.0:
                 self.Plan(context, state)
-            return
-        elif mode == planner_state.PlannerState.GO_HOME:
+            else:
+                self.GoToShelf(context, state)
+            return          
+        elif mode == planner_state.PlannerState.GO_HOME or mode == planner_state.PlannerState.GO_TO_SHELF:
             traj_q = context.get_mutable_abstract_state(int(
                 self._traj_q_index)).get_value()
             if not traj_q.is_time_in_range(current_time):
                 self.Plan(context, state)
             return
+
+        #if abs(current_time - times["place_end"]) < 0.1:
+        #    print(self.get_input_port(self._iiwa_position_index).Eval(context))
 
         # If we are between pick and place and the gripper is closed, then
         # we've missed or dropped the object.  Time to replan.
@@ -96,22 +104,28 @@ class Planner(LeafSystem):
                     return
                 
                 attempts[0] += 1
-                state.get_mutable_abstract_state(int(
-                    self._mode_index)).set_value(
-                        planner_state.PlannerState.WAIT_FOR_OBJECTS_TO_SETTLE)
-                times = {"initial": current_time}
-                state.get_mutable_abstract_state(int(
-                    self._times_index)).set_value(times)
-                X_G = self.get_input_port(0).Eval(context)[int(
-                    self._gripper_body_index)]
-                state.get_mutable_abstract_state(int(
-                    self._traj_X_G_index)).set_value(PiecewisePose.MakeLinear([current_time, np.inf], [X_G, X_G]))
+                self.GoHome(context, state)
+                # state.get_mutable_abstract_state(int(
+                #     self._mode_index)).set_value(
+                #         planner_state.PlannerState.WAIT_FOR_OBJECTS_TO_SETTLE)
+                # times = {"initial": current_time}
+                # state.get_mutable_abstract_state(int(
+                #     self._times_index)).set_value(times)
+                # X_G = self.get_input_port(0).Eval(context)[int(
+                #     self._gripper_body_index)]
+                # state.get_mutable_abstract_state(int(
+                #     self._traj_X_G_index)).set_value(PiecewisePose.MakeLinear([current_time, np.inf], [X_G, X_G]))
                 return
+            else:
+                #self.PlaceItem(context, state)
+                #self.FreezeBase(context)
+                pass
 
         traj_X_G = context.get_abstract_state(int(
             self._traj_X_G_index)).get_value()
         if not traj_X_G.is_time_in_range(current_time):
-            self.Plan(context, state)
+            #self.Plan(context, state)
+            self.GoHome(context, state)
             return
 
         X_G = self.get_input_port(0).Eval(context)[int(self._gripper_body_index)]
@@ -123,13 +137,13 @@ class Planner(LeafSystem):
             return
 
     def GoHome(self, context, state):
-        print("Replanning due to large tracking error.")
+        print("Replanning due to large tracking error (go home).")
         state.get_mutable_abstract_state(int(
             self._mode_index)).set_value(
                 planner_state.PlannerState.GO_HOME)
         q = self.get_input_port(self._iiwa_position_index).Eval(context)
         q0 = copy(context.get_discrete_state(self._q0_index).get_value())
-        #q0[2] = q[2]  # Safer to not reset the first joint.
+        q0[:2] = q[:2]  # Safer to not reset the first joint.
 
         current_time = context.get_time()
         q_traj = PiecewisePolynomial.FirstOrderHold(
@@ -137,6 +151,54 @@ class Planner(LeafSystem):
         state.get_mutable_abstract_state(int(
             self._traj_q_index)).set_value(q_traj)
 
+
+    def GoToShelf(self, context, state):
+        print("Going to shelf.")
+        state.get_mutable_abstract_state(int(
+            self._mode_index)).set_value(
+                planner_state.PlannerState.GO_HOME)
+        q = self.get_input_port(self._iiwa_position_index).Eval(context)
+        q0 = copy(q)
+        q0[:2] = SHELF_1
+        current_time = context.get_time()
+        q_traj = PiecewisePolynomial.FirstOrderHold(
+            [current_time, current_time + 5.0], np.vstack((q, q0)).T)
+        state.get_mutable_abstract_state(int(
+            self._traj_q_index)).set_value(q_traj)
+
+    # def PlaceItem(self, context, state):
+    #     print("Placing")
+    #     state.get_mutable_abstract_state(int(
+    #         self._mode_index)).set_value(
+    #             planner_state.PlannerState.GO_HOME)
+    #     q_current = self.get_input_port(self._iiwa_position_index).Eval(context)
+    #     q_clearance = copy(context.get_discrete_state(self._q0_index).get_value())
+    #     q_clearance[:3] = (q_current[0], q_current[1] + 0.1, 0)
+    #     q_place = copy(q_clearance)
+    #     q_place[3] = 1
+    #     q_place[5] = -1.2
+    #     q_place[7] = 0.6
+
+
+    #     current_time = context.get_time()
+    #     q_traj = PiecewisePolynomial.FirstOrderHold(
+    #         [current_time, current_time + 2.0, current_time + 4.0], np.vstack((q_current, q_clearance, q_place)).T)
+    #     state.get_mutable_abstract_state(int(
+    #         self._traj_q_index)).set_value(q_traj)
+
+    # def FreezeBase(self, context):
+    #     params = self.diff_ik.get_mutable_parameters()
+
+    #     q = self.get_input_port(self._iiwa_position_index).Eval(context)
+    #     position_limits = params.get_joint_position_limits()
+    #     position_limits[0][:2] = q[:2]
+    #     position_limits[1][:2] = q[:2]
+    #     params.set_joint_position_limits(position_limits)
+
+    #     velocity_limits = params.get_joint_velocity_limits()
+    #     velocity_limits[0][:2] = 0
+    #     velocity_limits[1][:2] = 0
+    #     params.set_joint_velocity_limits(velocity_limits)
 
     def Plan(self, context, state):
         mode = copy(
@@ -166,17 +228,22 @@ class Planner(LeafSystem):
             return
         state.get_mutable_abstract_state(int(self._mode_index)).set_value(mode)
 
+        #self.FreezeBase(context)
+
         # place pose calculation
         if mode == planner_state.PlannerState.PICKING_FROM_SHELF_1:
-            x_range = [.35, .65]
-            y_range = [0, .35]
+            x_range = np.array([.35, .6])
+            y_range = np.array([-.1, .1])
+
+            x_range += SHELF_1[0]
+            y_range += SHELF_1[1]
 
             # Place in Y bin:
             X_G["place"] = RigidTransform(
                 RollPitchYaw(-np.pi / 2, 0, np.pi / 2),
                 [self.rs.uniform(x_range[0], x_range[1]),
                  self.rs.uniform(y_range[0], y_range[1]),
-                 0])
+                 0.2])
                 
             self.meshcat.SetObject("place1", Sphere(0.02), rgba=Rgba(.9, .1, .1, 1))
             self.meshcat.SetTransform("place1", RigidTransform([x_range[0], y_range[0], 0]))
@@ -193,13 +260,14 @@ class Planner(LeafSystem):
 
 
         if True:  # Useful for debugging
-            #AddMeshcatTriad(meshcat, "X_Oinitial", X_PT=X_O["initial"])
-            #AddMeshcatTriad(meshcat, "X_Gpickwrotat", X_PT=X_G["pick"] @ RigidTransform(RotationMatrix.MakeXRotation(np.pi / 10)))
+            AddMeshcatTriad(self.meshcat, "X_Ginitial", X_PT=X_G["initial"])
+            #AddMeshcatTriad(self.meshcat, "X_Gclearance", X_PT=X_G["clearance"])
             AddMeshcatTriad(self.meshcat, "X_Gprepick", X_PT=X_G["prepick"])
             AddMeshcatTriad(self.meshcat, "X_Gpick", X_PT=X_G["pick"])
+            AddMeshcatTriad(self.meshcat, "X_Gpreplace", X_PT=X_G["preplace"])
             AddMeshcatTriad(self.meshcat, "X_Gplace", X_PT=X_G["place"])
 
-        traj_X_G = MakeGripperPoseTrajectory(X_G, times)
+        traj_X_G = pick.MakeGripperPoseTrajectory(X_G, times)
         traj_wsg_command = MakeGripperCommandTrajectory(times)
 
         state.get_mutable_abstract_state(int(
@@ -256,10 +324,13 @@ class Planner(LeafSystem):
         # Command the open position
         output.SetFromVector([opened])
 
+    def CalcBasePosition(self, context, output):
+        output.SetFromVector([0, 0])
+
     def CalcControlMode(self, context, output):
         mode = context.get_abstract_state(int(self._mode_index)).get_value()
 
-        if mode == planner_state.PlannerState.GO_HOME:
+        if mode == planner_state.PlannerState.GO_HOME or mode == planner_state.PlannerState.GO_TO_SHELF:
             output.set_value(InputPortIndex(2))  # Go Home
         else:
             output.set_value(InputPortIndex(1))  # Diff IK
@@ -267,7 +338,7 @@ class Planner(LeafSystem):
     def CalcDiffIKReset(self, context, output):
         mode = context.get_abstract_state(int(self._mode_index)).get_value()
 
-        if mode == planner_state.PlannerState.GO_HOME:
+        if mode == planner_state.PlannerState.GO_HOME or mode == planner_state.PlannerState.GO_TO_SHELF:
             output.set_value(True)
         else:
             output.set_value(False)

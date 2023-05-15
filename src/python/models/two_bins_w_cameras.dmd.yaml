@@ -3,8 +3,8 @@ directives:
 - add_directives:
     file: package://grocery/shelves.dmd.yaml
 
-- add_directives:
-    file: package://grocery/bin.dmd.yaml
+# - add_directives:
+#     file: package://grocery/bin.dmd.yaml
 
 
 #- add_frame:

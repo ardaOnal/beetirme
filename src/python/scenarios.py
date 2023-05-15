@@ -33,15 +33,18 @@ ycb = [
 
 JOINT_COUNT = 9
 
-def AddIiwa(plant, collision_model="no_collision"):
+def AddIiwa(plant, collision_model="no_collision", fixed=False):
     sdf_path = FindResourceOrThrow(
         "drake/manipulation/models/iiwa_description/iiwa7/"
         f"iiwa7_{collision_model}.sdf")
 
     parser = Parser(plant)
     parser.package_map().AddPackageXml(os.path.join(os.path.dirname(os.path.realpath(__file__)), "models/package.xml"))
-    iiwa = parser.AddModelFromFile("src/python/models/iiwa7/iiwa7_no_collision.sdf")
-    #plant.WeldFrames(plant.world_frame(), plant.GetFrameByName("iiwa_link_0"))
+    if not fixed:
+        iiwa = parser.AddModelFromFile("src/python/models/iiwa7/iiwa7_no_collision.sdf")
+    else:
+        iiwa = parser.AddModelFromFile("src/python/models/iiwa7/fixed_iiwa7_no_collision.sdf")
+        #plant.WeldFrames(plant.world_frame(), plant.GetFrameByName("iiwa_link_0"))
 
     # Set default positions:
     q0 = [-1.57, 0.1, 0.0, -1.4, 0, 1.6, 0]
@@ -463,17 +466,25 @@ def AddIiwaDifferentialIK(builder, plant, frame=None):
     params.set_end_effector_translational_velocity_limits([-2, -2, -2],
                                                             [2, 2, 2])
     
-    position_lower_limits = np.array([-1, -0.1, -2.96706, -2.0944,-2.96706, -2.0944, -2.96706, -2.0944, -3.05433])
-    position_upper_limits = np.array([0.1, 1, 2.96706, 2.0944, 2.96706, 2.0944, 2.96706, 2.0944, 3.05433])
-    params.set_joint_position_limits((position_lower_limits, position_upper_limits))
+    if plant.num_actuators() == JOINT_COUNT:
+        position_lower_limits = np.array([-1, -0.1, -4, -2.0944,-2.96706, -2.0944, -2.96706, -2.0944, -3.05433])
+        position_upper_limits = np.array([0.1, 1, 4, 2.0944, 2.96706, 2.0944, 2.96706, 2.0944, 3.05433])
+        params.set_joint_position_limits((position_lower_limits, position_upper_limits))
 
-    iiwa14_velocity_limits = np.array([1, 1, 1.4, 1.4, 1.7, 1.3, 2.2, 2.3, 2.3])
-    assert (
-            len(iiwa14_velocity_limits) == JOINT_COUNT
-        ), "Joint count does not match the size of velocity limits"
-    params.set_joint_velocity_limits(
-        (-iiwa14_velocity_limits, iiwa14_velocity_limits))
-    params.set_joint_centering_gain(10 * np.eye(JOINT_COUNT))
+        iiwa14_velocity_limits = np.array([1, 1, 1.4, 1.4, 1.7, 1.3, 2.2, 2.3, 2.3])
+        assert (
+                len(iiwa14_velocity_limits) == JOINT_COUNT
+            ), "Joint count does not match the size of velocity limits"
+        params.set_joint_velocity_limits(
+            (-iiwa14_velocity_limits, iiwa14_velocity_limits))
+        params.set_joint_centering_gain(10 * np.eye(JOINT_COUNT))
+    else: # fixed base
+        print("num pos", plant.num_joints())
+        iiwa14_velocity_limits = np.array([0, 0, 1.4, 1.4, 1.7, 1.3, 2.2, 2.3, 2.3])
+        params.set_joint_velocity_limits( 
+            (-iiwa14_velocity_limits, iiwa14_velocity_limits))
+        params.set_joint_centering_gain(10 * np.eye(JOINT_COUNT))
+
         
     if frame is None:
         frame = plant.GetFrameByName("body")
@@ -592,8 +603,6 @@ def MakeManipulationStation(model_directives=None,
             
             AddWsg(controller_plant, controller_iiwa, welded=True)
 
-            #mobile_base = controller_plant.AddJoint(PlanarJoint(name="mobile_base", frame_on_parent=controller_plant.world_frame(), frame_on_child=controller_plant.GetFrameByName("iiwa_link_0")))
-            #controller_plant.AddJointActuator("asd", mobile_base)
             controller_plant.Finalize()
 
             print("controller:", controller_plant.num_actuators())
