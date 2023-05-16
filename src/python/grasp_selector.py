@@ -1,7 +1,7 @@
 import numpy as np
 
 from pydrake.all import (AbstractValue, Concatenate, LeafSystem, PointCloud, RigidTransform, 
-                         RollPitchYaw, Sphere, Rgba, Image, ImageRgba8U, ImageDepth16U, ImageDepth32F)
+                         RollPitchYaw, Sphere, Rgba, Image, ImageRgba8U, ImageDepth16U, ImageDepth32F, PortDataType)
 
 from manipulation.clutter import GenerateAntipodalGraspCandidate
 
@@ -25,20 +25,14 @@ class GraspSelector(LeafSystem):
         model_point_cloud = AbstractValue.Make(PointCloud(0))
         cntxt31 = diag.CreateDefaultContext()
         # rgb_im = station.GetOutputPort('camera1_{}_rgb_image'.format(1)).Eval(cntxt31).data
+        self.DeclareAbstractInputPort("shelf_id", AbstractValue.Make(0))
 
         index = 0
-        for i in range(1, num_shelves+1):
-            self.DeclareAbstractInputPort(f"cloud{index}_W_{i}", model_point_cloud)
-            self.DeclareAbstractInputPort(f"rgb1_{index}_{i}", AbstractValue.Make(Image(31,31)))
-            self.DeclareAbstractInputPort(f"depth1_{index}_{i}", AbstractValue.Make(ImageDepth32F(31,31)))
-            index = index+1
-            self.DeclareAbstractInputPort(f"cloud{index}_W_{i}", model_point_cloud)
-            index = index+1
-            self.DeclareAbstractInputPort(f"cloud{index}_W_{i}", model_point_cloud)
-            index = index+1
-            self.DeclareAbstractInputPort(f"cloud{index}_W_{i}", model_point_cloud)
-            index = index+1
-
+        for shelf_id in range(1, num_shelves+1):
+            for i in range(4):
+                self.DeclareAbstractInputPort(f"cloud{i}_s{shelf_id}", model_point_cloud)
+            self.DeclareAbstractInputPort(f"rgb_s{shelf_id}", AbstractValue.Make(Image(31,31)))
+            self.DeclareAbstractInputPort(f"depth_s{shelf_id}", AbstractValue.Make(ImageDepth32F(31,31)))
 
         # for i in range(camera_count):
         #     self.DeclareAbstractInputPort(f"cloud{i}_W", model_point_cloud)
@@ -86,8 +80,8 @@ class GraspSelector(LeafSystem):
 
         self.cam_info = []
         self.X_WC_Cam1 = []
-        for i in range(1, num_shelves+1): 
-            cam1 = diag.GetSubsystemByName(f"camera0_{i}")
+        for shelf_id in range(1, num_shelves+1): 
+            cam1 = diag.GetSubsystemByName(f"camera1_{shelf_id}")
             self.cam_info.append(cam1.depth_camera_info())
 
             cam1_context = cam1.GetMyMutableContextFromRoot(cntxt31)
@@ -95,7 +89,7 @@ class GraspSelector(LeafSystem):
 
         self.meshcat = meshcat
 
-    def project_depth_to_pC(self, depth_pixel, uv=None):
+    def project_depth_to_pC(self, depth_pixel, shelf_id, uv=None):
         """
         project depth pixels to points in camera frame
         using pinhole camera model
@@ -109,10 +103,10 @@ class GraspSelector(LeafSystem):
         u = depth_pixel[:, 1]
         Z = depth_pixel[:, 2]
         # read camera intrinsics
-        cx = self.cam_info.center_x()
-        cy = self.cam_info.center_y()
-        fx = self.cam_info.focal_x()
-        fy = self.cam_info.focal_y()
+        cx = self.cam_info[shelf_id].center_x()
+        cy = self.cam_info[shelf_id].center_y()
+        fx = self.cam_info[shelf_id].focal_x()
+        fy = self.cam_info[shelf_id].focal_y()
         X = (u - cx) * Z / fx
         Y = (v - cy) * Z / fy
         pC = np.c_[X, Y, Z]
@@ -120,7 +114,10 @@ class GraspSelector(LeafSystem):
 
     # MAKE DYNAMIC
     def SelectGrasp(self, context, output):
-        rgb_im = self.get_input_port(1).Eval(context).data # TO DO make dynamic
+        shelf_id = self.GetInputPort("shelf_id").Eval(context)
+        print("shelf", shelf_id)
+
+        rgb_im = self.GetInputPort(f"rgb_s{shelf_id}").Eval(context).data # TO DO make dynamic
         image_pil = PILImage.fromarray(rgb_im).convert("RGB")
         plt.imshow(image_pil)
         plt.show()
@@ -154,7 +151,7 @@ class GraspSelector(LeafSystem):
             plt.imshow(result)
             plt.show()
 
-            depth_im = self.get_input_port(2).Eval(context).data.squeeze() # todo
+            depth_im = self.GetInputPort(f"depth_s{shelf_id}").Eval(context).data.squeeze() # todo
             print("DEPTH IMAGE", depth_im)
             print("DEPTH SHAPE", depth_im.shape)
 
@@ -166,14 +163,14 @@ class GraspSelector(LeafSystem):
             depth_pnts = depth_pnts.reshape([img_h * img_w, 3])
 
             # point poses in camera frame
-            pC = self.project_depth_to_pC(depth_pnts)
+            pC = self.project_depth_to_pC(depth_pnts, shelf_id)
             pC = np.reshape(pC,(480,640,3))
 
             print("CROP POINTS", pC[smallest_sum[1]][smallest_sum[2]], pC[largest_sum[1]][largest_sum[2]])
 
-            X_Crop1 = self.X_WC_Cam1 @ RigidTransform(pC[smallest_sum[1]][smallest_sum[2]])
+            X_Crop1 = self.X_WC_Cam1[shelf_id] @ RigidTransform(pC[smallest_sum[1]][smallest_sum[2]])
             print("CROPPED FRAME1", X_Crop1)
-            X_Crop2 = self.X_WC_Cam1 @ RigidTransform(pC[largest_sum[1]][largest_sum[2]])
+            X_Crop2 = self.X_WC_Cam1[shelf_id] @ RigidTransform(pC[largest_sum[1]][largest_sum[2]])
             print("CROPPED FRAME2", X_Crop2)
 
             # Solves: Failure at perception/point_cloud.cc:350 in Crop(): condition '(lower_xyz.array() <= upper_xyz.array()).all()' failed.
@@ -217,13 +214,10 @@ class GraspSelector(LeafSystem):
             self.meshcat.SetObject("pick2", Sphere(0.01), rgba=Rgba(.1, .9, .1, 1))
             self.meshcat.SetTransform("pick2", RigidTransform(b))
 
-            body_poses = self.get_input_port(36).Eval(context) # TO DO
+            body_poses = self.GetInputPort("body_poses").Eval(context) # TO DO
             pcd = []
-            for i in range(2): # TO
-                if i == 0:
-                    cloud = self.get_input_port(i).Eval(context) # TO DO
-                else:
-                    cloud = self.get_input_port(3).Eval(context) # TO DO
+            for i in range(4): # TO
+                cloud = self.GetInputPort(f"cloud{i}_s{shelf_id}").Eval(context) # TO DO
                 #pcd.append(cloud.Crop(self._crop_lower, self._crop_upper))
                 pcd.append(cloud.Crop(np.array(X_Crop1_Array), np.array(X_Crop2_Array)))
                 pcd[i].EstimateNormals(radius=0.1, num_closest=30)

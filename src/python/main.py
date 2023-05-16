@@ -7,7 +7,8 @@ from matplotlib.pyplot import plot, draw, show, ion
 import pydot
 from IPython.display import HTML, SVG, display
 
-from pydrake.all import (DiagramBuilder, MeshcatVisualizer, PortSwitch, Simulator, StartMeshcat)
+from pydrake.all import (DiagramBuilder, MeshcatVisualizer, PortSwitch, Simulator, StartMeshcat,
+                         ConstantValueSource, AbstractValue)
 
 from manipulation import running_as_notebook
 from manipulation.scenarios import  ycb
@@ -110,24 +111,15 @@ directives:
                       ], cropPointA=cropPointA, cropPointB=cropPointB, meshcat=meshcat, running_as_notebook=running_as_notebook, camera_count=camera_count,
                         diag=diag, station=station, camera_per_shelf=camera_per_shelf, num_shelves=num_shelves))
     
-    index = 0
-    for i in range(1, num_shelves+1):
-        builder.Connect(station.GetOutputPort(f"camera0_{i}_point_cloud"),x_bin_grasp_selector.get_input_port(index))
-        index = index+1
-        builder.Connect(station.GetOutputPort(f"camera0_{i}_rgb_image"), x_bin_grasp_selector.get_input_port(index))
-        index = index+1
-        builder.Connect(station.GetOutputPort(f"camera0_{i}_depth_image"), x_bin_grasp_selector.get_input_port(index))
-        index = index+1
-        builder.Connect(station.GetOutputPort(f"camera1_{i}_point_cloud"), x_bin_grasp_selector.get_input_port(index))
-        index = index+1
-        builder.Connect(station.GetOutputPort(f"camera2_{i}_point_cloud"), x_bin_grasp_selector.get_input_port(index))
-        index = index+1
-        builder.Connect(station.GetOutputPort(f"camera3_{i}_point_cloud"), x_bin_grasp_selector.get_input_port(index))
-        index = index+1
+    cons = builder.AddSystem(ConstantValueSource(AbstractValue.Make(4)))
+    builder.Connect(cons.get_output_port(0), x_bin_grasp_selector.GetInputPort("shelf_id"))
+
+    for shelf_id in range(1, num_shelves+1):
+        for i in range(4):
+            builder.Connect(station.GetOutputPort(f"camera{i}_{shelf_id}_point_cloud"), x_bin_grasp_selector.GetInputPort(f"cloud{i}_s{shelf_id}"))
+        builder.Connect(station.GetOutputPort(f"camera1_{shelf_id}_rgb_image"), x_bin_grasp_selector.GetInputPort(f"rgb_s{shelf_id}"))
+        builder.Connect(station.GetOutputPort(f"camera1_{shelf_id}_depth_image"), x_bin_grasp_selector.GetInputPort(f"depth_s{shelf_id}"))
         
-        
-    
-    print("INDEX: ", index)
     builder.Connect(station.GetOutputPort("body_poses"), x_bin_grasp_selector.GetInputPort("body_poses"))
 
 
