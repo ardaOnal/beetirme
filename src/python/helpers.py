@@ -21,6 +21,7 @@ def make_internal_model():
 
 def place_items(shelf_index, start_index, end_index, shelf_frame, plant, plant_context, x, y, z, items_per_shelf):
     count = 0
+    print("shelf index: ", shelf_index, " item: ", plant.get_body(sorted(list(plant.GetFloatingBaseBodies()))[start_index]))
     for body_index in range(start_index, end_index):
         coordinate_array = [shelf_frame.translation()[0]+x, shelf_frame.translation()[1]+y, shelf_frame.translation()[2]+z]
         if shelf_index < 6:
