@@ -6,11 +6,17 @@ from manipulation.pick import (MakeGripperCommandTrajectory, MakeGripperPoseTraj
 from copy import copy
 
 import numpy as np
+from enum import Enum
 
-import planner_state
 import pick
 
-SHELF_1 = (0, 0)
+SHELF_1 = (1, 1, np.pi/2)
+
+class PlannerState(Enum):
+    WAIT_FOR_OBJECTS_TO_SETTLE = 1
+    GO_TO_SHELF = 2
+    PICKING_FROM_SHELF_1 = 3
+    GO_HOME = 4
 
 class Planner(LeafSystem):
     def __init__(self, plant, joint_count, meshcat, rs, prepick_distance):
@@ -24,7 +30,7 @@ class Planner(LeafSystem):
         self._wsg_state_index = self.DeclareVectorInputPort("wsg_state", 2).get_index()
 
         self._mode_index = self.DeclareAbstractState(
-            AbstractValue.Make(planner_state.PlannerState.WAIT_FOR_OBJECTS_TO_SETTLE))
+            AbstractValue.Make(PlannerState.WAIT_FOR_OBJECTS_TO_SETTLE))
         self._traj_X_G_index = self.DeclareAbstractState(
             AbstractValue.Make(PiecewisePose()))
         self._traj_wsg_index = self.DeclareAbstractState(
@@ -73,13 +79,13 @@ class Planner(LeafSystem):
         times = context.get_abstract_state(int(
             self._times_index)).get_value()
 
-        if mode == planner_state.PlannerState.WAIT_FOR_OBJECTS_TO_SETTLE:
+        if mode == PlannerState.WAIT_FOR_OBJECTS_TO_SETTLE:
             if context.get_time() - times["initial"] > 1.0:
                 self.Plan(context, state)
             else:
                 self.GoToShelf(context, state)
             return          
-        elif mode == planner_state.PlannerState.GO_HOME or mode == planner_state.PlannerState.GO_TO_SHELF:
+        elif mode == PlannerState.GO_HOME or mode == PlannerState.GO_TO_SHELF:
             traj_q = context.get_mutable_abstract_state(int(
                 self._traj_q_index)).get_value()
             if not traj_q.is_time_in_range(current_time):
@@ -107,7 +113,7 @@ class Planner(LeafSystem):
                 self.GoHome(context, state)
                 # state.get_mutable_abstract_state(int(
                 #     self._mode_index)).set_value(
-                #         planner_state.PlannerState.WAIT_FOR_OBJECTS_TO_SETTLE)
+                #         PlannerState.WAIT_FOR_OBJECTS_TO_SETTLE)
                 # times = {"initial": current_time}
                 # state.get_mutable_abstract_state(int(
                 #     self._times_index)).set_value(times)
@@ -140,10 +146,10 @@ class Planner(LeafSystem):
         print("Replanning due to large tracking error (go home).")
         state.get_mutable_abstract_state(int(
             self._mode_index)).set_value(
-                planner_state.PlannerState.GO_HOME)
+                PlannerState.GO_HOME)
         q = self.get_input_port(self._iiwa_position_index).Eval(context)
         q0 = copy(context.get_discrete_state(self._q0_index).get_value())
-        q0[:2] = q[:2]  # Safer to not reset the first joint.
+        q0[:3] = q[:3]  # Safer to not reset the first joint.
 
         current_time = context.get_time()
         q_traj = PiecewisePolynomial.FirstOrderHold(
@@ -156,13 +162,15 @@ class Planner(LeafSystem):
         print("Going to shelf.")
         state.get_mutable_abstract_state(int(
             self._mode_index)).set_value(
-                planner_state.PlannerState.GO_HOME)
+                PlannerState.GO_HOME)
         q = self.get_input_port(self._iiwa_position_index).Eval(context)
-        q0 = copy(q)
-        q0[:2] = SHELF_1
+        q_clearance = copy(q)
+        q_clearance[2] = SHELF_1[2]
+        q_shelf = copy(q_clearance)
+        q_shelf[:2] = SHELF_1[:2]
         current_time = context.get_time()
         q_traj = PiecewisePolynomial.FirstOrderHold(
-            [current_time, current_time + 5.0], np.vstack((q, q0)).T)
+            [current_time, current_time + 3.0, current_time + 6.0], np.vstack((q, q_clearance, q_shelf)).T)
         state.get_mutable_abstract_state(int(
             self._traj_q_index)).set_value(q_traj)
 
@@ -170,7 +178,7 @@ class Planner(LeafSystem):
     #     print("Placing")
     #     state.get_mutable_abstract_state(int(
     #         self._mode_index)).set_value(
-    #             planner_state.PlannerState.GO_HOME)
+    #             PlannerState.GO_HOME)
     #     q_current = self.get_input_port(self._iiwa_position_index).Eval(context)
     #     q_clearance = copy(context.get_discrete_state(self._q0_index).get_value())
     #     q_clearance[:3] = (q_current[0], q_current[1] + 0.1, 0)
@@ -212,7 +220,7 @@ class Planner(LeafSystem):
 
         # pick pose calculation
         cost = np.inf
-        mode = planner_state.PlannerState.PICKING_FROM_SHELF_1
+        mode = PlannerState.PICKING_FROM_SHELF_1
         for i in range(5):
             cost, X_G["pick"] = self.get_input_port(
                 self._x_bin_grasp_index).Eval(context)
@@ -231,7 +239,7 @@ class Planner(LeafSystem):
         #self.FreezeBase(context)
 
         # place pose calculation
-        if mode == planner_state.PlannerState.PICKING_FROM_SHELF_1:
+        if mode == PlannerState.PICKING_FROM_SHELF_1:
             x_range = np.array([.35, .6])
             y_range = np.array([-.1, .1])
 
@@ -307,7 +315,7 @@ class Planner(LeafSystem):
         opened = np.array([0.107])
         closed = np.array([0.0])
 
-        if mode == planner_state.PlannerState.GO_HOME:
+        if mode == PlannerState.GO_HOME:
             # Command the open position
             output.SetFromVector([opened])
             return
@@ -330,7 +338,7 @@ class Planner(LeafSystem):
     def CalcControlMode(self, context, output):
         mode = context.get_abstract_state(int(self._mode_index)).get_value()
 
-        if mode == planner_state.PlannerState.GO_HOME or mode == planner_state.PlannerState.GO_TO_SHELF:
+        if mode == PlannerState.GO_HOME or mode == PlannerState.GO_TO_SHELF:
             output.set_value(InputPortIndex(2))  # Go Home
         else:
             output.set_value(InputPortIndex(1))  # Diff IK
@@ -338,7 +346,7 @@ class Planner(LeafSystem):
     def CalcDiffIKReset(self, context, output):
         mode = context.get_abstract_state(int(self._mode_index)).get_value()
 
-        if mode == planner_state.PlannerState.GO_HOME or mode == planner_state.PlannerState.GO_TO_SHELF:
+        if mode == PlannerState.GO_HOME or mode == PlannerState.GO_TO_SHELF:
             output.set_value(True)
         else:
             output.set_value(False)

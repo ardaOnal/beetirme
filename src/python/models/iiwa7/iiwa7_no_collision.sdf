@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <sdf version="1.7">
   <model name="iiwa7">
-    <link name="mobile_base_link">
+    <link name="mobile_base_link_0">
       <inertial>
         <mass>1</mass>
         <inertia>
@@ -16,13 +16,43 @@
       <gravity>1</gravity>
     </link>
     <joint name="mobile_base_joint_x" type="prismatic">
-      <child>mobile_base_link</child>
+      <child>mobile_base_link_0</child>
       <parent>world</parent>
       <axis>
         <xyz expressed_in="__model__">1 0 0</xyz>
         <limit>
-          <lower>-1</lower>
-          <upper>1</upper>
+          <effort>10</effort>
+          <stiffness>15000</stiffness>
+          <velocity>1</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.0</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="mobile_base_link_1">
+      <inertial>
+        <mass>1</mass>
+        <inertia>
+          <ixx>0.0041666666666666675</ixx>
+          <ixy>0.0</ixy>
+          <ixz>0.0</ixz>
+          <iyy>0.0041666666666666675 </iyy>
+          <iyz>0.0</iyz>
+          <izz>0.001666666666666667</izz>
+        </inertia>
+      </inertial>
+      <gravity>1</gravity>
+    </link>
+    <joint name="mobile_base_joint_y" type="prismatic">
+      <child>mobile_base_link_1</child>
+      <parent>mobile_base_link_0</parent>
+      <axis>
+        <xyz expressed_in="__model__">0 1 0</xyz>
+        <limit>
           <effort>10</effort>
           <stiffness>15000</stiffness>
           <velocity>1</velocity>
@@ -63,15 +93,13 @@
       <velocity_decay />
       <self_collide>0</self_collide>
     </link>
-    <joint name="mobile_base_joint_y" type="prismatic">
+    <joint name="mobile_base_joint_r" type="revolute">
       <child>iiwa_link_0</child>
-      <parent>mobile_base_link</parent>
+      <parent>mobile_base_link_1</parent>
       <axis>
-        <xyz expressed_in="__model__">0 1 0</xyz>
+        <xyz expressed_in="__model__">0 0 1</xyz>
         <limit>
-          <lower>-1</lower>
-          <upper>1</upper>
-          <effort>10</effort>
+          <effort>300</effort>
           <stiffness>15000</stiffness>
           <velocity>1</velocity>
         </limit>

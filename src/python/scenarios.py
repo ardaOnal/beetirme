@@ -31,7 +31,7 @@ ycb = [
     "006_mustard_bottle.sdf", "009_gelatin_box.sdf", "010_potted_meat_can.sdf"
 ]
 
-JOINT_COUNT = 9
+JOINT_COUNT = 10
 
 def AddIiwa(plant, collision_model="no_collision", fixed=False):
     sdf_path = FindResourceOrThrow(
@@ -47,7 +47,7 @@ def AddIiwa(plant, collision_model="no_collision", fixed=False):
         #plant.WeldFrames(plant.world_frame(), plant.GetFrameByName("iiwa_link_0"))
 
     # Set default positions:
-    q0 = [-1.57, 0.1, 0.0, -1.4, 0, 1.6, 0]
+    q0 = [0, -1.57, 0.1, 0.0, -1.4, 0, 1.6, 0]
     index = 0
     for joint_index in plant.GetJointIndices(iiwa):
         joint = plant.get_mutable_joint(joint_index)
@@ -466,7 +466,7 @@ def AddIiwaDifferentialIK(builder, plant, frame=None):
     params.set_end_effector_translational_velocity_limits([-2, -2, -2],
                                                             [2, 2, 2])
     
-    if plant.num_actuators() == JOINT_COUNT:
+    if False:#plant.num_actuators() == JOINT_COUNT:
         position_lower_limits = np.array([-1, -0.1, -4, -2.0944,-2.96706, -2.0944, -2.96706, -2.0944, -3.05433])
         position_upper_limits = np.array([0.1, 1, 4, 2.0944, 2.96706, 2.0944, 2.96706, 2.0944, 3.05433])
         params.set_joint_position_limits((position_lower_limits, position_upper_limits))
@@ -480,7 +480,7 @@ def AddIiwaDifferentialIK(builder, plant, frame=None):
         params.set_joint_centering_gain(10 * np.eye(JOINT_COUNT))
     else: # fixed base
         print("num pos", plant.num_joints())
-        iiwa14_velocity_limits = np.array([0, 0, 1.4, 1.4, 1.7, 1.3, 2.2, 2.3, 2.3])
+        iiwa14_velocity_limits = np.array([0, 0, 0, 1.4, 1.4, 1.7, 1.3, 2.2, 2.3, 2.3])
         params.set_joint_velocity_limits( 
             (-iiwa14_velocity_limits, iiwa14_velocity_limits))
         params.set_joint_centering_gain(10 * np.eye(JOINT_COUNT))
