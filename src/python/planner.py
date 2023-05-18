@@ -10,7 +10,7 @@ from enum import Enum
 
 import pick
 
-SHELF_1 = (1, 1, np.pi/2)
+#SHELF_1 = (2.5, 1, np.pi/2)
 
 class PlannerState(Enum):
     WAIT_FOR_OBJECTS_TO_SETTLE = 1
@@ -19,7 +19,7 @@ class PlannerState(Enum):
     GO_HOME = 4
 
 class Planner(LeafSystem):
-    def __init__(self, plant, joint_count, meshcat, rs, prepick_distance):
+    def __init__(self, plant, joint_count, meshcat, rs, prepick_distance, shelf_poses):
         LeafSystem.__init__(self)
         self._gripper_body_index = plant.GetBodyByName("body").index()
         self.DeclareAbstractInputPort(
@@ -28,6 +28,7 @@ class Planner(LeafSystem):
             "x_bin_grasp", AbstractValue.Make(
                 (np.inf, RigidTransform()))).get_index()
         self._wsg_state_index = self.DeclareVectorInputPort("wsg_state", 2).get_index()
+        self.DeclareAbstractInputPort("shelf_id", AbstractValue.Make(0))
 
         self._mode_index = self.DeclareAbstractState(
             AbstractValue.Make(PlannerState.WAIT_FOR_OBJECTS_TO_SETTLE))
@@ -68,6 +69,7 @@ class Planner(LeafSystem):
         self.meshcat = meshcat
         self.rs = rs
         self.prepick_distance = prepick_distance
+        self.shelf_poses = shelf_poses
 
     def Update(self, context, state):
         if self._simulation_done:
@@ -83,7 +85,8 @@ class Planner(LeafSystem):
             if context.get_time() - times["initial"] > 1.0:
                 self.Plan(context, state)
             else:
-                self.GoToShelf(context, state)
+                shelf_id = self.GetInputPort("shelf_id").Eval(context)
+                self.GoToShelf(context, state, shelf_id)
             return          
         elif mode == PlannerState.GO_HOME or mode == PlannerState.GO_TO_SHELF:
             traj_q = context.get_mutable_abstract_state(int(
@@ -158,19 +161,24 @@ class Planner(LeafSystem):
             self._traj_q_index)).set_value(q_traj)
 
 
-    def GoToShelf(self, context, state):
+    def GoToShelf(self, context, state, shelf_id):
         print("Going to shelf.")
         state.get_mutable_abstract_state(int(
             self._mode_index)).set_value(
                 PlannerState.GO_HOME)
+        
+        shelf_pose = self.shelf_poses[shelf_id]
+        xy = shelf_pose.translation()[:2]
+        rotation = RollPitchYaw(shelf_pose.rotation()).yaw_angle()
+
         q = self.get_input_port(self._iiwa_position_index).Eval(context)
         q_clearance = copy(q)
-        q_clearance[2] = SHELF_1[2]
+        q_clearance[2] = rotation
         q_shelf = copy(q_clearance)
-        q_shelf[:2] = SHELF_1[:2]
+        q_shelf[:2] = xy
         current_time = context.get_time()
         q_traj = PiecewisePolynomial.FirstOrderHold(
-            [current_time, current_time + 3.0, current_time + 6.0], np.vstack((q, q_clearance, q_shelf)).T)
+            [current_time, current_time + 3.0, current_time + 8.0], np.vstack((q, q_clearance, q_shelf)).T)
         state.get_mutable_abstract_state(int(
             self._traj_q_index)).set_value(q_traj)
 
@@ -243,11 +251,14 @@ class Planner(LeafSystem):
             x_range = np.array([.35, .6])
             y_range = np.array([-.1, .1])
 
-            x_range += SHELF_1[0]
-            y_range += SHELF_1[1]
+            # x_range += SHELF_1[0]
+            # y_range += SHELF_1[1]
+
+            shelf_id = self.GetInputPort("shelf_id").Eval(context)
+            X_shelf = self.shelf_poses[shelf_id]
 
             # Place in Y bin:
-            X_G["place"] = RigidTransform(
+            X_G["place"] = X_shelf @ RigidTransform(
                 RollPitchYaw(-np.pi / 2, 0, np.pi / 2),
                 [self.rs.uniform(x_range[0], x_range[1]),
                  self.rs.uniform(y_range[0], y_range[1]),

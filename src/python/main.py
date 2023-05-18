@@ -3,11 +3,13 @@ import numpy as np
 import os
 
 from pydrake.all import (DiagramBuilder, MeshcatVisualizer, PortSwitch, Simulator, StartMeshcat, 
-                         MultibodyPlant, Multiplexer, Demultiplexer, ConstantValueSource, AbstractValue)
+                         MultibodyPlant, Multiplexer, Demultiplexer, ConstantValueSource, AbstractValue,
+                         RigidTransform, RollPitchYaw)
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import plot, draw, show, ion
 import pydot
 from IPython.display import HTML, SVG, display                         
+from manipulation.meshcat_utils import AddMeshcatTriad
 
 from manipulation import running_as_notebook
 from manipulation.scenarios import  ycb
@@ -35,7 +37,7 @@ rs = np.random.RandomState()
 SAVE_DIAGRAM_SVG = False
 PREPICK_DISTANCE = 0.12
 ITEM_COUNT = 3  # number of items to be generated
-MAX_TIME = 10  # max duration after which the simulation is forced to end (recommended: ITEM_COUNT * 31)
+MAX_TIME = 150 # max duration after which the simulation is forced to end (recommended: ITEM_COUNT * 31)
 
 def clutter_clearing_demo():
     meshcat.Delete()
@@ -62,7 +64,7 @@ def clutter_clearing_demo():
 
     elif CONFIG == 1:
         side_shelf_count = 3
-        no_of_sides = 2
+        no_of_sides = 1
         num_shelves = side_shelf_count * no_of_sides
         camera_per_shelf = 4
         camera_count = num_shelves * camera_per_shelf
@@ -113,24 +115,33 @@ directives:
                               for shelf_no in range(1, num_shelves+1) for camera_no in range(camera_per_shelf)
                       ], cropPointA=cropPointA, cropPointB=cropPointB, meshcat=meshcat, running_as_notebook=running_as_notebook, camera_count=camera_count,
                         diag=diag, station=station, camera_per_shelf=camera_per_shelf, num_shelves=num_shelves))
-    
-    cons = builder.AddSystem(ConstantValueSource(AbstractValue.Make(3)))
-    builder.Connect(cons.get_output_port(0), x_bin_grasp_selector.GetInputPort("shelf_id"))
 
     for shelf_id in range(1, num_shelves+1):
         for i in range(4):
             builder.Connect(station.GetOutputPort(f"camera{i}_{shelf_id}_point_cloud"), x_bin_grasp_selector.GetInputPort(f"cloud{i}_s{shelf_id}"))
-        builder.Connect(station.GetOutputPort(f"camera1_{shelf_id}_rgb_image"), x_bin_grasp_selector.GetInputPort(f"rgb_s{shelf_id}"))
-        builder.Connect(station.GetOutputPort(f"camera1_{shelf_id}_depth_image"), x_bin_grasp_selector.GetInputPort(f"depth_s{shelf_id}"))
+        builder.Connect(station.GetOutputPort(f"camera0_{shelf_id}_rgb_image"), x_bin_grasp_selector.GetInputPort(f"rgb_s{shelf_id}"))
+        builder.Connect(station.GetOutputPort(f"camera0_{shelf_id}_depth_image"), x_bin_grasp_selector.GetInputPort(f"depth_s{shelf_id}"))
         
     builder.Connect(station.GetOutputPort("body_poses"), x_bin_grasp_selector.GetInputPort("body_poses"))
 
+    shelf_poses = {}
+    con = plant.CreateDefaultContext()
+    for shelf_id in range(1, num_shelves+1):
+        X_shelf = plant.GetFrameByName(f"shelves{shelf_id}_origin").CalcPoseInWorld(con) @ RigidTransform(RollPitchYaw(0, 0, -np.pi/2), [0.5, 0, -.6085])
+        AddMeshcatTriad(meshcat, f"shelf{shelf_id}", X_PT=X_shelf)
+        shelf_poses[shelf_id] = X_shelf
+
     # Add planner
-    planner = builder.AddSystem(planner_class.Planner(plant, JOINT_COUNT, meshcat, rs, PREPICK_DISTANCE))
+    planner = builder.AddSystem(planner_class.Planner(plant, JOINT_COUNT, meshcat, rs, PREPICK_DISTANCE, shelf_poses))
     builder.Connect(station.GetOutputPort("body_poses"), planner.GetInputPort("body_poses"))
     builder.Connect(x_bin_grasp_selector.get_output_port(), planner.GetInputPort("x_bin_grasp"))
     builder.Connect(station.GetOutputPort("wsg_state_measured"), planner.GetInputPort("wsg_state"))
     builder.Connect(station.GetOutputPort("iiwa_position_measured"), planner.GetInputPort("iiwa_position"))
+
+    # Provide shelf id input to grasp selector and planner
+    cons = builder.AddSystem(ConstantValueSource(AbstractValue.Make(3)))
+    builder.Connect(cons.get_output_port(0), x_bin_grasp_selector.GetInputPort("shelf_id"))
+    builder.Connect(cons.get_output_port(0), planner.GetInputPort("shelf_id"))
 
     # The DiffIK and the direct position-control modes go through a PortSwitch
     switch = builder.AddSystem(PortSwitch(JOINT_COUNT))
@@ -209,7 +220,7 @@ directives:
         # z = 3.5
 
         slice_cnt = 0
-        for shelf_index in range(num_shelves):
+        for shelf_index in range(1, num_shelves+1):
             if shelf_index < 6:
                 x = 0
                 y = 0.23
@@ -218,7 +229,7 @@ directives:
                 x = 0.18
                 y = -0.07
                 z = -0.1
-            X_SHELF = plant.GetFrameByName(f"shelves{shelf_index+1}_origin").CalcPoseInWorld(plant_context)
+            X_SHELF = plant.GetFrameByName(f"shelves{shelf_index}_origin").CalcPoseInWorld(plant_context)
             helpers.place_items(shelf_index, slice_cnt, slice_cnt+items_per_shelf, X_SHELF, plant, plant_context, x=x, y=y, z=z, items_per_shelf=items_per_shelf)
             slice_cnt = slice_cnt + items_per_shelf
         
