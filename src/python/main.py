@@ -127,7 +127,7 @@ directives:
     shelf_poses = {}
     con = plant.CreateDefaultContext()
     for shelf_id in range(1, num_shelves+1):
-        X_shelf = plant.GetFrameByName(f"shelves{shelf_id}_origin").CalcPoseInWorld(con) @ RigidTransform(RollPitchYaw(0, 0, -np.pi/2), [0.5, 0, -.6085])
+        X_shelf = plant.GetFrameByName(f"shelves{shelf_id}_origin").CalcPoseInWorld(con) @ RigidTransform(RollPitchYaw(0, 0, -np.pi/2), [0.6, 0, -.6085])
         AddMeshcatTriad(meshcat, f"shelf{shelf_id}", X_PT=X_shelf)
         shelf_poses[shelf_id] = X_shelf
 
@@ -221,8 +221,8 @@ directives:
 
         slice_cnt = 0
         for shelf_index in range(1, num_shelves+1):
-            if shelf_index < 6:
-                x = 0
+            if shelf_index <= 6:
+                x = -0.06
                 y = 0.23
                 z = -0.1
             else:
