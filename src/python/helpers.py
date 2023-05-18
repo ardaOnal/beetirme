@@ -24,7 +24,7 @@ def place_items(shelf_index, start_index, end_index, shelf_frame, plant, plant_c
     print("shelf index: ", shelf_index, " item: ", plant.get_body(sorted(list(plant.GetFloatingBaseBodies()))[start_index]))
     for body_index in range(start_index, end_index):
         coordinate_array = [shelf_frame.translation()[0]+x, shelf_frame.translation()[1]+y, shelf_frame.translation()[2]+z]
-        if shelf_index < 6:
+        if shelf_index <= 6:
             roll = RollPitchYaw(-np.pi/2, 0, 0)
         else:
             roll = RollPitchYaw(-np.pi/2, 0, -np.pi/2)
@@ -37,7 +37,7 @@ def place_items(shelf_index, start_index, end_index, shelf_frame, plant, plant_c
                               plant.get_body(sorted(list(plant.GetFloatingBaseBodies()))[body_index]), # TO DO body index bozuyo
                               tf)
         count += 1
-        if shelf_index < 6:
+        if shelf_index <= 6:
             y -= 0.2
         else:
             x -= 0.2

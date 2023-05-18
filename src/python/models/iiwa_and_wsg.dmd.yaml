@@ -3,9 +3,9 @@ directives:
     name: iiwa
     file: package://grocery/iiwa7/iiwa7_no_collision.sdf
     default_joint_positions:
-        mobile_base_joint_x: [-1]
-        mobile_base_joint_y: [1]
-        mobile_base_joint_r: [-1.57]
+        mobile_base_joint_x: [0]
+        mobile_base_joint_y: [0]
+        mobile_base_joint_r: [3.14]
         iiwa_joint_1: [-1.57]
         iiwa_joint_2: [0.1] # default: 0.1
         iiwa_joint_3: [0]

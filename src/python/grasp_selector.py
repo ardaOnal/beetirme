@@ -75,7 +75,7 @@ class GraspSelector(LeafSystem):
         self.cam_info = []
         self.X_WC_Cam1 = []
         for shelf_id in range(1, num_shelves+1): 
-            cam1 = diag.GetSubsystemByName(f"camera1_{shelf_id}")
+            cam1 = diag.GetSubsystemByName(f"camera0_{shelf_id}")
             self.cam_info.append(cam1.depth_camera_info())
 
             cam1_context = cam1.GetMyMutableContextFromRoot(cntxt31)
@@ -97,10 +97,10 @@ class GraspSelector(LeafSystem):
         u = depth_pixel[:, 1]
         Z = depth_pixel[:, 2]
         # read camera intrinsics
-        cx = self.cam_info[shelf_id].center_x()
-        cy = self.cam_info[shelf_id].center_y()
-        fx = self.cam_info[shelf_id].focal_x()
-        fy = self.cam_info[shelf_id].focal_y()
+        cx = self.cam_info[shelf_id-1].center_x()
+        cy = self.cam_info[shelf_id-1].center_y()
+        fx = self.cam_info[shelf_id-1].focal_x()
+        fy = self.cam_info[shelf_id-1].focal_y()
         X = (u - cx) * Z / fx
         Y = (v - cy) * Z / fy
         pC = np.c_[X, Y, Z]
@@ -116,8 +116,8 @@ class GraspSelector(LeafSystem):
 
         rgb_im = self.GetInputPort(f"rgb_s{shelf_id}").Eval(context).data # TO DO make dynamic
         image_pil = PILImage.fromarray(rgb_im).convert("RGB")
-        #plt.imshow(image_pil)
-        #plt.show()
+        # plt.imshow(image_pil)
+        # plt.show()
 
         text_prompt = 'canned_tomato'
         #text_prompt = 'dark_blue_canned_spaghetti'
@@ -133,11 +133,11 @@ class GraspSelector(LeafSystem):
         largest_sum = [0,0,0]
 
         if len(masks) > 0:
-            for x in range(masks[0].shape[0]):
-                for y in range(masks[0].shape[1]):
-                    if masks[0][x][y] == True and x + y > largest_sum[0]:
+            for x in range(masks[-1].shape[0]):
+                for y in range(masks[-1].shape[1]):
+                    if masks[-1][x][y] == True and x + y > largest_sum[0]:
                         largest_sum = [x+y, x, y]
-                    if masks[0][x][y] == True and x + y < smallest_sum[0]:
+                    if masks[-1][x][y] == True and x + y < smallest_sum[0]:
                         smallest_sum = [x+y, x, y]
 
             print("smallest sum", smallest_sum)
@@ -145,8 +145,8 @@ class GraspSelector(LeafSystem):
 
             np_image = np.array(image_pil)
             result = draw_image(np_image, masks, boxes, phrases)
-            #plt.imshow(result)
-            #plt.show()
+            # plt.imshow(result)
+            # plt.show()
 
             depth_im = self.GetInputPort(f"depth_s{shelf_id}").Eval(context).data.squeeze() # todo
             print("DEPTH IMAGE", depth_im)
@@ -165,9 +165,9 @@ class GraspSelector(LeafSystem):
 
             print("CROP POINTS", pC[smallest_sum[1]][smallest_sum[2]], pC[largest_sum[1]][largest_sum[2]])
 
-            X_Crop1 = self.X_WC_Cam1[shelf_id] @ RigidTransform(pC[smallest_sum[1]][smallest_sum[2]])
+            X_Crop1 = self.X_WC_Cam1[shelf_id-1] @ RigidTransform(pC[smallest_sum[1]][smallest_sum[2]])
             print("CROPPED FRAME1", X_Crop1)
-            X_Crop2 = self.X_WC_Cam1[shelf_id] @ RigidTransform(pC[largest_sum[1]][largest_sum[2]])
+            X_Crop2 = self.X_WC_Cam1[shelf_id-1] @ RigidTransform(pC[largest_sum[1]][largest_sum[2]])
             print("CROPPED FRAME2", X_Crop2)
 
             # Solves: Failure at perception/point_cloud.cc:350 in Crop(): condition '(lower_xyz.array() <= upper_xyz.array()).all()' failed.
