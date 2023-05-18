@@ -17,6 +17,7 @@ from matplotlib.pyplot import plot, draw, show, ion
 
 
 SHELF_HEIGHT_LOWER_LIMIT = 0.36
+SEGMENTATION_TRESHHOLD = 0.4
 
 # Takes 3 point clouds (in world coordinates) as input, and outputs and estimated pose for the items.
 class GraspSelector(LeafSystem):
@@ -121,27 +122,31 @@ class GraspSelector(LeafSystem):
 
         text_prompt = 'canned_tomato'
         #text_prompt = 'dark_blue_canned_spaghetti'
+        print("-----SEGMENTING OBJECTS-----")
         masks, boxes, phrases, logits = self.lang_sam_model.predict(image_pil, text_prompt)
-        print("masks", masks)
-        print("masks shape", masks.shape)
-        print("boxes", boxes)
-        print("phrases", phrases)
-        print("logits", logits)
+        # print("masks", masks)
+        # print("masks shape", masks.shape)
+        # print("boxes", boxes)
+        # print("phrases", phrases)
+        # print("logits", logits)
 
+        selected_index = 0
+        for i in range(len(logits)):
+            if logits[i] > SEGMENTATION_TRESHHOLD:
+                selected_index = i
+
+        print("-----SEGMENTATION COMPLETE-----")
         # compute bottom left and top right corner of the segmented pixel
         smallest_sum = [2**30,0,0] # value and coordinates
         largest_sum = [0,0,0]
 
         if len(masks) > 0:
-            for x in range(masks[-1].shape[0]):
-                for y in range(masks[-1].shape[1]):
+            for x in range(masks[selected_index].shape[0]):
+                for y in range(masks[selected_index].shape[1]):
                     if masks[-1][x][y] == True and x + y > largest_sum[0]:
                         largest_sum = [x+y, x, y]
                     if masks[-1][x][y] == True and x + y < smallest_sum[0]:
                         smallest_sum = [x+y, x, y]
-
-            print("smallest sum", smallest_sum)
-            print("largest sum", largest_sum)
 
             np_image = np.array(image_pil)
             result = draw_image(np_image, masks, boxes, phrases)
@@ -149,8 +154,6 @@ class GraspSelector(LeafSystem):
             # plt.show()
 
             depth_im = self.GetInputPort(f"depth_s{shelf_id}").Eval(context).data.squeeze() # todo
-            print("DEPTH IMAGE", depth_im)
-            print("DEPTH SHAPE", depth_im.shape)
 
             img_h, img_w = depth_im.shape
             v_range = np.arange(img_h)
@@ -163,12 +166,12 @@ class GraspSelector(LeafSystem):
             pC = self.project_depth_to_pC(depth_pnts, shelf_id)
             pC = np.reshape(pC,(480,640,3))
 
-            print("CROP POINTS", pC[smallest_sum[1]][smallest_sum[2]], pC[largest_sum[1]][largest_sum[2]])
+            #print("CROP POINTS", pC[smallest_sum[1]][smallest_sum[2]], pC[largest_sum[1]][largest_sum[2]])
 
             X_Crop1 = self.X_WC_Cam1[shelf_id-1] @ RigidTransform(pC[smallest_sum[1]][smallest_sum[2]])
-            print("CROPPED FRAME1", X_Crop1)
+            #print("CROPPED FRAME1", X_Crop1)
             X_Crop2 = self.X_WC_Cam1[shelf_id-1] @ RigidTransform(pC[largest_sum[1]][largest_sum[2]])
-            print("CROPPED FRAME2", X_Crop2)
+            #print("CROPPED FRAME2", X_Crop2)
 
             # Solves: Failure at perception/point_cloud.cc:350 in Crop(): condition '(lower_xyz.array() <= upper_xyz.array()).all()' failed.
             X_Crop1_Array = [X_Crop1.translation()[0], X_Crop1.translation()[1], X_Crop1.translation()[2]]
@@ -198,8 +201,8 @@ class GraspSelector(LeafSystem):
             if X_Crop1_Array[2] < SHELF_HEIGHT_LOWER_LIMIT:
                 X_Crop1_Array[2] = SHELF_HEIGHT_LOWER_LIMIT
 
-            print(X_Crop1_Array)
-            print(X_Crop2_Array)
+            #print(X_Crop1_Array)
+            #print(X_Crop2_Array)
 
             
             # put spheres to corners of the crop box
@@ -210,6 +213,8 @@ class GraspSelector(LeafSystem):
             self.meshcat.SetTransform("pick1", RigidTransform(a))
             self.meshcat.SetObject("pick2", Sphere(0.01), rgba=Rgba(.1, .9, .1, 1))
             self.meshcat.SetTransform("pick2", RigidTransform(b))
+
+            print("-----CALCULATING GRASP-----")
 
             body_poses = self.GetInputPort("body_poses").Eval(context) # TO DO
             pcd = []
