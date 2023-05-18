@@ -62,7 +62,7 @@ def clutter_clearing_demo():
 
     elif CONFIG == 1:
         side_shelf_count = 3
-        no_of_sides = 2
+        no_of_sides = 3
         num_shelves = side_shelf_count * no_of_sides
         camera_per_shelf = 4
         camera_count = num_shelves * camera_per_shelf
