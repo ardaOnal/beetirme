@@ -15,7 +15,7 @@ GroceryBee is a robot to assist grocery stores in keeping up with their online o
 sudo apt update
 sudo apt install python3 python3-pip python3-virtualenv
 ```
-4) Create a virtual environment in the project's root directory and install the requirements.
+3) Create a virtual environment in the project's root directory and install the requirements.
 ```
 python3 -m venv env
 source env/bin/activate
