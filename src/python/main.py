@@ -139,7 +139,7 @@ directives:
     builder.Connect(station.GetOutputPort("iiwa_position_measured"), planner.GetInputPort("iiwa_position"))
 
     # Provide shelf id input to grasp selector and planner
-    cons = builder.AddSystem(ConstantValueSource(AbstractValue.Make(3)))
+    cons = builder.AddSystem(ConstantValueSource(AbstractValue.Make(2)))
     builder.Connect(cons.get_output_port(0), x_bin_grasp_selector.GetInputPort("shelf_id"))
     builder.Connect(cons.get_output_port(0), planner.GetInputPort("shelf_id"))
 

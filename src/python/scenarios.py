@@ -480,7 +480,7 @@ def AddIiwaDifferentialIK(builder, plant, frame=None):
         params.set_joint_centering_gain(10 * np.eye(JOINT_COUNT))
     else: # fixed base
         print("num pos", plant.num_joints())
-        iiwa14_velocity_limits = np.array([0, 0, 0, 1.4, 1.4, 1.7, 1.3, 2.2, 2.3, 2.3])
+        iiwa14_velocity_limits = np.array([0.01, 0.01, 0, 1.4, 1.4, 1.7, 1.3, 2.2, 2.3, 2.3])
         params.set_joint_velocity_limits( 
             (-iiwa14_velocity_limits, iiwa14_velocity_limits))
         params.set_joint_centering_gain(10 * np.eye(JOINT_COUNT))

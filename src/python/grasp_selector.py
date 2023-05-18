@@ -120,7 +120,7 @@ class GraspSelector(LeafSystem):
         # plt.imshow(image_pil)
         # plt.show()
 
-        text_prompt = 'canned_tomato'
+        text_prompt = 'sugar_box'
         #text_prompt = 'dark_blue_canned_spaghetti'
         print("-----SEGMENTING OBJECTS-----")
         masks, boxes, phrases, logits = self.lang_sam_model.predict(image_pil, text_prompt)
@@ -143,9 +143,9 @@ class GraspSelector(LeafSystem):
         if len(masks) > 0:
             for x in range(masks[selected_index].shape[0]):
                 for y in range(masks[selected_index].shape[1]):
-                    if masks[-1][x][y] == True and x + y > largest_sum[0]:
+                    if masks[selected_index][x][y] == True and x + y > largest_sum[0]:
                         largest_sum = [x+y, x, y]
-                    if masks[-1][x][y] == True and x + y < smallest_sum[0]:
+                    if masks[selected_index][x][y] == True and x + y < smallest_sum[0]:
                         smallest_sum = [x+y, x, y]
 
             np_image = np.array(image_pil)
@@ -234,7 +234,7 @@ class GraspSelector(LeafSystem):
             X_Gs = []
             # TODO(russt): Take the randomness from an input port, and re-enable
             # caching.
-            for i in range(100 if self.running_as_notebook else 2):
+            for i in range(100):
                 cost, X_G = GenerateAntipodalGraspCandidate(
                     self._internal_model, self._internal_model_context,
                     down_sampled_pcd, self._rng)

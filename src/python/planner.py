@@ -152,11 +152,11 @@ class Planner(LeafSystem):
                 PlannerState.GO_HOME)
         q = self.get_input_port(self._iiwa_position_index).Eval(context)
         q0 = copy(context.get_discrete_state(self._q0_index).get_value())
-        q0[:3] = q[:3]  # Safer to not reset the first joint.
+        #q0[:3] = q[:3]  # Safer to not reset the first joint.
 
         current_time = context.get_time()
-        q_traj = PiecewisePolynomial.FirstOrderHold(
-            [current_time, current_time + 5.0], np.vstack((q, q0)).T)
+        q_traj = PiecewisePolynomial.CubicShapePreserving(
+            [current_time, current_time + 5.0], np.vstack((q, q0)).T, True)
         state.get_mutable_abstract_state(int(
             self._traj_q_index)).set_value(q_traj)
 
@@ -177,10 +177,15 @@ class Planner(LeafSystem):
         q_shelf = copy(q_clearance)
         q_shelf[:2] = xy
         current_time = context.get_time()
-        q_traj = PiecewisePolynomial.FirstOrderHold(
-            [current_time, current_time + 3.0, current_time + 8.0], np.vstack((q, q_clearance, q_shelf)).T)
+        q_traj = PiecewisePolynomial.CubicShapePreserving(
+            [current_time, current_time + 3.0, current_time + 8.0, current_time + 9.0], np.vstack((q, q_clearance, q_shelf, q_shelf)).T, True)
         state.get_mutable_abstract_state(int(
             self._traj_q_index)).set_value(q_traj)
+        
+        # update q0
+        q0 = state.get_mutable_discrete_state(
+            int(self._q0_index)).get_mutable_value()
+        q0[:] = q_shelf[:]
 
     # def PlaceItem(self, context, state):
     #     print("Placing")
