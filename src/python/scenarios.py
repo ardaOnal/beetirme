@@ -47,7 +47,7 @@ def AddIiwa(plant, collision_model="no_collision", fixed=False):
         #plant.WeldFrames(plant.world_frame(), plant.GetFrameByName("iiwa_link_0"))
 
     # Set default positions:
-    q0 = [0, -1.57, 0.1, 0.0, -1.4, 0, 1.6, 0]
+    q0 = [3.14, 0, 0.1, 0, -1.4, 0, 1.6, 0]
     index = 0
     for joint_index in plant.GetJointIndices(iiwa):
         joint = plant.get_mutable_joint(joint_index)
