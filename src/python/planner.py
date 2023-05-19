@@ -10,7 +10,7 @@ from enum import Enum
 
 import pick
 
-#SHELF_1 = (2.5, 1, np.pi/2)
+from config import DEBUG_MODE
 
 class PlannerState(Enum):
     WAIT_FOR_OBJECTS_TO_SETTLE = 1
@@ -93,7 +93,7 @@ class Planner(LeafSystem):
         shelf_id = item[1]
 
         if mode == PlannerState.WAIT_FOR_OBJECTS_TO_SETTLE:
-            self.GoToShelf(context, state, shelf_id)
+            self.GoToShelf(context, state, item)
             return          
         elif mode == PlannerState.GO_HOME or mode == PlannerState.GO_TO_SHELF:
             traj_q = context.get_mutable_abstract_state(int(
@@ -102,11 +102,8 @@ class Planner(LeafSystem):
                 if shelf_id == 0: # simulation is done when delivery point is reached
                     self._simulation_done = True
                 else:
-                    self.Plan(context, state, shelf_id)
+                    self.Plan(context, state, item)
             return
-
-        #if abs(current_time - times["place_end"]) < 0.1:
-        #    print(self.get_input_port(self._iiwa_position_index).Eval(context))
 
         # If we are between pick and place and the gripper is closed, then
         # we've missed or dropped the object.  Time to replan.
@@ -124,7 +121,7 @@ class Planner(LeafSystem):
                 
                 attempts[0] += 1
                 #self.GoHome(context, state)
-                self.GoToShelf(context, state, shelf_id)
+                self.GoToShelf(context, state, item)
                 # state.get_mutable_abstract_state(int(
                 #     self._mode_index)).set_value(
                 #         PlannerState.WAIT_FOR_OBJECTS_TO_SETTLE)
@@ -141,7 +138,7 @@ class Planner(LeafSystem):
             self._traj_X_G_index)).get_value()
         if not traj_X_G.is_time_in_range(current_time):
             #self.GoHome(context, state)
-            self.GoToShelf(context, state, shelf_id)
+            self.GoToShelf(context, state, item)
             return
 
         # update the item list after placing an item
@@ -151,7 +148,8 @@ class Planner(LeafSystem):
             item_list = state.get_abstract_state(int(
                 self._item_list_index)).get_value()
             
-            print(item_list.pop(0), "placed--------------------------")
+            placed_item = item_list.pop(0)
+            if DEBUG_MODE: print("Placed", placed_item[0])
             
             state.get_mutable_abstract_state(int(
                 self._item_list_index)).set_value(item_list)
@@ -165,7 +163,7 @@ class Planner(LeafSystem):
         if np.linalg.norm(traj_X_G.GetPose(current_time).translation()
                 - X_G.translation()) > 0.2:
             #self.GoHome(context, state)
-            self.GoToShelf(context, state, shelf_id)
+            self.GoToShelf(context, state, item)
             return
 
     # def GoHome(self, context, state):
@@ -184,40 +182,43 @@ class Planner(LeafSystem):
     #         self._traj_q_index)).set_value(q_traj)
 
 
-    def GoToShelf(self, context, state, shelf_id):
+    def GoToShelf(self, context, state, item):
         state.get_mutable_abstract_state(int(
             self._mode_index)).set_value(
                 PlannerState.GO_HOME)
 
         # compute current and desired (shelf) position
+        shelf_id = item[1]
         shelf_pose = self.shelf_poses[shelf_id]
         xy = shelf_pose.translation()[:2]
         rotation = RollPitchYaw(shelf_pose.rotation()).yaw_angle()
         q = self.get_input_port(self._iiwa_position_index).Eval(context)
-        q_clearance = copy(q)
-        q_clearance[2] = rotation
-        q_shelf = copy(q_clearance)
+        # q_clearance = copy(q)
+        # q_clearance[2] = rotation
+        # q_shelf = copy(q_clearance)
+        q_shelf = copy(context.get_discrete_state(self._q0_index).get_value())
         q_shelf[:2] = xy
+        q_shelf[2] = rotation
 
         if shelf_id == 0:
             print("Going to the delivery point")
         elif np.linalg.norm(q[:2] - q_shelf[:2]) > 0.3:
-            print("Going to shelf", shelf_id)
+            print("Going to shelf", shelf_id, "to pick", item[0])
         else:
             print("Replanning due to large tracking error")
         
         current_time = context.get_time()
         q_traj = PiecewisePolynomial.CubicShapePreserving(
-            [current_time, current_time + 3.0, current_time + 8.0, current_time + 9.0], np.vstack((q, q_clearance, q_shelf, q_shelf)).T, True)
+            [current_time, current_time + 6.0, current_time + 7.0], np.vstack((q, q_shelf, q_shelf)).T, True)
         state.get_mutable_abstract_state(int(
             self._traj_q_index)).set_value(q_traj)
         
-        # update q0
-        q0 = state.get_mutable_discrete_state(
-            int(self._q0_index)).get_mutable_value()
-        q0[:] = q_shelf[:]
+        # # update q0
+        # q0 = state.get_mutable_discrete_state(
+        #     int(self._q0_index)).get_mutable_value()
+        # q0[:] = q_shelf[:]
 
-    def Plan(self, context, state, shelf_id):       
+    def Plan(self, context, state, item):       
         # disable pop block
         state.get_mutable_abstract_state(int(
                 self._pop_block_index)).set_value(False)
@@ -234,9 +235,7 @@ class Planner(LeafSystem):
         for i in range(5):
             cost, X_G["pick"] = self.get_input_port(
                 self._x_bin_grasp_index).Eval(context)
-            
-            #X_G["pick"] = X_G["pick"] @ RigidTransform(RotationMatrix.MakeXRotation(-np.pi / 2))
-            
+                        
             if not np.isinf(cost):
                 break
         
@@ -246,42 +245,38 @@ class Planner(LeafSystem):
             return
         state.get_mutable_abstract_state(int(self._mode_index)).set_value(mode)
 
-        #self.FreezeBase(context)
-
         # place pose calculation
         if mode == PlannerState.PICKING_FROM_SHELF_1:
-            x_range = np.array([.35, .6])
-            y_range = np.array([-.1, .1])
+            x_range = np.array([.4, .55])
+            y_range = np.array([-.05, .05])
 
-            # x_range += SHELF_1[0]
-            # y_range += SHELF_1[1]
-
+            shelf_id = item[1]
             X_shelf = self.shelf_poses[shelf_id]
 
-            # Place in Y bin:
+            # Compute place pose using shelf pose
             X_G["place"] = X_shelf @ RigidTransform(
                 RollPitchYaw(-np.pi / 2, 0, np.pi / 2),
                 [self.rs.uniform(x_range[0], x_range[1]),
                  self.rs.uniform(y_range[0], y_range[1]),
                  0.2])
-                
-            self.meshcat.SetObject("place1", Sphere(0.02), rgba=Rgba(.9, .1, .1, 1))
-            self.meshcat.SetTransform("place1", RigidTransform([x_range[0], y_range[0], 0]))
-            self.meshcat.SetObject("place2", Sphere(0.02), rgba=Rgba(.1, .9, .1, 1))
-            self.meshcat.SetTransform("place2", RigidTransform([x_range[1], y_range[1], 0]))
+            
+            if DEBUG_MODE:
+                self.meshcat.SetObject("place1", Sphere(0.02), rgba=Rgba(.9, .1, .1, 1))
+                self.meshcat.SetTransform("place1", RigidTransform([x_range[0], y_range[0], 0]))
+                self.meshcat.SetObject("place2", Sphere(0.02), rgba=Rgba(.1, .9, .1, 1))
+                self.meshcat.SetTransform("place2", RigidTransform([x_range[1], y_range[1], 0]))
 
         # plan trajectory
         X_G, times = pick.MakeGripperFrames(X_G, t0=context.get_time(), prepick_distance=self.prepick_distance)
         print(
-            f"t={int(context.get_time())}s - Planned {int(times['postplace'] - times['initial'])} seconds trajectory for picking from the shelf."
+            f"t={int(context.get_time())}s - Planned {int(times['postplace'] - times['initial'])} seconds trajectory for picking {item[0]} from shelf {shelf_id}."
         )
         state.get_mutable_abstract_state(int(
             self._times_index)).set_value(times)
 
 
-        if True:  # Useful for debugging
+        if DEBUG_MODE:  # Useful for debugging
             AddMeshcatTriad(self.meshcat, "X_Ginitial", X_PT=X_G["initial"])
-            #AddMeshcatTriad(self.meshcat, "X_Gclearance", X_PT=X_G["clearance"])
             AddMeshcatTriad(self.meshcat, "X_Gprepick", X_PT=X_G["prepick"])
             AddMeshcatTriad(self.meshcat, "X_Gpick", X_PT=X_G["pick"])
             AddMeshcatTriad(self.meshcat, "X_Gpreplace", X_PT=X_G["preplace"])
