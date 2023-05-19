@@ -5,6 +5,7 @@ from tkinter import messagebox
 from tkinter import scrolledtext
 from PIL import Image, ImageTk
 import math
+from collections import defaultdict
 
 # shelf index:  1  item:  <RigidBody_[float] name='base_link_cracker' index=69 model_instance=51>
 # shelf index:  2  item:  <RigidBody_[float] name='base_link_sugar' index=72 model_instance=54>
@@ -16,15 +17,40 @@ import math
 # shelf index:  8  item:  <RigidBody_[float] name='base_link_sugar' index=90 model_instance=72>
 # shelf index:  9  item:  <RigidBody_[float] name='base_link_soup' index=93 model_instance=75>
 
-items_to_shelves = {"cracker": (1, 7), "sugar": (2, 8), "soup": (3, 9), "mustard": (4), "jello": (5), "meat": (6)}
+items_to_shelves = {"cracker": (1), "sugar": (2), "soup": (3), "mustard": (4), "jello": (5), "meat": (6)}
 
-def select_items(inventory, items_per_shelf=3):
+def def_value():
+    return 0
+
+def get_item_inventory(plant):
+    inventory = defaultdict(lambda: 0)
+    
+    for bodyIndex in plant.GetFloatingBaseBodies():
+        name = plant.get_body(bodyIndex).name()
+        if name == "base_link_cracker":
+            inventory["cracker"] += 1
+        elif name == "base_link_sugar":
+            inventory["sugar"] += 1
+        elif name == "base_link_soup":
+            inventory["soup"] += 1
+        elif name == "base_link_mustard":
+            inventory["mustard"] += 1
+        elif name == "base_link_gelatin":
+            inventory["jello"] += 1
+        elif name == "base_link_meat":
+            inventory["meat"] += 1
+    print(inventory)
+    return inventory
+
+def select_items(plant, items_per_shelf=3):
+    inventory = get_item_inventory(plant)
+
     item_names = []
     max_amounts = []
 
-    for item in inventory:
-        item_names.append(item[0]) # item name
-        max_amounts.append(item[1]) # max amount available of that item
+    for name, count in inventory.items():
+        item_names.append(name.capitalize()) # item name
+        max_amounts.append(count) # max amount available of that item
 
     lst = []
 
@@ -161,7 +187,7 @@ def select_items(inventory, items_per_shelf=3):
 inventory = [("Cracker", 6), ("Sugar", 3), ("Soup", 3), ("Mustard", 3), ("Jello", 3), ("Meat", 3)]
 
 # Call the select_items function with the item names and maximum amounts
-print(select_items(inventory))
+#print(select_items(inventory))
 
 
 

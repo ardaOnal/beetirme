@@ -19,7 +19,7 @@ class PlannerState(Enum):
     GO_HOME = 4
 
 class Planner(LeafSystem):
-    def __init__(self, plant, joint_count, meshcat, rs, prepick_distance, shelf_poses, shopping_list=None):
+    def __init__(self, plant, joint_count, meshcat, rs, prepick_distance, shelf_poses, item_list):
         LeafSystem.__init__(self)
         self._gripper_body_index = plant.GetBodyByName("body").index()
         self.DeclareAbstractInputPort(
@@ -45,9 +45,8 @@ class Planner(LeafSystem):
         self.DeclareVectorOutputPort("wsg_position", 1, self.CalcWsgPosition)
 
         # For shopping list
-        shopping_list = [("sugar_box", 2), ("canned_tomato", 3)]
-        shopping_list.append(("", 0)) # to go to the delivery point
-        self._item_list_index = self.DeclareAbstractState(AbstractValue.Make(shopping_list))
+        item_list.append(("", 0)) # to go to the delivery point
+        self._item_list_index = self.DeclareAbstractState(AbstractValue.Make(item_list))
         self._pop_block_index = self.DeclareAbstractState(AbstractValue.Make(False))
         self.DeclareAbstractOutputPort("item", lambda: AbstractValue.Make(("", 0)),
             self.CalcItemToPick, {self.all_state_ticket()})
@@ -202,9 +201,12 @@ class Planner(LeafSystem):
 
         if shelf_id == 0:
             print("Going to the delivery point")
-        elif np.linalg.norm(q[:2] - q_shelf[:2]) > 0.3:
+        elif np.linalg.norm(q[:2] - q_shelf[:2]) > 0.4:
             print("Going to shelf", shelf_id, "to pick", item[0])
         else:
+            xy = (shelf_pose @ RigidTransform([-.25, 0, 0])).translation()[:2]
+            q_shelf[:2] = xy
+            #q_shelf[3] = -1.57
             print("Replanning due to large tracking error")
         
         current_time = context.get_time()

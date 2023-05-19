@@ -22,6 +22,7 @@ import nodiffik_warnings
 import planner as planner_class
 import helpers
 import models.env_generation as env
+from parse_list import select_items
 
 import pydot
 from IPython.display import HTML, SVG, display
@@ -122,8 +123,16 @@ directives:
         shelf_poses[shelf_id] = X_shelf
         if DEBUG_MODE: AddMeshcatTriad(meshcat, f"shelf{shelf_id}", X_PT=X_shelf)
 
+    # select items from GUI
+    shopping_list = select_items(plant, items_per_shelf)
+    item_list = []
+    for item in shopping_list:
+        for i in range(item[1]):
+            item_list.append((item[0], item[2]))
+    print(item_list)
+
     # Add planner
-    planner = builder.AddSystem(planner_class.Planner(plant, JOINT_COUNT, meshcat, rs, PREPICK_DISTANCE, shelf_poses))
+    planner = builder.AddSystem(planner_class.Planner(plant, JOINT_COUNT, meshcat, rs, PREPICK_DISTANCE, shelf_poses, item_list))
     builder.Connect(station.GetOutputPort("body_poses"), planner.GetInputPort("body_poses"))
     builder.Connect(grasp_selector.get_output_port(), planner.GetInputPort("x_bin_grasp"))
     builder.Connect(station.GetOutputPort("wsg_state_measured"), planner.GetInputPort("wsg_state"))
