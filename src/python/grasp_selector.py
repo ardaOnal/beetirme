@@ -26,7 +26,7 @@ class GraspSelector(LeafSystem):
         model_point_cloud = AbstractValue.Make(PointCloud(0))
         cntxt31 = diag.CreateDefaultContext()
         # rgb_im = station.GetOutputPort('camera1_{}_rgb_image'.format(1)).Eval(cntxt31).data
-        self.DeclareAbstractInputPort("shelf_id", AbstractValue.Make(0))
+        self.DeclareAbstractInputPort("item", AbstractValue.Make(("", 0)))
 
         index = 0
         for shelf_id in range(1, num_shelves+1):
@@ -112,7 +112,7 @@ class GraspSelector(LeafSystem):
     #     output.set_value((np.inf, RigidTransform()))
 
     def SelectGrasp(self, context, output):
-        shelf_id = self.GetInputPort("shelf_id").Eval(context)
+        shelf_id = self.GetInputPort("item").Eval(context)[1]
         print("shelf", shelf_id)
 
         rgb_im = self.GetInputPort(f"rgb_s{shelf_id}").Eval(context).data # TO DO make dynamic
@@ -120,7 +120,9 @@ class GraspSelector(LeafSystem):
         # plt.imshow(image_pil)
         # plt.show()
 
-        text_prompt = 'sugar_box'
+        text_prompt = self.GetInputPort("item").Eval(context)[0]
+        print("=============picking", text_prompt)
+        #text_prompt = 'sugar_box'
         #text_prompt = 'dark_blue_canned_spaghetti'
         print("-----SEGMENTING OBJECTS-----")
         masks, boxes, phrases, logits = self.lang_sam_model.predict(image_pil, text_prompt)
