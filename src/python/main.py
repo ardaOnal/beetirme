@@ -124,7 +124,7 @@ directives:
         
     builder.Connect(station.GetOutputPort("body_poses"), x_bin_grasp_selector.GetInputPort("body_poses"))
 
-    shelf_poses = {}
+    shelf_poses = {0: RigidTransform()}
     con = plant.CreateDefaultContext()
     for shelf_id in range(1, num_shelves+1):
         X_shelf = plant.GetFrameByName(f"shelves{shelf_id}_origin").CalcPoseInWorld(con) @ RigidTransform(RollPitchYaw(0, 0, -np.pi/2), [0.6, 0, -.6085])
@@ -139,9 +139,8 @@ directives:
     builder.Connect(station.GetOutputPort("iiwa_position_measured"), planner.GetInputPort("iiwa_position"))
 
     # Provide shelf id input to grasp selector and planner
-    cons = builder.AddSystem(ConstantValueSource(AbstractValue.Make(2)))
-    builder.Connect(cons.get_output_port(0), x_bin_grasp_selector.GetInputPort("shelf_id"))
-    builder.Connect(cons.get_output_port(0), planner.GetInputPort("shelf_id"))
+    #cons = builder.AddSystem(ConstantValueSource(AbstractValue.Make(2)))
+    builder.Connect(planner.GetOutputPort("item"), x_bin_grasp_selector.GetInputPort("item"))
 
     # The DiffIK and the direct position-control modes go through a PortSwitch
     switch = builder.AddSystem(PortSwitch(JOINT_COUNT))
