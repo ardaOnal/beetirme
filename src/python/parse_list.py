@@ -4,6 +4,7 @@ from tkinter import filedialog
 from tkinter import messagebox
 from tkinter import scrolledtext
 from PIL import Image, ImageTk
+import math
 
 # shelf index:  1  item:  <RigidBody_[float] name='base_link_cracker' index=69 model_instance=51>
 # shelf index:  2  item:  <RigidBody_[float] name='base_link_sugar' index=72 model_instance=54>
@@ -17,7 +18,7 @@ from PIL import Image, ImageTk
 
 items_to_shelves = {"cracker": (1, 7), "sugar": (2, 8), "soup": (3, 9), "mustard": (4), "jello": (5), "meat": (6)}
 
-def select_items(inventory):
+def select_items(inventory, items_per_shelf=3):
     item_names = []
     max_amounts = []
 
@@ -37,9 +38,19 @@ def select_items(inventory):
                 item_name = item.lower()
                 shelf_id = items_to_shelves[item_name]
                 if type(shelf_id) is not int:
-                    shelf_id = random.choice(shelf_id)
-                item = (item_name, amount, shelf_id)  # item name, amount, shelf_id
-                lst.append(item)
+                    shelves = math.ceil(amount / items_per_shelf)
+                    if shelves == 1:
+                        shelf_id = random.choice(shelf_id)
+                        added = [(item_name, amount, shelf_id)]  # item name, amount, shelf_id
+                    else:
+                        added = []
+                        remaining = amount
+                        for j in range(shelves):
+                            added.append((item_name, items_per_shelf if remaining >= items_per_shelf else remaining, shelf_id[j]))
+                            remaining -= items_per_shelf
+                else:
+                    added = [(item, amount, shelf_id)]
+                lst += added
 
     def exit_program():
         root.quit()
@@ -146,7 +157,7 @@ def select_items(inventory):
 
 
 # Example usage:
-inventory = [("Cracker", 3), ("Sugar", 3), ("Soup", 3), ("Mustard", 3), ("Jello", 3), ("Meat", 3)]
+inventory = [("Cracker", 6), ("Sugar", 3), ("Soup", 3), ("Mustard", 3), ("Jello", 3), ("Meat", 3)]
 
 # Call the select_items function with the item names and maximum amounts
 print(select_items(inventory))
