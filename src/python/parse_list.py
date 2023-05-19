@@ -75,7 +75,7 @@ def select_items(inventory):
     items_frame = Frame(canvas)
     items_frame.pack(anchor=NW, pady=20)
 
-    max_label_width = max([len(item) for item in item_names])  # Get the maximum label width
+    max_label_width = max([len(f"{item} (stock: {max_amounts[index]})") for index, item in enumerate(item_names)])  # Get the maximum label width
 
     images = [
         Image.open("src/python/images/cracker.jpg"),
@@ -101,15 +101,15 @@ def select_items(inventory):
         item_frame = Frame(items_frame)
         item_frame.pack(pady=5)
 
-        label = Label(item_frame, text=item, font=label_font, width=max_label_width, anchor="w")
-        label.pack(side=LEFT, padx=5)
-
-        spinner = Spinbox(item_frame, from_=0, to=max_amount, font=spinner_font, width=7, textvariable=var,
-                          validate='key', validatecommand=(item_frame.register(validate_spinbox), '%P', max_amount))
-        spinner.pack(side=LEFT, padx=5)
-
         image_label = Label(item_frame, image=photo_images[i])
         image_label.pack(side=LEFT, padx=5)
+
+        label = Label(item_frame, text=f"{item} (stock: {max_amount})", font=label_font, width=max_label_width, anchor="w")
+        label.pack(side=LEFT)
+
+        spinner = Spinbox(item_frame, from_=0, to=max_amount, font=spinner_font, width=5, textvariable=var,
+                          validate='key', validatecommand=(item_frame.register(validate_spinbox), '%P', max_amount))
+        spinner.pack(side=LEFT)
 
     canvas.create_window((0, 0), window=items_frame, anchor=NW)
 
