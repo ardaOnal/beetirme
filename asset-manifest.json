@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.js": "/grocery-bee/static/js/main.3b9fc349.js",
+    "main.js": "/grocery-bee/static/js/main.1b972522.js",
     "static/media/T2323_Analysis_Requirements_Report.pdf": "/grocery-bee/static/media/T2323_Analysis_Requirements_Report.a1c4d61ad378e00193c4.pdf",
     "static/media/T2323_Project_Specification_Document.pdf": "/grocery-bee/static/media/T2323_Project_Specification_Document.5574b006267876d4ad84.pdf",
+    "static/media/T2323_FinalReport.pdf": "/grocery-bee/static/media/T2323_FinalReport.90d93a051fa0afc68a9b.pdf",
     "static/media/T2323_Detail_Design_Document.pdf": "/grocery-bee/static/media/T2323_Detail_Design_Document.8ecd8f3f4ee75479d78f.pdf",
-    "static/media/iiwa.jpg": "/grocery-bee/static/media/iiwa.8b2f09302f798f74a922.jpg",
     "static/media/erhanDolak.jpg": "/grocery-bee/static/media/erhanDolak.b567200025cdc0005207.jpg",
     "static/media/ozgurOguz.jpg": "/grocery-bee/static/media/ozgurOguz.09787be1954e26121fee.jpg",
     "static/media/efeBeydogan.jpg": "/grocery-bee/static/media/efeBeydogan.9c216912557e35b79f90.jpg",
@@ -13,9 +13,9 @@
     "static/media/emirMelihErdem.jpg": "/grocery-bee/static/media/emirMelihErdem.29d19f098b6c75461df8.jpg",
     "static/media/ardaOnal.jpg": "/grocery-bee/static/media/ardaOnal.9e89a28c3dca45f2e9c5.jpg",
     "index.html": "/grocery-bee/index.html",
-    "main.3b9fc349.js.map": "/grocery-bee/static/js/main.3b9fc349.js.map"
+    "main.1b972522.js.map": "/grocery-bee/static/js/main.1b972522.js.map"
   },
   "entrypoints": [
-    "static/js/main.3b9fc349.js"
+    "static/js/main.1b972522.js"
   ]
 }
