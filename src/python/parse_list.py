@@ -51,6 +51,7 @@ def select_items(inventory, items_per_shelf=3):
                 else:
                     added = [(item, amount, shelf_id)]
                 lst += added
+        root.quit()
 
     def exit_program():
         root.quit()
