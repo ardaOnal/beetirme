@@ -15,20 +15,20 @@ import torchvision.transforms.functional as Tf
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import plot, draw, show, ion
 
+from config import DEBUG_MODE
 
 SHELF_HEIGHT_LOWER_LIMIT = 0.36
-SEGMENTATION_TRESHHOLD = 0.4
+SEGMENTATION_THRESHOLD = 0.4
 
 # Takes 3 point clouds (in world coordinates) as input, and outputs and estimated pose for the items.
 class GraspSelector(LeafSystem):
-    def __init__(self, plant, shelf_instance, camera_count, camera_body_indices, cropPointA, cropPointB, meshcat, running_as_notebook, diag, station, camera_per_shelf, num_shelves):
+    def __init__(self, plant, shelf_instance, camera_count, camera_body_indices, meshcat, running_as_notebook, diag, station, camera_per_shelf, num_shelves):
         LeafSystem.__init__(self)
         model_point_cloud = AbstractValue.Make(PointCloud(0))
         cntxt31 = diag.CreateDefaultContext()
         # rgb_im = station.GetOutputPort('camera1_{}_rgb_image'.format(1)).Eval(cntxt31).data
         self.DeclareAbstractInputPort("item", AbstractValue.Make(("", 0)))
 
-        index = 0
         for shelf_id in range(1, num_shelves+1):
             for i in range(4):
                 self.DeclareAbstractInputPort(f"cloud{i}_s{shelf_id}", model_point_cloud)
@@ -44,25 +44,9 @@ class GraspSelector(LeafSystem):
 
         port.disable_caching_by_default()
 
-        # Compute crop box.
-        context = plant.CreateDefaultContext()
-        X_B = RigidTransform([0,0,0])
-        a = X_B.multiply(cropPointA)
-        b = X_B.multiply(cropPointB)
-
         self.station = station
         self.diag = diag
         self.cntxt31 = diag.CreateDefaultContext()
-
-        
-        # corners of the crop box
-        meshcat.SetObject("pick1", Sphere(0.01), rgba=Rgba(.9, .1, .1, 1))
-        meshcat.SetTransform("pick1", RigidTransform(a))
-        meshcat.SetObject("pick2", Sphere(0.01), rgba=Rgba(.1, .9, .1, 1))
-        meshcat.SetTransform("pick2", RigidTransform(b))
-
-        self._crop_lower = np.minimum(a,b)
-        self._crop_upper = np.maximum(a,b)
 
         self._internal_model = helpers.make_internal_model()
         self._internal_model_context = self._internal_model.CreateDefaultContext()
@@ -113,7 +97,7 @@ class GraspSelector(LeafSystem):
 
     def SelectGrasp(self, context, output):
         shelf_id = self.GetInputPort("item").Eval(context)[1]
-        print("shelf", shelf_id)
+        # print("shelf", shelf_id)
 
         rgb_im = self.GetInputPort(f"rgb_s{shelf_id}").Eval(context).data # TO DO make dynamic
         image_pil = PILImage.fromarray(rgb_im).convert("RGB")
@@ -121,10 +105,10 @@ class GraspSelector(LeafSystem):
         # plt.show()
 
         text_prompt = self.GetInputPort("item").Eval(context)[0]
-        print("=============picking", text_prompt)
+        #print("picking", text_prompt)
         #text_prompt = 'sugar_box'
         #text_prompt = 'dark_blue_canned_spaghetti'
-        print("-----SEGMENTING OBJECTS-----")
+        if DEBUG_MODE: print("---Segmenting objects---")
         masks, boxes, phrases, logits = self.lang_sam_model.predict(image_pil, text_prompt)
         # print("masks", masks)
         # print("masks shape", masks.shape)
@@ -134,10 +118,10 @@ class GraspSelector(LeafSystem):
 
         selected_index = 0
         for i in range(len(logits)):
-            if logits[i] > SEGMENTATION_TRESHHOLD:
+            if logits[i] > SEGMENTATION_THRESHOLD:
                 selected_index = i
 
-        print("-----SEGMENTATION COMPLETE-----")
+        if DEBUG_MODE: print("---Segmentation complete---")
         # compute bottom left and top right corner of the segmented pixel
         smallest_sum = [2**30,0,0] # value and coordinates
         largest_sum = [0,0,0]
@@ -211,18 +195,17 @@ class GraspSelector(LeafSystem):
             X_B = RigidTransform([0,0,0])
             a = X_B.multiply(X_Crop1_Array)
             b = X_B.multiply(X_Crop2_Array)
-            self.meshcat.SetObject("pick1", Sphere(0.01), rgba=Rgba(.9, .1, .1, 1))
-            self.meshcat.SetTransform("pick1", RigidTransform(a))
-            self.meshcat.SetObject("pick2", Sphere(0.01), rgba=Rgba(.1, .9, .1, 1))
-            self.meshcat.SetTransform("pick2", RigidTransform(b))
-
-            print("-----CALCULATING GRASP-----")
+            if DEBUG_MODE:
+                self.meshcat.SetObject("pick1", Sphere(0.01), rgba=Rgba(.9, .1, .1, 1))
+                self.meshcat.SetTransform("pick1", RigidTransform(a))
+                self.meshcat.SetObject("pick2", Sphere(0.01), rgba=Rgba(.1, .9, .1, 1))
+                self.meshcat.SetTransform("pick2", RigidTransform(b))
+                print("---Calculating grasp---")
 
             body_poses = self.GetInputPort("body_poses").Eval(context) # TO DO
             pcd = []
             for i in range(4): # TO
                 cloud = self.GetInputPort(f"cloud{i}_s{shelf_id}").Eval(context) # TO DO
-                #pcd.append(cloud.Crop(self._crop_lower, self._crop_upper))
                 pcd.append(cloud.Crop(np.array(X_Crop1_Array), np.array(X_Crop2_Array)))
                 pcd[i].EstimateNormals(radius=0.1, num_closest=30)
 

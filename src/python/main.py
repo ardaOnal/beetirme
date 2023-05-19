@@ -17,7 +17,7 @@ from manipulation.meshcat_utils import MeshcatPoseSliders
                                     
 import scenarios
 from scenarios import JOINT_COUNT
-import grasp_selector
+from grasp_selector import GraspSelector
 import nodiffik_warnings
 import planner as planner_class
 import helpers
@@ -34,17 +34,11 @@ meshcat = StartMeshcat()
 
 rs = np.random.RandomState()
 
-SAVE_DIAGRAM_SVG = False
-PREPICK_DISTANCE = 0.12
-ITEM_COUNT = 3  # number of items to be generated
-MAX_TIME = 150 # max duration after which the simulation is forced to end (recommended: ITEM_COUNT * 31)
+from config import *
 
 def clutter_clearing_demo():
     meshcat.Delete()
     builder = DiagramBuilder()
-    # plant, scene_graph = AddMultibodyPlantSceneGraph(builder, time_step=0.001)
-
-    CONFIG = 1 # 0: row, 1: U shaped shelves
 
     if CONFIG == 0:
         row_count = 3
@@ -60,7 +54,7 @@ def clutter_clearing_demo():
                 shelf_start_point=shelf_start_point, row_increment=row_increment, shelf_increment=shelf_increment)
 
         items_per_shelf = 3
-        ITEM_COUNT = num_shelves * items_per_shelf
+        item_count = num_shelves * items_per_shelf
 
     elif CONFIG == 1:
         side_shelf_count = 3
@@ -71,7 +65,7 @@ def clutter_clearing_demo():
         increment = -1
         shelf_start_point = 3
         items_per_shelf = 3
-        ITEM_COUNT = num_shelves * items_per_shelf
+        item_count = num_shelves * items_per_shelf
         env.maze(start=shelf_start_point, side=side_shelf_count, no_of_sides=no_of_sides, increment=increment)
 
 
@@ -82,8 +76,8 @@ directives:
 """
     i = 0
     object_num = 0
-    # generate ITEM_COUNT items
-    while i < ITEM_COUNT:
+    # generate item_count items
+    while i < item_count:
         # if "cracker_box" in ycb[object_num] or "mustard" in ycb[object_num] or "sugar" in ycb[object_num]:
         #     # skip it. it's just too big!
         #     continue
@@ -101,76 +95,61 @@ directives:
     station = builder.AddSystem(diag)
     plant = station.GetSubsystemByName("plant")
 
-    # point cloud cropbox points
-    cropPointA = [-.28, -.72, 0.36]
-    cropPointB = [0.26, -.47, 0.57]
-
-    x_bin_grasp_selector = builder.AddSystem(
-        grasp_selector.GraspSelector(plant,
-                      #plant.GetModelInstanceByName("shelves1"),
+    grasp_selector = builder.AddSystem(
+        GraspSelector(plant,
                       plant.GetFrameByName("shelves1_origin"),
                       camera_body_indices=[
                           plant.GetBodyIndices(
                               plant.GetModelInstanceByName(f"camera{camera_no}_{shelf_no}"))[0]
                               for shelf_no in range(1, num_shelves+1) for camera_no in range(camera_per_shelf)
-                      ], cropPointA=cropPointA, cropPointB=cropPointB, meshcat=meshcat, running_as_notebook=running_as_notebook, camera_count=camera_count,
+                      ], meshcat=meshcat, running_as_notebook=running_as_notebook, camera_count=camera_count,
                         diag=diag, station=station, camera_per_shelf=camera_per_shelf, num_shelves=num_shelves))
 
     for shelf_id in range(1, num_shelves+1):
         for i in range(4):
-            builder.Connect(station.GetOutputPort(f"camera{i}_{shelf_id}_point_cloud"), x_bin_grasp_selector.GetInputPort(f"cloud{i}_s{shelf_id}"))
-        builder.Connect(station.GetOutputPort(f"camera0_{shelf_id}_rgb_image"), x_bin_grasp_selector.GetInputPort(f"rgb_s{shelf_id}"))
-        builder.Connect(station.GetOutputPort(f"camera0_{shelf_id}_depth_image"), x_bin_grasp_selector.GetInputPort(f"depth_s{shelf_id}"))
+            builder.Connect(station.GetOutputPort(f"camera{i}_{shelf_id}_point_cloud"), grasp_selector.GetInputPort(f"cloud{i}_s{shelf_id}"))
+        builder.Connect(station.GetOutputPort(f"camera0_{shelf_id}_rgb_image"), grasp_selector.GetInputPort(f"rgb_s{shelf_id}"))
+        builder.Connect(station.GetOutputPort(f"camera0_{shelf_id}_depth_image"), grasp_selector.GetInputPort(f"depth_s{shelf_id}"))
         
-    builder.Connect(station.GetOutputPort("body_poses"), x_bin_grasp_selector.GetInputPort("body_poses"))
+    builder.Connect(station.GetOutputPort("body_poses"), grasp_selector.GetInputPort("body_poses"))
 
+    # Determine the pose of the base of the robot when visiting each shelf
     shelf_poses = {0: RigidTransform()}
     con = plant.CreateDefaultContext()
+    X_Shelf_Robot = RigidTransform(RollPitchYaw(0, 0, -np.pi/2), [0.6, 0, -.6085])
     for shelf_id in range(1, num_shelves+1):
-        X_shelf = plant.GetFrameByName(f"shelves{shelf_id}_origin").CalcPoseInWorld(con) @ RigidTransform(RollPitchYaw(0, 0, -np.pi/2), [0.6, 0, -.6085])
-        AddMeshcatTriad(meshcat, f"shelf{shelf_id}", X_PT=X_shelf)
+        X_shelf = plant.GetFrameByName(f"shelves{shelf_id}_origin").CalcPoseInWorld(con) @ X_Shelf_Robot
         shelf_poses[shelf_id] = X_shelf
+        if DEBUG_MODE: AddMeshcatTriad(meshcat, f"shelf{shelf_id}", X_PT=X_shelf)
 
     # Add planner
     planner = builder.AddSystem(planner_class.Planner(plant, JOINT_COUNT, meshcat, rs, PREPICK_DISTANCE, shelf_poses))
     builder.Connect(station.GetOutputPort("body_poses"), planner.GetInputPort("body_poses"))
-    builder.Connect(x_bin_grasp_selector.get_output_port(), planner.GetInputPort("x_bin_grasp"))
+    builder.Connect(grasp_selector.get_output_port(), planner.GetInputPort("x_bin_grasp"))
     builder.Connect(station.GetOutputPort("wsg_state_measured"), planner.GetInputPort("wsg_state"))
     builder.Connect(station.GetOutputPort("iiwa_position_measured"), planner.GetInputPort("iiwa_position"))
 
     # Provide shelf id input to grasp selector and planner
     #cons = builder.AddSystem(ConstantValueSource(AbstractValue.Make(2)))
-    builder.Connect(planner.GetOutputPort("item"), x_bin_grasp_selector.GetInputPort("item"))
+    builder.Connect(planner.GetOutputPort("item"), grasp_selector.GetInputPort("item"))
 
     # The DiffIK and the direct position-control modes go through a PortSwitch
     switch = builder.AddSystem(PortSwitch(JOINT_COUNT))
 
-    if False:
-        # Set up mobile base differential inverse kinematics.
-        robot = station.GetSubsystemByName("iiwa_controller").get_multibody_plant_for_control()
-        diff_ik = scenarios.AddIiwaDifferentialIK(builder, robot)
+    # Set up fixed base differential inverse kinematics.
+    # create fixed plant
+    fixed_plant = MultibodyPlant(time_step=0.001)
+    controller_iiwa = scenarios.AddIiwa(fixed_plant, fixed=True)
+    scenarios.AddWsg(fixed_plant, controller_iiwa, welded=True)
+    fixed_plant.Finalize()
 
-        builder.Connect(planner.GetOutputPort("X_WG"), diff_ik.get_input_port(0))
-        builder.Connect(station.GetOutputPort("iiwa_state_estimated"), diff_ik.GetInputPort("robot_state"))
-        builder.Connect(planner.GetOutputPort("reset_diff_ik"), diff_ik.GetInputPort("use_robot_state"))
+    diff_ik = scenarios.AddIiwaDifferentialIK(builder, fixed_plant)
 
-        builder.Connect(diff_ik.get_output_port(), switch.DeclareInputPort("diff_ik"))
-    else:
-        # Set up fixed base differential inverse kinematics.
-        # create fixed plant
-        fixed_plant = MultibodyPlant(time_step=0.001)
-        controller_iiwa = scenarios.AddIiwa(fixed_plant, fixed=True)
-        scenarios.AddWsg(fixed_plant, controller_iiwa, welded=True)
-        fixed_plant.Finalize()
+    builder.Connect(planner.GetOutputPort("X_WG"), diff_ik.get_input_port(0))
+    builder.Connect(station.GetOutputPort("iiwa_state_estimated"), diff_ik.GetInputPort("robot_state"))
+    builder.Connect(planner.GetOutputPort("reset_diff_ik"), diff_ik.GetInputPort("use_robot_state"))
 
-        diff_ik = scenarios.AddIiwaDifferentialIK(builder, fixed_plant)
-    
-        builder.Connect(planner.GetOutputPort("X_WG"), diff_ik.get_input_port(0))
-        #builder.Connect(iiwa_state_mux.get_output_port(), diff_ik.GetInputPort("robot_state"))
-        builder.Connect(station.GetOutputPort("iiwa_state_estimated"), diff_ik.GetInputPort("robot_state"))
-        builder.Connect(planner.GetOutputPort("reset_diff_ik"), diff_ik.GetInputPort("use_robot_state"))
-
-        builder.Connect(diff_ik.get_output_port(), switch.DeclareInputPort("diff_ik"))
+    builder.Connect(diff_ik.get_output_port(), switch.DeclareInputPort("diff_ik"))
         
 
     builder.Connect(planner.GetOutputPort("wsg_position"), station.GetInputPort("wsg_position"))
