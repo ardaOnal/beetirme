@@ -55,6 +55,32 @@ def grid(row_count=5, row_start_point=-6.6, row_increment=3.3, shelf_row_count=5
 - add_weld:
     parent: camera1_{shelf_no}_origin
     child: camera1_{shelf_no}::base
+
+- add_frame:
+    name: camera2_{shelf_no}_origin
+    X_PF:
+        base_frame: {origin}
+        rotation: !Rpy {{ deg: [-135, 0, 0]}}
+        translation: [.05, -.40, 0.25]
+- add_model:
+    name: camera2_{shelf_no}
+    file: package://grocery/camera_box.sdf
+- add_weld:
+    parent: camera2_{shelf_no}_origin
+    child: camera2_{shelf_no}::base
+
+- add_frame:
+    name: camera3_{shelf_no}_origin
+    X_PF:
+        base_frame: {origin}
+        rotation: !Rpy {{ deg: [-135, 0, 180]}}
+        translation: [.05, .40, 0.25]
+- add_model:
+    name: camera3_{shelf_no}
+    file: package://grocery/camera_box.sdf
+- add_weld:
+    parent: camera3_{shelf_no}_origin
+    child: camera3_{shelf_no}::base
 """
             cur_point += shelf_increment
             shelf_no += 1
