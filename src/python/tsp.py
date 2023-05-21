@@ -22,12 +22,14 @@ def tsp( coordinates):
 
     print(distance)
     print(permutation)
+    return permutation, distance
     # Initialize fitness function object using coords_list
     # fitness_coords = mlrose.TravellingSales(coords = coordinates)
     # problem_fit = mlrose.TSPOpt(length = 8, fitness_fn = fitness_coords,
     #                         maximize=False)
     # best_state, best_fitness = mlrose.genetic_alg(problem_fit, random_state = 2)
     # print('The best state found is: ', best_state)
+
 
 coordinates =[(0,0), (1, 1), (4, 2), (5, 2), (6, 4), (4, 4), (3, 6), (1, 5), (2, 3)]   
 tsp(coordinates)
