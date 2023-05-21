@@ -187,10 +187,12 @@ class GraspSelector(LeafSystem):
             if X_Crop1_Array[2] < SHELF_HEIGHT_LOWER_LIMIT:
                 X_Crop1_Array[2] = SHELF_HEIGHT_LOWER_LIMIT
 
+            if X_Crop2_Array[2] < SHELF_HEIGHT_LOWER_LIMIT:
+                X_Crop2_Array[2] = SHELF_HEIGHT_LOWER_LIMIT
+
             #print(X_Crop1_Array)
             #print(X_Crop2_Array)
 
-            
             # put spheres to corners of the crop box
             X_B = RigidTransform([0,0,0])
             a = X_B.multiply(X_Crop1_Array)
