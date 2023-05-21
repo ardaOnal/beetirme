@@ -115,8 +115,15 @@ directives:
         
     builder.Connect(station.GetOutputPort("body_poses"), grasp_selector.GetInputPort("body_poses"))
 
-    # Determine the pose of the base of the robot when visiting each shelf
+    # Determine start/delivery pose
     delivery_position = [-2, 0, 0] if CONFIG == 0 else [0, 0, 0]
+    # Set default base joint positions
+    base_joint_x = plant.GetMutableJointByName("mobile_base_joint_x")
+    base_joint_x.set_default_positions([delivery_position[0]])
+    base_joint_y = plant.GetMutableJointByName("mobile_base_joint_y")
+    base_joint_y.set_default_positions([delivery_position[1]])
+
+    # Determine the pose of the base of the robot when visiting each shelf
     shelf_poses = {0: RigidTransform(delivery_position)}
     con = plant.CreateDefaultContext()
     X_Shelf_Robot = RigidTransform(RollPitchYaw(0, 0, -np.pi/2), [0.6, 0, -.6085])
