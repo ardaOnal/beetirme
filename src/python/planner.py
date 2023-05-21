@@ -209,28 +209,36 @@ class Planner(LeafSystem):
         current_time = context.get_time()
 
         y_difference = abs(q[1] - q_shelf[1])
+        # select which side to travel from
+        if abs(q[0]+1.55) + abs(q_shelf[0]+1.55) > abs(q[0]-2) + abs(q_shelf[0]-2):
+            x_pos = 2
+        else:
+            x_pos = -1.55
         # going to a different row in row configuration
         if CONFIG == 0 and y_difference > 1: 
             q_clearance1 = copy(q)
-            q_clearance1[0] = -2
+            q_clearance1[0] = x_pos
             q_clearance2 = copy(q_shelf)
-            q_clearance2[0] = -2
-            key_positions = (q, q_clearance1, q_clearance2, q_shelf, q_shelf)
+            q_clearance2[0] = x_pos
+            key_positions = [q, q_clearance1, q_clearance2, q_shelf]
         else:
-            key_positions = (q, q_shelf, q_shelf)
+            key_positions = [q, q_shelf]
             
         def compute_times_for_base(pos):
             times = [current_time]
             for i in range(1, len(pos)):
                 p = pos[i][:3]
                 last_p = pos[i-1][:3]
-                t = np.linalg.norm(p - last_p) * 1.2
-                if t < 0.1:
-                    t = 1
+                t = np.linalg.norm(p - last_p) * 1.5
+                if t < 1:
+                    t = 3
                 times.append(t + times[-1])
-            return times
+            # to stabilize
+            pos.append(pos[-1])
+            times.append(times[-1]+1.5)
+            return pos, times
         
-        times = compute_times_for_base(key_positions)
+        key_positions, times = compute_times_for_base(key_positions)
         q_traj = PiecewisePolynomial.CubicShapePreserving(times, np.vstack(key_positions).T, True)
         state.get_mutable_abstract_state(int(
             self._traj_q_index)).set_value(q_traj)
@@ -263,7 +271,10 @@ class Planner(LeafSystem):
             skipped_item = item_list.pop(0)
             print("Could not find the item or a valid grasp. Skipping", skipped_item[0])
             state.get_mutable_abstract_state(int(
-                self._item_list_index)).set_value(item_list)          
+                self._item_list_index)).set_value(item_list)
+            state.get_mutable_abstract_state(int(
+                self._mode_index)).set_value(
+                    PlannerState.WAIT_FOR_OBJECTS_TO_SETTLE)
             return
         
         # Rotate the pick pose if necessary

@@ -48,8 +48,8 @@ def clutter_clearing_demo():
         num_shelves = row_count * shelf_row_count
         camera_per_shelf = 4
         camera_count = num_shelves * camera_per_shelf
-        row_increment = 3.3
-        shelf_increment = 1.1
+        row_increment = 1.8
+        shelf_increment = 0.9
         row_start_point=-.6
         shelf_start_point = 0
         env.grid(row_start_point=row_start_point, row_count=row_count, shelf_row_count=shelf_row_count, 
