@@ -135,7 +135,7 @@ directives:
     # select items from GUI
     shopping_list = select_items(plant, items_per_shelf)
     print("initial shopping list: ", shopping_list)
-    shelf_coordinates = [(0, 0)]
+    shelf_coordinates = [(delivery_position[0], delivery_position[1])]
 
     for item in shopping_list:
         shelf_index = item[2]

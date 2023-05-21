@@ -238,6 +238,6 @@ class GraspSelector(LeafSystem):
                 output.set_value((costs[best], X_Gs[best]))
         else:
             print("Could not segment any of the objects")
-            output.set_value((np.inf, None))
+            output.set_value((np.inf, RigidTransform()))
 
 

@@ -204,7 +204,7 @@ class Planner(LeafSystem):
             #xy = (shelf_pose @ RigidTransform([-.4, 0, 0])).translation()[:2]
             #q_shelf[:2] = xy
             #q_shelf[3] = -1.57
-            print("Replanning due to large tracking error")
+            print("Replanning")
         
         current_time = context.get_time()
 
@@ -224,7 +224,7 @@ class Planner(LeafSystem):
             for i in range(1, len(pos)):
                 p = pos[i][:3]
                 last_p = pos[i-1][:3]
-                t = np.linalg.norm(p - last_p)
+                t = np.linalg.norm(p - last_p) * 1.2
                 if t < 0.1:
                     t = 1
                 times.append(t + times[-1])
@@ -249,7 +249,7 @@ class Planner(LeafSystem):
         # pick pose calculation
         cost = np.inf
         mode = PlannerState.PICKING_FROM_SHELF_1
-        for i in range(5):
+        for i in range(3):
             cost, X_G["pick"] = self.get_input_port(
                 self._x_bin_grasp_index).Eval(context)
                         
@@ -257,10 +257,16 @@ class Planner(LeafSystem):
                 break
         
         if np.isinf(cost):
-            self._simulation_done = True
-            print("Could not find a valid grasp in either bin after 5 attempts")
+            # Skip this item
+            item_list = state.get_abstract_state(int(
+                self._item_list_index)).get_value()
+            skipped_item = item_list.pop(0)
+            print("Could not find the item or a valid grasp. Skipping", skipped_item[0])
+            state.get_mutable_abstract_state(int(
+                self._item_list_index)).set_value(item_list)          
             return
         
+        # Rotate the pick pose if necessary
         given_pose = X_G["initial"].rotation()
         pose1 = X_G["pick"].rotation()
         pose2 = X_G["pick"].rotation() @ RotationMatrix(RollPitchYaw(0, np.pi, 0))
@@ -272,8 +278,8 @@ class Planner(LeafSystem):
         rotation_diff2 = given_pose.inverse().multiply(pose2)
         angle_diff2 = rotation_diff2.ToAngleAxis().angle()
 
-        print("Rotation difference with pose1: ", angle_diff1)
-        print("Rotation difference with pose2: ", angle_diff2)
+        # print("Rotation difference with pose1: ", angle_diff1)
+        # print("Rotation difference with pose2: ", angle_diff2)
 
         if angle_diff1 > angle_diff2:
             X_G["pick"] = X_G["pick"] @ RigidTransform(RollPitchYaw(0, np.pi, 0), [0,0,0])
