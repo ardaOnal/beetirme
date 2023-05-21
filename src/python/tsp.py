@@ -10,8 +10,6 @@ def euclidian_distance(tuple1, tuple2):
     y2 = tuple2[1]
     return math.sqrt((x1-x2)**2 + (y1-y2)**2)
 def tsp( coordinates):
-    coordinates=[(0,0), (1, 1), (4, 2), (5, 2), (6, 4), (4, 4), (3, 6), (1, 5), (2, 3)]
-
     distances = []
     for i in range(len(coordinates)):
         arr = []
@@ -31,5 +29,5 @@ def tsp( coordinates):
     # best_state, best_fitness = mlrose.genetic_alg(problem_fit, random_state = 2)
     # print('The best state found is: ', best_state)
 
-coordinates = []   
+coordinates = coordinates=[(1, 1), (4, 2), (5, 2), (6, 4), (4, 4), (3, 6), (1, 5), (2, 3)]   
 tsp(coordinates)
