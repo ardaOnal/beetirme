@@ -75,7 +75,7 @@ def select_items(plant, items_per_shelf=3):
                             added.append((item_name, items_per_shelf if remaining >= items_per_shelf else remaining, shelf_id[j]))
                             remaining -= items_per_shelf
                 else:
-                    added = [(item, amount, shelf_id)]
+                    added = [(item_name, amount, shelf_id)]
                 lst += added
         root.quit()
 

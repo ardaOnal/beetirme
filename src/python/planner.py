@@ -1,6 +1,6 @@
 from pydrake.all import (AbstractValue, InputPortIndex, LeafSystem,
                          PiecewisePolynomial, PiecewisePose, RigidTransform,
-                         RollPitchYaw, Sphere, Rgba)
+                         RollPitchYaw, Sphere, Rgba, RotationMatrix)
 from manipulation.meshcat_utils import AddMeshcatTriad
 from manipulation.pick import (MakeGripperCommandTrajectory, MakeGripperPoseTrajectory)
 from copy import copy
@@ -192,9 +192,6 @@ class Planner(LeafSystem):
         xy = shelf_pose.translation()[:2]
         rotation = RollPitchYaw(shelf_pose.rotation()).yaw_angle()
         q = self.get_input_port(self._iiwa_position_index).Eval(context)
-        # q_clearance = copy(q)
-        # q_clearance[2] = rotation
-        # q_shelf = copy(q_clearance)
         q_shelf = copy(context.get_discrete_state(self._q0_index).get_value())
         q_shelf[:2] = xy
         q_shelf[2] = rotation
@@ -211,17 +208,30 @@ class Planner(LeafSystem):
         
         current_time = context.get_time()
 
-        if CONFIG == 1: # u-environment
-            q_traj = PiecewisePolynomial.CubicShapePreserving(
-                [current_time, current_time + 6.0, current_time + 7.0], np.vstack((q, q_shelf, q_shelf)).T, True)
-        else: # row environment
+        y_difference = abs(q[1] - q_shelf[1])
+        # going to a different row in row configuration
+        if CONFIG == 0 and y_difference > 1: 
             q_clearance1 = copy(q)
             q_clearance1[0] = -2
             q_clearance2 = copy(q_shelf)
             q_clearance2[0] = -2
-            q_traj = PiecewisePolynomial.CubicShapePreserving(
-                [current_time, current_time + 3.0, current_time + 6.0, current_time + 9.0, current_time + 10.0], 
-                np.vstack((q, q_clearance1, q_clearance2, q_shelf, q_shelf)).T, True)
+            key_positions = (q, q_clearance1, q_clearance2, q_shelf, q_shelf)
+        else:
+            key_positions = (q, q_shelf, q_shelf)
+            
+        def compute_times_for_base(pos):
+            times = [current_time]
+            for i in range(1, len(pos)):
+                p = pos[i][:3]
+                last_p = pos[i-1][:3]
+                t = np.linalg.norm(p - last_p)
+                if t < 0.1:
+                    t = 1
+                times.append(t + times[-1])
+            return times
+        
+        times = compute_times_for_base(key_positions)
+        q_traj = PiecewisePolynomial.CubicShapePreserving(times, np.vstack(key_positions).T, True)
         state.get_mutable_abstract_state(int(
             self._traj_q_index)).set_value(q_traj)
 
@@ -250,6 +260,24 @@ class Planner(LeafSystem):
             self._simulation_done = True
             print("Could not find a valid grasp in either bin after 5 attempts")
             return
+        
+        given_pose = X_G["initial"].rotation()
+        pose1 = X_G["pick"].rotation()
+        pose2 = X_G["pick"].rotation() @ RotationMatrix(RollPitchYaw(0, np.pi, 0))
+        # Compute the rotation difference between the given pose and pose1
+        rotation_diff1 = given_pose.inverse().multiply(pose1)
+        angle_diff1 = rotation_diff1.ToAngleAxis().angle()
+
+        # Compute the rotation difference between the given pose and pose2
+        rotation_diff2 = given_pose.inverse().multiply(pose2)
+        angle_diff2 = rotation_diff2.ToAngleAxis().angle()
+
+        print("Rotation difference with pose1: ", angle_diff1)
+        print("Rotation difference with pose2: ", angle_diff2)
+
+        if angle_diff1 > angle_diff2:
+            X_G["pick"] = X_G["pick"] @ RigidTransform(RollPitchYaw(0, np.pi, 0), [0,0,0])
+
         state.get_mutable_abstract_state(int(self._mode_index)).set_value(mode)
 
         # place pose calculation
@@ -284,6 +312,7 @@ class Planner(LeafSystem):
 
         if DEBUG_MODE:  # Useful for debugging
             AddMeshcatTriad(self.meshcat, "X_Ginitial", X_PT=X_G["initial"])
+            #AddMeshcatTriad(self.meshcat, "X_Ginitial", X_PT=X_G["prepare"])
             AddMeshcatTriad(self.meshcat, "X_Gprepick", X_PT=X_G["prepick"])
             AddMeshcatTriad(self.meshcat, "X_Gpick", X_PT=X_G["pick"])
             AddMeshcatTriad(self.meshcat, "X_Gpreplace", X_PT=X_G["preplace"])

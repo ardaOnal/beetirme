@@ -97,7 +97,7 @@ class GraspSelector(LeafSystem):
 
     def SelectGrasp(self, context, output):
         shelf_id = self.GetInputPort("item").Eval(context)[1]
-        # print("shelf", shelf_id)
+        #print("shelf", shelf_id)
 
         rgb_im = self.GetInputPort(f"rgb_s{shelf_id}").Eval(context).data # TO DO make dynamic
         image_pil = PILImage.fromarray(rgb_im).convert("RGB")
@@ -108,7 +108,7 @@ class GraspSelector(LeafSystem):
         #print("picking", text_prompt)
         #text_prompt = 'sugar_box'
         #text_prompt = 'dark_blue_canned_spaghetti'
-        if DEBUG_MODE: print("---Segmenting objects---")
+        if DEBUG_MODE: print(f"---Segmenting {text_prompt} from shelf {shelf_id}---")
         masks, boxes, phrases, logits = self.lang_sam_model.predict(image_pil, text_prompt)
         # print("masks", masks)
         # print("masks shape", masks.shape)
@@ -238,5 +238,6 @@ class GraspSelector(LeafSystem):
                 output.set_value((costs[best], X_Gs[best]))
         else:
             print("Could not segment any of the objects")
+            output.set_value((np.inf, None))
 
 
