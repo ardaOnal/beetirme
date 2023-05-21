@@ -60,7 +60,7 @@ def clutter_clearing_demo():
 
     elif CONFIG == 1:
         side_shelf_count = 3
-        no_of_sides = 2
+        no_of_sides = 3 # between 1 to 3
         num_shelves = side_shelf_count * no_of_sides
         camera_per_shelf = 4
         camera_count = num_shelves * camera_per_shelf
@@ -238,23 +238,12 @@ directives:
             slice_cnt = slice_cnt + items_per_shelf
 
     elif CONFIG == 1:
-        x = shelf_start_point - 0.2
-        y = shelf_start_point
-        z = 0.4
-        # x = 0
-        # y = 0.2
-        # z = 3.5
-
         slice_cnt = 0
         for shelf_index in range(1, num_shelves+1):
-            if shelf_index <= 6:
-                x = -0.06
-                y = 0.23
-                z = -0.1
-            else:
-                x = 0.18
-                y = -0.07
-                z = -0.1
+            x = 0.1
+            y = 0.2
+            z = -0.1
+            
             X_SHELF = plant.GetFrameByName(f"shelves{shelf_index}_origin").CalcPoseInWorld(plant_context)
             helpers.place_items(shelf_index, slice_cnt, slice_cnt+items_per_shelf, X_SHELF, plant, plant_context, x=x, y=y, z=z, items_per_shelf=items_per_shelf)
             slice_cnt = slice_cnt + items_per_shelf
