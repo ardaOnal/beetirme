@@ -12,7 +12,7 @@ from IPython.display import HTML, SVG, display
 from manipulation.meshcat_utils import AddMeshcatTriad
 
 from manipulation import running_as_notebook
-from manipulation.scenarios import  ycb
+from scenarios import ycb
 from manipulation.meshcat_utils import MeshcatPoseSliders
                                     
 import scenarios
@@ -60,7 +60,7 @@ def clutter_clearing_demo():
 
     elif CONFIG == 1:
         side_shelf_count = 3
-        no_of_sides = 3 # between 1 to 3
+        no_of_sides = 1 # between 1 to 3
         num_shelves = side_shelf_count * no_of_sides
         camera_per_shelf = 4
         camera_count = num_shelves * camera_per_shelf

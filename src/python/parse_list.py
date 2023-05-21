@@ -17,7 +17,7 @@ from collections import defaultdict
 # shelf index:  8  item:  <RigidBody_[float] name='base_link_sugar' index=90 model_instance=72>
 # shelf index:  9  item:  <RigidBody_[float] name='base_link_soup' index=93 model_instance=75>
 
-items_to_shelves = {"cracker": (1), "sugar": (2), "soup": (3), "mustard": (4), "jello": (5), "meat": (6)}
+items_to_shelves = {"sponge": (1), "sugar": (2), "soup": (3), "mustard": (4), "jello": (5), "meat": (6)}
 
 def def_value():
     return 0
@@ -39,6 +39,16 @@ def get_item_inventory(plant):
             inventory["jello"] += 1
         elif name == "base_link_meat":
             inventory["meat"] += 1
+        elif name == "plum_link":
+            inventory["plum"] += 1
+        elif name == "chips_can_link":
+            inventory["chips"] += 1
+        elif name == "pudding_box_link":
+            inventory["pudding"] += 1
+        elif name == "link":
+            inventory["beer"] += 1
+        elif name == "sponge_link":
+            inventory["sponge"] += 1
     print(inventory)
     return inventory
 
