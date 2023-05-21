@@ -126,6 +126,17 @@ directives:
 
     # select items from GUI
     shopping_list = select_items(plant, items_per_shelf)
+    shelf_coordinates = [(0, 0, -1)]
+
+    for item in shopping_list:
+        shelf_index = item[2]
+        shelf_coords = shelf_poses[shelf_index].translation()[:2]
+        shelf_x = shelf_coords[0]
+        shelf_y = shelf_coords[1]
+        res = (shelf_x, shelf_y, item[0], item[1], item[2])
+        shelf_coordinates.append(res)
+    print("shelf coords: ", shelf_coordinates)
+
     item_list = []
     for item in shopping_list:
         for i in range(item[1]):

@@ -3,8 +3,8 @@ directives:
     name: shelves1_origin
     X_PF:
         base_frame: world
-        translation: [0, -0.6, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 90]}
+        translation: [3, 3, 0.6085]
+        rotation: !Rpy { deg: [0, 0, 180]}
 
 - add_model:
     name: shelves1
@@ -13,6 +13,7 @@ directives:
 - add_weld:
     parent: shelves1_origin
     child: shelves1::shelves_body
+
 
 - add_frame:
     name: camera0_1_origin
@@ -70,8 +71,8 @@ directives:
     name: shelves2_origin
     X_PF:
         base_frame: world
-        translation: [1.1, -0.6, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 90]}
+        translation: [3, 2, 0.6085]
+        rotation: !Rpy { deg: [0, 0, 180]}
 
 - add_model:
     name: shelves2
@@ -80,6 +81,7 @@ directives:
 - add_weld:
     parent: shelves2_origin
     child: shelves2::shelves_body
+
 
 - add_frame:
     name: camera0_2_origin
@@ -137,8 +139,8 @@ directives:
     name: shelves3_origin
     X_PF:
         base_frame: world
-        translation: [0, 2.6999999999999997, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 90]}
+        translation: [3, 1, 0.6085]
+        rotation: !Rpy { deg: [0, 0, 180]}
 
 - add_model:
     name: shelves3
@@ -147,6 +149,7 @@ directives:
 - add_weld:
     parent: shelves3_origin
     child: shelves3::shelves_body
+
 
 - add_frame:
     name: camera0_3_origin
@@ -204,8 +207,8 @@ directives:
     name: shelves4_origin
     X_PF:
         base_frame: world
-        translation: [1.1, 2.6999999999999997, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 90]}
+        translation: [-3, 3, 0.6085]
+        rotation: !Rpy { deg: [0, 0, 0]}
 
 - add_model:
     name: shelves4
@@ -214,6 +217,7 @@ directives:
 - add_weld:
     parent: shelves4_origin
     child: shelves4::shelves_body
+
 
 - add_frame:
     name: camera0_4_origin
@@ -271,8 +275,8 @@ directives:
     name: shelves5_origin
     X_PF:
         base_frame: world
-        translation: [0, 6.0, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 90]}
+        translation: [-3, 2, 0.6085]
+        rotation: !Rpy { deg: [0, 0, 0]}
 
 - add_model:
     name: shelves5
@@ -281,6 +285,7 @@ directives:
 - add_weld:
     parent: shelves5_origin
     child: shelves5::shelves_body
+
 
 - add_frame:
     name: camera0_5_origin
@@ -338,8 +343,8 @@ directives:
     name: shelves6_origin
     X_PF:
         base_frame: world
-        translation: [1.1, 6.0, 0.6085]
-        rotation: !Rpy { deg: [0, 0, 90]}
+        translation: [-3, 1, 0.6085]
+        rotation: !Rpy { deg: [0, 0, 0]}
 
 - add_model:
     name: shelves6
@@ -348,6 +353,7 @@ directives:
 - add_weld:
     parent: shelves6_origin
     child: shelves6::shelves_body
+
 
 - add_frame:
     name: camera0_6_origin
