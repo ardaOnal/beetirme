@@ -24,9 +24,10 @@ def tsp( coordinates):
     print(permutation)
 
     ans = []
-    for i in range(1, len(permutation)):
-        ans.append((coordinates[i][0], coordinates[i][1], coordinates[i][2], coordinates[i][3], coordinates[i][4]))
-    print(ans)
+    for i in permutation:
+        if i != 0:
+            ans.append((coordinates[i][0], coordinates[i][1], coordinates[i][2], coordinates[i][3], coordinates[i][4]))
+    # print("answer: ", ans)
     return ans, distance
     # Initialize fitness function object using coords_list
     # fitness_coords = mlrose.TravellingSales(coords = coordinates)
@@ -36,5 +37,6 @@ def tsp( coordinates):
     # print('The best state found is: ', best_state)
 
 
-coordinates =[(0, 0), (2.4, 1.0, 'Soup', 1, 3), (2.4, 2.0, 'Sugar', 1, 2), (2.4, 3.0, 'Cracker', 1, 1), (-2.4, 2.0, 'Jello', 1, 5), (-2.4, 3.0, 'Mustard', 1, 4), (-2.4, 1.0, 'Meat', 1, 6)]
-tsp(coordinates)
+# coordinates =[(0, 0), (2.4, 3.0, 'Cracker', 1, 1), (2.4, 2.0, 'Sugar', 1, 2), (2.4, 1.0, 'Soup', 1, 3), (-2.4, 2.0, 'Jello', 1, 5), (-2.4, 3.0, 'Mustard', 1, 4), (-2.4, 1.0, 'Meat', 1, 6)]
+# coordinates =[(0, 0), (2.4, 2.0, 'Sugar', 1, 2), (2.4, 3.0, 'Cracker', 1, 1), (2.4, 1.0, 'Soup', 1, 3), (-2.4, 2.0, 'Jello', 1, 5), (-2.4, 3.0, 'Mustard', 1, 4), (-2.4, 1.0, 'Meat', 1, 6)]
+# tsp(coordinates)

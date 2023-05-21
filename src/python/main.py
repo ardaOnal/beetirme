@@ -26,6 +26,7 @@ from parse_list import select_items
 
 import pydot
 from IPython.display import HTML, SVG, display
+from tsp import tsp
 
 logging.getLogger("drake").addFilter(nodiffik_warnings.NoDiffIKWarnings())
 logging.getLogger("drake").addFilter(nodiffik_warnings.NoSDFWarnings())
@@ -126,7 +127,8 @@ directives:
 
     # select items from GUI
     shopping_list = select_items(plant, items_per_shelf)
-    shelf_coordinates = [(0, 0, -1)]
+    print("initial shopping list: ", shopping_list)
+    shelf_coordinates = [(0, 0)]
 
     for item in shopping_list:
         shelf_index = item[2]
@@ -135,8 +137,16 @@ directives:
         shelf_y = shelf_coords[1]
         res = (shelf_x, shelf_y, item[0], item[1], item[2])
         shelf_coordinates.append(res)
-    print("shelf coords: ", shelf_coordinates)
+    
+    ans, _ = tsp(shelf_coordinates)
+    print("shelf coords: ", ans)
 
+    shopping_list = []
+    for item in ans:
+        tmp = list(item)[2:]
+        shopping_list.append(tuple(tmp))
+
+    print("updated shopping list: ", shopping_list)
     item_list = []
     for item in shopping_list:
         for i in range(item[1]):
