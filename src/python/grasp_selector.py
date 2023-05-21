@@ -91,10 +91,20 @@ class GraspSelector(LeafSystem):
         pC = np.c_[X, Y, Z]
         return pC
 
-    # MAKE DYNAMIC
-    # def SelectGrasp(self, context, output):
-    #     output.set_value((np.inf, RigidTransform()))
-
+    def convertTextPrompt(self, textPrompt):
+        if ( textPrompt == "sugar"): 
+            return "sugar_box"
+        elif ( textPrompt == "mustard"):
+            return "mustard"
+        elif ( textPrompt == "jello"):
+            return "red_jello_box"
+        elif ( textPrompt == "meat"):
+            return "blue_canned_meat"
+        elif ( textPrompt == "soup"):
+            return "canned_tomato_soup"
+        else:
+            return textPrompt
+        
     def SelectGrasp(self, context, output):
         shelf_id = self.GetInputPort("item").Eval(context)[1]
         #print("shelf", shelf_id)
@@ -105,6 +115,9 @@ class GraspSelector(LeafSystem):
         # plt.show()
 
         text_prompt = self.GetInputPort("item").Eval(context)[0]
+
+        text_prompt = self.convertTextPrompt(text_prompt)
+        
         #print("picking", text_prompt)
         #text_prompt = 'sugar_box'
         #text_prompt = 'dark_blue_canned_spaghetti'
@@ -187,10 +200,12 @@ class GraspSelector(LeafSystem):
             if X_Crop1_Array[2] < SHELF_HEIGHT_LOWER_LIMIT:
                 X_Crop1_Array[2] = SHELF_HEIGHT_LOWER_LIMIT
 
+            if X_Crop2_Array[2] < SHELF_HEIGHT_LOWER_LIMIT:
+                X_Crop2_Array[2] = SHELF_HEIGHT_LOWER_LIMIT
+
             #print(X_Crop1_Array)
             #print(X_Crop2_Array)
 
-            
             # put spheres to corners of the crop box
             X_B = RigidTransform([0,0,0])
             a = X_B.multiply(X_Crop1_Array)
