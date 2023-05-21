@@ -22,4 +22,7 @@ source env/bin/activate
 pip install -r requirements.txt
 pip install torch torchvision
 pip install -U git+https://github.com/luca-medeiros/lang-segment-anything.git
+
+pip install python-tsp
+sudo apt-get install python3-tk
 ```
