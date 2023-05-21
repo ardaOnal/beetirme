@@ -5,7 +5,7 @@ directives:
     default_joint_positions:
         mobile_base_joint_x: [0]
         mobile_base_joint_y: [0]
-        mobile_base_joint_r: [3.14]
+        mobile_base_joint_r: [0]
         iiwa_joint_1: [-0.5]
         iiwa_joint_2: [0.1] # default: 0.1
         iiwa_joint_3: [0]

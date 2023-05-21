@@ -59,7 +59,7 @@ def clutter_clearing_demo():
 
     elif CONFIG == 1:
         side_shelf_count = 3
-        no_of_sides = 1
+        no_of_sides = 2
         num_shelves = side_shelf_count * no_of_sides
         camera_per_shelf = 4
         camera_count = num_shelves * camera_per_shelf
@@ -115,7 +115,8 @@ directives:
     builder.Connect(station.GetOutputPort("body_poses"), grasp_selector.GetInputPort("body_poses"))
 
     # Determine the pose of the base of the robot when visiting each shelf
-    shelf_poses = {0: RigidTransform()}
+    delivery_position = [-2, 0, 0] if CONFIG == 0 else [0, 0, 0]
+    shelf_poses = {0: RigidTransform(delivery_position)}
     con = plant.CreateDefaultContext()
     X_Shelf_Robot = RigidTransform(RollPitchYaw(0, 0, -np.pi/2), [0.6, 0, -.6085])
     for shelf_id in range(1, num_shelves+1):
@@ -146,13 +147,15 @@ directives:
     switch = builder.AddSystem(PortSwitch(JOINT_COUNT))
 
     # Set up fixed base differential inverse kinematics.
-    # create fixed plant
-    fixed_plant = MultibodyPlant(time_step=0.001)
-    controller_iiwa = scenarios.AddIiwa(fixed_plant, fixed=True)
-    scenarios.AddWsg(fixed_plant, controller_iiwa, welded=True)
-    fixed_plant.Finalize()
+    # # create fixed plant
+    # fixed_plant = MultibodyPlant(time_step=0.001)
+    # controller_iiwa = scenarios.AddIiwa(fixed_plant, fixed=True)
+    # scenarios.AddWsg(fixed_plant, controller_iiwa, welded=True)
+    # fixed_plant.Finalize()
 
-    diff_ik = scenarios.AddIiwaDifferentialIK(builder, fixed_plant)
+    robot = station.GetSubsystemByName(
+        "iiwa_controller").get_multibody_plant_for_control()
+    diff_ik = scenarios.AddIiwaDifferentialIK(builder, robot)
 
     builder.Connect(planner.GetOutputPort("X_WG"), diff_ik.get_input_port(0))
     builder.Connect(station.GetOutputPort("iiwa_state_estimated"), diff_ik.GetInputPort("robot_state"))

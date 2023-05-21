@@ -10,7 +10,7 @@ from enum import Enum
 
 import pick
 
-from config import DEBUG_MODE
+from config import DEBUG_MODE, CONFIG
 
 class PlannerState(Enum):
     WAIT_FOR_OBJECTS_TO_SETTLE = 1
@@ -204,21 +204,26 @@ class Planner(LeafSystem):
         elif np.linalg.norm(q[:2] - q_shelf[:2]) > 0.4:
             print("Going to shelf", shelf_id, "to pick", item[0])
         else:
-            xy = (shelf_pose @ RigidTransform([-.25, 0, 0])).translation()[:2]
-            q_shelf[:2] = xy
+            #xy = (shelf_pose @ RigidTransform([-.4, 0, 0])).translation()[:2]
+            #q_shelf[:2] = xy
             #q_shelf[3] = -1.57
             print("Replanning due to large tracking error")
         
         current_time = context.get_time()
-        q_traj = PiecewisePolynomial.CubicShapePreserving(
-            [current_time, current_time + 6.0, current_time + 7.0], np.vstack((q, q_shelf, q_shelf)).T, True)
+
+        if CONFIG == 1: # u-environment
+            q_traj = PiecewisePolynomial.CubicShapePreserving(
+                [current_time, current_time + 6.0, current_time + 7.0], np.vstack((q, q_shelf, q_shelf)).T, True)
+        else: # row environment
+            q_clearance1 = copy(q)
+            q_clearance1[0] = -2
+            q_clearance2 = copy(q_shelf)
+            q_clearance2[0] = -2
+            q_traj = PiecewisePolynomial.CubicShapePreserving(
+                [current_time, current_time + 3.0, current_time + 6.0, current_time + 9.0, current_time + 10.0], 
+                np.vstack((q, q_clearance1, q_clearance2, q_shelf, q_shelf)).T, True)
         state.get_mutable_abstract_state(int(
             self._traj_q_index)).set_value(q_traj)
-        
-        # # update q0
-        # q0 = state.get_mutable_discrete_state(
-        #     int(self._q0_index)).get_mutable_value()
-        # q0[:] = q_shelf[:]
 
     def Plan(self, context, state, item):       
         # disable pop block
