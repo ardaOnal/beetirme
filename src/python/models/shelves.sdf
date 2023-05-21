@@ -3,46 +3,64 @@
   <model name="shelves">
     <link name="shelves_body">
       <visual name="right_wall">
-        <pose> 0 0.442 0 0 0 0</pose>
+        <pose> 0 0.442 0.1 0 0 0</pose>
         <geometry>
           <box>
-            <size>0.3 0.016 1.566</size>
+            <size>0.3 0.016 1.416</size>
           </box>
         </geometry>
+        <material>
+          <ambient>1 0.92 0.83 1</ambient>
+          <diffuse>1 0.92 0.83 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <visual name="left_wall">
-        <pose> 0 -0.442 0 0 0 0</pose>
+        <pose> 0 -0.442 0.1 0 0 0</pose>
         <geometry>
           <box>
-            <size>0.3 0.016 1.566</size>
+            <size>0.3 0.016 1.416</size>
           </box>
         </geometry>
+        <material>
+          <ambient>1 0.92 0.83 1</ambient>
+          <diffuse>1 0.92 0.83 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <collision name="right_wall">
-        <pose> 0 0.442 0 0 0 0</pose>
+        <pose> 0 0.442 0.1 0 0 0</pose>
         <geometry>
           <box>
-            <size>0.3 0.016 1.566</size>
+            <size>0.3 0.016 1.416</size>
           </box>
         </geometry>
       </collision>
       <collision name="left_wall">
-        <pose> 0 -0.442 0 0 0 0</pose>
+        <pose> 0 -0.442 0.1 0 0 0</pose>
         <geometry>
           <box>
-            <size>0.3 0.016 1.566</size>
+            <size>0.3 0.016 1.416</size>
           </box>
         </geometry>
       </collision>
     </link>
     <link name="top_and_bottom">
       <visual name="bottom">
-        <pose> 0 0 -0.799 0 0 0</pose>
+        <pose> 0 0 -0.599 0 0 0</pose>
         <geometry>
           <box>
             <size>0.3 0.9 0.016</size>
           </box>
         </geometry>
+        <material>
+          <ambient>1 0.92 0.83 1</ambient>
+          <diffuse>1 0.92 0.83 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <visual name="top">
         <pose> 0 0 0.799 0 0 0</pose>
@@ -51,6 +69,12 @@
             <size>0.3 0.9 0.016</size>
           </box>
         </geometry>
+        <material>
+          <ambient>1 0.92 0.83 1</ambient>
+          <diffuse>1 0.92 0.83 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <visual name="shelf_lower">
         <pose> 0 0 -0.26230 0 0 0</pose>
@@ -59,6 +83,12 @@
             <size>0.3 0.9 0.016</size>
           </box>
         </geometry>
+        <material>
+          <ambient>1 0.92 0.83 1</ambient>
+          <diffuse>1 0.92 0.83 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <visual name="shelf_upper">
         <!-- default z: 0.26230 -->
@@ -68,9 +98,15 @@
             <size>0.3 0.9 0.016</size>
           </box>
         </geometry>
+        <material>
+          <ambient>1 0.92 0.83 1</ambient>
+          <diffuse>1 0.92 0.83 1</diffuse>
+          <specular>0.1 0.1 0.1 1</specular>
+          <emissive>0 0 0 0</emissive>
+        </material>
       </visual>
       <collision name="bottom">
-        <pose> 0 0 -0.799 0 0 0</pose>
+        <pose> 0 0 -0.599 0 0 0</pose>
         <geometry>
           <box>
             <size>0.3 0.9 0.016</size>

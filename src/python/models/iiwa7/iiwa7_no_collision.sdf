@@ -1,9 +1,73 @@
 <?xml version="1.0"?>
 <sdf version="1.7">
   <model name="iiwa7">
+    <link name="mobile_base_link_0">
+      <inertial>
+        <mass>1</mass>
+        <inertia>
+          <ixx>0.0041666666666666675</ixx>
+          <ixy>0.0</ixy>
+          <ixz>0.0</ixz>
+          <iyy>0.0041666666666666675 </iyy>
+          <iyz>0.0</iyz>
+          <izz>0.001666666666666667</izz>
+        </inertia>
+      </inertial>
+      <gravity>1</gravity>
+    </link>
+    <joint name="mobile_base_joint_x" type="prismatic">
+      <child>mobile_base_link_0</child>
+      <parent>world</parent>
+      <axis>
+        <xyz expressed_in="__model__">1 0 0</xyz>
+        <limit>
+          <effort>10</effort>
+          <stiffness>15000</stiffness>
+          <velocity>1</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.0</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
+    <link name="mobile_base_link_1">
+      <inertial>
+        <mass>1</mass>
+        <inertia>
+          <ixx>0.0041666666666666675</ixx>
+          <ixy>0.0</ixy>
+          <ixz>0.0</ixz>
+          <iyy>0.0041666666666666675 </iyy>
+          <iyz>0.0</iyz>
+          <izz>0.001666666666666667</izz>
+        </inertia>
+      </inertial>
+      <gravity>1</gravity>
+    </link>
+    <joint name="mobile_base_joint_y" type="prismatic">
+      <child>mobile_base_link_1</child>
+      <parent>mobile_base_link_0</parent>
+      <axis>
+        <xyz expressed_in="__model__">0 1 0</xyz>
+        <limit>
+          <effort>10</effort>
+          <stiffness>15000</stiffness>
+          <velocity>1</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.0</damping>
+          <friction>0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
     <link name="iiwa_link_0">
       <inertial>
-        <pose>-0.013 0 0.07 0 0 0</pose>
+        <pose>0.49 0 0.07 0 0 0</pose>
         <mass>3.863</mass>
         <inertia>
           <ixx>0.0141</ixx>
@@ -22,13 +86,31 @@
           </mesh>
         </geometry>
         <material>
-          <diffuse>0.4 0.4 0.4 1.0</diffuse>
+          <diffuse>0.0 0.0 0.0 1.0</diffuse>
         </material>
       </visual>
       <gravity>1</gravity>
-      <velocity_decay/>
+      <velocity_decay />
       <self_collide>0</self_collide>
     </link>
+    <joint name="mobile_base_joint_r" type="revolute">
+      <child>iiwa_link_0</child>
+      <parent>mobile_base_link_1</parent>
+      <axis>
+        <xyz expressed_in="__model__">0 0 1</xyz>
+        <limit>
+          <effort>10</effort>
+          <stiffness>30000</stiffness>
+          <velocity>5</velocity>
+        </limit>
+        <dynamics>
+          <damping>0.0</damping>
+          <friction>0.0</friction>
+          <spring_reference>0</spring_reference>
+          <spring_stiffness>0</spring_stiffness>
+        </dynamics>
+      </axis>
+    </joint>
     <link name="iiwa_link_1">
       <pose>0 0 0.1575 0 0 0</pose>
       <inertial>
@@ -51,11 +133,11 @@
           </mesh>
         </geometry>
         <material>
-          <diffuse>0.4 0.4 0.4 1.0</diffuse>
+          <diffuse>1.0 1.0 0.0 1.0</diffuse>
         </material>
       </visual>
       <gravity>1</gravity>
-      <velocity_decay/>
+      <velocity_decay />
       <self_collide>0</self_collide>
     </link>
     <joint name="iiwa_joint_1" type="revolute">
@@ -64,8 +146,8 @@
       <axis>
         <xyz expressed_in="__model__">0 0 1</xyz>
         <limit>
-          <lower>-2.96706</lower>
-          <upper>2.96706</upper>
+          <lower>-4</lower>
+          <upper>4</upper>
           <effort>300</effort>
           <velocity>10</velocity>
         </limit>
@@ -99,11 +181,11 @@
           </mesh>
         </geometry>
         <material>
-          <diffuse>1.0 0.423529411765 0.0392156862745 1.0</diffuse>
+          <diffuse>0.0 0.0 0.0 1.0</diffuse>
         </material>
       </visual>
       <gravity>1</gravity>
-      <velocity_decay/>
+      <velocity_decay />
       <self_collide>0</self_collide>
     </link>
     <joint name="iiwa_joint_2" type="revolute">
@@ -147,11 +229,11 @@
           </mesh>
         </geometry>
         <material>
-          <diffuse>0.4 0.4 0.4 1.0</diffuse>
+          <diffuse>1.0 1.0 0.0 1.0</diffuse>
         </material>
       </visual>
       <gravity>1</gravity>
-      <velocity_decay/>
+      <velocity_decay />
       <self_collide>0</self_collide>
     </link>
     <joint name="iiwa_joint_3" type="revolute">
@@ -195,11 +277,11 @@
           </mesh>
         </geometry>
         <material>
-          <diffuse>1.0 0.423529411765 0.0392156862745 1.0</diffuse>
+          <diffuse>0.0 0.0 0.0 1.0</diffuse>
         </material>
       </visual>
       <gravity>1</gravity>
-      <velocity_decay/>
+      <velocity_decay />
       <self_collide>0</self_collide>
     </link>
     <joint name="iiwa_joint_4" type="revolute">
@@ -243,11 +325,11 @@
           </mesh>
         </geometry>
         <material>
-          <diffuse>0.4 0.4 0.4 1.0</diffuse>
+          <diffuse>1.0 1.0 0.0 1.0</diffuse>
         </material>
       </visual>
       <gravity>1</gravity>
-      <velocity_decay/>
+      <velocity_decay />
       <self_collide>0</self_collide>
     </link>
     <joint name="iiwa_joint_5" type="revolute">
@@ -292,11 +374,11 @@
           </mesh>
         </geometry>
         <material>
-          <diffuse>1.0 0.423529411765 0.0392156862745 1.0</diffuse>
+          <diffuse>0.0 0.0 0.0 1.0</diffuse>
         </material>
       </visual>
       <gravity>1</gravity>
-      <velocity_decay/>
+      <velocity_decay />
       <self_collide>0</self_collide>
     </link>
     <joint name="iiwa_joint_6" type="revolute">
@@ -340,11 +422,11 @@
           </mesh>
         </geometry>
         <material>
-          <diffuse>0.4 0.4 0.4 1.0</diffuse>
+          <diffuse>1.0 1.0 0.0 1.0</diffuse>
         </material>
       </visual>
       <gravity>1</gravity>
-      <velocity_decay/>
+      <velocity_decay />
       <self_collide>0</self_collide>
     </link>
     <joint name="iiwa_joint_7" type="revolute">
