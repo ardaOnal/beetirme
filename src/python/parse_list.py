@@ -115,14 +115,9 @@ def select_items(plant, items_per_shelf=3):
 
     max_label_width = max([len(f"{item} (stock: {max_amounts[index]})") for index, item in enumerate(item_names)])  # Get the maximum label width
 
-    images = [
-        Image.open("src/python/images/cracker.jpg"),
-        Image.open("src/python/images/sugar.jpeg"),
-        Image.open("src/python/images/soup.jpg"),
-        Image.open("src/python/images/mustard.jpg"),
-        Image.open("src/python/images/jello.png"),
-        Image.open("src/python/images/meat.jpg")
-    ]
+    images = []
+    for name in item_names:
+        images.append(Image.open(f"src/python/images/{name.lower()}.jpg"))
 
     resized_images = [
         image.resize((70, 70), Image.Resampling.LANCZOS) for image in images

@@ -3,10 +3,10 @@
   <model name="shelves">
     <link name="shelves_body">
       <visual name="right_wall">
-        <pose> 0 0.442 0 0 0 0</pose>
+        <pose> 0 0.442 0.1 0 0 0</pose>
         <geometry>
           <box>
-            <size>0.3 0.016 1.566</size>
+            <size>0.3 0.016 1.416</size>
           </box>
         </geometry>
         <material>
@@ -17,10 +17,10 @@
         </material>
       </visual>
       <visual name="left_wall">
-        <pose> 0 -0.442 0 0 0 0</pose>
+        <pose> 0 -0.442 0.1 0 0 0</pose>
         <geometry>
           <box>
-            <size>0.3 0.016 1.566</size>
+            <size>0.3 0.016 1.416</size>
           </box>
         </geometry>
         <material>
@@ -31,25 +31,25 @@
         </material>
       </visual>
       <collision name="right_wall">
-        <pose> 0 0.442 0 0 0 0</pose>
+        <pose> 0 0.442 0.1 0 0 0</pose>
         <geometry>
           <box>
-            <size>0.3 0.016 1.566</size>
+            <size>0.3 0.016 1.416</size>
           </box>
         </geometry>
       </collision>
       <collision name="left_wall">
-        <pose> 0 -0.442 0 0 0 0</pose>
+        <pose> 0 -0.442 0.1 0 0 0</pose>
         <geometry>
           <box>
-            <size>0.3 0.016 1.566</size>
+            <size>0.3 0.016 1.416</size>
           </box>
         </geometry>
       </collision>
     </link>
     <link name="top_and_bottom">
       <visual name="bottom">
-        <pose> 0 0 -0.799 0 0 0</pose>
+        <pose> 0 0 -0.599 0 0 0</pose>
         <geometry>
           <box>
             <size>0.3 0.9 0.016</size>
@@ -106,7 +106,7 @@
         </material>
       </visual>
       <collision name="bottom">
-        <pose> 0 0 -0.799 0 0 0</pose>
+        <pose> 0 0 -0.599 0 0 0</pose>
         <geometry>
           <box>
             <size>0.3 0.9 0.016</size>
