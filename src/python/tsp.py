@@ -29,5 +29,5 @@ def tsp( coordinates):
     # best_state, best_fitness = mlrose.genetic_alg(problem_fit, random_state = 2)
     # print('The best state found is: ', best_state)
 
-coordinates = coordinates=[(1, 1), (4, 2), (5, 2), (6, 4), (4, 4), (3, 6), (1, 5), (2, 3)]   
+coordinates = coordinates=[(0,0), (1, 1), (4, 2), (5, 2), (6, 4), (4, 4), (3, 6), (1, 5), (2, 3)]   
 tsp(coordinates)
