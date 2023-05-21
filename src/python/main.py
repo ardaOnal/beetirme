@@ -12,7 +12,7 @@ from IPython.display import HTML, SVG, display
 from manipulation.meshcat_utils import AddMeshcatTriad
 
 from manipulation import running_as_notebook
-from manipulation.scenarios import  ycb
+from scenarios import ycb
 from manipulation.meshcat_utils import MeshcatPoseSliders
                                     
 import scenarios
@@ -26,6 +26,7 @@ from parse_list import select_items
 
 import pydot
 from IPython.display import HTML, SVG, display
+from tsp import tsp
 
 logging.getLogger("drake").addFilter(nodiffik_warnings.NoDiffIKWarnings())
 logging.getLogger("drake").addFilter(nodiffik_warnings.NoSDFWarnings())
@@ -59,7 +60,7 @@ def clutter_clearing_demo():
 
     elif CONFIG == 1:
         side_shelf_count = 3
-        no_of_sides = 2
+        no_of_sides = 1 # between 1 to 3
         num_shelves = side_shelf_count * no_of_sides
         camera_per_shelf = 4
         camera_count = num_shelves * camera_per_shelf
@@ -133,6 +134,26 @@ directives:
 
     # select items from GUI
     shopping_list = select_items(plant, items_per_shelf)
+    print("initial shopping list: ", shopping_list)
+    shelf_coordinates = [(0, 0)]
+
+    for item in shopping_list:
+        shelf_index = item[2]
+        shelf_coords = shelf_poses[shelf_index].translation()[:2]
+        shelf_x = shelf_coords[0]
+        shelf_y = shelf_coords[1]
+        res = (shelf_x, shelf_y, item[0], item[1], item[2])
+        shelf_coordinates.append(res)
+    
+    ans, _ = tsp(shelf_coordinates)
+    print("shelf coords: ", ans)
+
+    shopping_list = []
+    for item in ans:
+        tmp = list(item)[2:]
+        shopping_list.append(tuple(tmp))
+
+    print("updated shopping list: ", shopping_list)
     item_list = []
     for item in shopping_list:
         for i in range(item[1]):
@@ -191,59 +212,17 @@ directives:
   
     plant_context = plant.GetMyMutableContextFromRoot(context)
 
-    # x = -0.20 
-    # y = -0.6
-    # z = 0.4
-
-    if CONFIG == 0: # row config
-        x = shelf_start_point - 0.2
-        y = row_start_point
-        z = 0.4
-        slice_counter = 0
-        # for i in range(row_count):
-        #     for j in range(num_shelves):
-        #         items = list(plant.GetFloatingBaseBodies())[slice_counter:slice_counter+items_per_shelf]
-        #         helpers.place_items(items, plant, plant_context, x=x, y=y, z=z, items_per_shelf=items_per_shelf)
-        #         x += shelf_increment
-        #         slice_counter = slice_counter + items_per_shelf
-        #     y = y + row_increment
-        #     x = shelf_start_point - 0.2
-
-        slice_cnt = 0
-        for shelf_index in range(1, num_shelves+1):
-            # if shelf_index <= 6:
-            #     x = -0.06
-            #     y = 0.23
-            #     z = -0.1
-            # else:
-            x = -0.18
-            y = 0.07
-            z = -0.1
-            X_SHELF = plant.GetFrameByName(f"shelves{shelf_index}_origin").CalcPoseInWorld(plant_context)
-            helpers.place_items_row_config(shelf_index, slice_cnt, slice_cnt+items_per_shelf, X_SHELF, plant, plant_context, x=x, y=y, z=z, items_per_shelf=items_per_shelf)
-            slice_cnt = slice_cnt + items_per_shelf
-
-    elif CONFIG == 1:
-        x = shelf_start_point - 0.2
-        y = shelf_start_point
-        z = 0.4
-        # x = 0
-        # y = 0.2
-        # z = 3.5
-
-        slice_cnt = 0
-        for shelf_index in range(1, num_shelves+1):
-            if shelf_index <= 6:
-                x = -0.06
-                y = 0.23
-                z = -0.1
-            else:
-                x = 0.18
-                y = -0.07
-                z = -0.1
-            X_SHELF = plant.GetFrameByName(f"shelves{shelf_index}_origin").CalcPoseInWorld(plant_context)
-            helpers.place_items(shelf_index, slice_cnt, slice_cnt+items_per_shelf, X_SHELF, plant, plant_context, x=x, y=y, z=z, items_per_shelf=items_per_shelf)
-            slice_cnt = slice_cnt + items_per_shelf
+    # place items
+    slice_cnt = 0
+    for shelf_index in range(1, num_shelves+1):
+        # first item spawn coordinates relative to the shelf
+        x = 0.1
+        y = 0.2
+        z = -0.1
+        
+        X_SHELF = plant.GetFrameByName(f"shelves{shelf_index}_origin").CalcPoseInWorld(plant_context)
+        helpers.place_items(shelf_index, slice_cnt, slice_cnt+items_per_shelf, X_SHELF, plant, plant_context, x=x, y=y, z=z, items_per_shelf=items_per_shelf)
+        slice_cnt = slice_cnt + items_per_shelf
         
 
     # run simulation
