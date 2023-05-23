@@ -31,9 +31,15 @@ import ozgurOguzPhoto from "./static/images/avatar/ozgurOguz.jpg";
 import erhanDolakPhoto from "./static/images/avatar/erhanDolak.jpg";
 import tagmacTopalPhoto from "./static/images/avatar/tagmacTopal.jpg";
 import iiwaPhoto from "./static/images/robot/iiwa.jpg";
+import groupPhoto from "./static/images/group_photo.jpg";
 
 import specReport from "./static/files/reports/T2323_Project_Specification_Document.pdf";
 import analReport from "./static/files/reports/T2323_Analysis_Requirements_Report.pdf";
+import designReport from "./static/files/reports/T2323_Detail_Design_Document.pdf";
+import finalReport from "./static/files/reports/T2323_FinalReport.pdf";
+
+import demo1 from "./static/files/presentations/DemoPresentation.pdf";
+import demo2 from "./static/files/presentations/FinalDemoPresentation.pdf";
 
 const paddingMarginStyle: React.CSSProperties = { margin: 16, padding: 16 };
 const appBarSectionStyle = {
@@ -160,10 +166,14 @@ function App() {
                 with their online orders. GroceryBee will help grocery store
                 employees by collecting the items which are required for an
                 online order from the store shelves, thus speeding up the
-                delivery process. Additionally, GroceryBee will restock shelves
-                which are empty and keep updated stock information in order to
-                inform customers on whether a product is available in the store
-                or not.
+                delivery process. GroceryBee is designed to make decisions in an
+                uncertain environment, so it is able to exploit real-time
+                information from RGB-D cameras to make real-time changes in
+                planning. GroceryBee is able to collect required items in
+                response to the orders while navigating between the supermarket
+                aisles without crashing. It can easily detect requested items on
+                the shelves, picks them up safely and brings them to the
+                delivery point for speedy delivery to customers.
               </Typography>
               <br></br>
               <Typography variant="h5">Repository</Typography>
@@ -192,15 +202,32 @@ function App() {
                   flexDirection: "column",
                 }}
               >
-                <img src={iiwaPhoto} width={"70%"}></img>
-                <Typography>
-                  Screenshot taken from simulation of the robot picking up items
-                  from shelves.
-                </Typography>
+                <iframe
+                  width={"70%"}
+                  height={360}
+                  src="https://www.youtube.com/embed/afYTiJdF9Yk?autoplay=1"
+                ></iframe>
+                <Typography>GroceryBee demo video</Typography>
               </div>
 
               <br></br>
               <List>
+                <ListItem>
+                  <Checkbox defaultChecked disabled={true} />
+                  <ListItemText primary="Merge everything and create final product"></ListItemText>
+                </ListItem>
+                <ListItem>
+                  <Checkbox defaultChecked disabled={true} />
+                  <ListItemText primary="Implementation of Environment Generation"></ListItemText>
+                </ListItem>
+                <ListItem>
+                  <Checkbox defaultChecked disabled={true} />
+                  <ListItemText primary="Implementation of Mobile Navigation"></ListItemText>
+                </ListItem>
+                <ListItem>
+                  <Checkbox defaultChecked disabled={true} />
+                  <ListItemText primary="Implementation of Perception"></ListItemText>
+                </ListItem>
                 <ListItem>
                   <Checkbox defaultChecked disabled={true} />
                   <ListItemText primary="Implementation of Pick and Place with Cameras"></ListItemText>
@@ -237,6 +264,20 @@ function App() {
             <Paper elevation={24} style={paddingMarginStyle}>
               <div id="team">
                 <Typography variant="h3"> Team</Typography>
+              </div>
+
+              <div
+                style={{
+                  alignItems: "center",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <img src={groupPhoto} width={"70%"}></img>
+                <Typography>
+                  From left to right: Arda Önal, Emir Melih Erdem, Mert Barkın
+                  Er, Efe Beydoğan (robo), Eren Polat
+                </Typography>
               </div>
               <List>
                 <ListItem>
@@ -362,6 +403,82 @@ function App() {
                       }}
                     >
                       Project Specification Document
+                    </Typography>
+                  </a>
+                </ListItem>
+                <ListItem>
+                  <ListItemIcon>
+                    <InsertDriveFileIcon />
+                  </ListItemIcon>
+                  <a href={designReport} target="_blank">
+                    <Typography
+                      sx={{
+                        color: "white",
+                        fontSize: "24px",
+                        textDecoration: "underline",
+                        textDecorationColor: "white",
+                      }}
+                    >
+                      Detailed Design Document
+                    </Typography>
+                  </a>
+                </ListItem>
+                <ListItem>
+                  <ListItemIcon>
+                    <InsertDriveFileIcon />
+                  </ListItemIcon>
+                  <a href={finalReport} target="_blank">
+                    <Typography
+                      sx={{
+                        color: "white",
+                        fontSize: "24px",
+                        textDecoration: "underline",
+                        textDecorationColor: "white",
+                      }}
+                    >
+                      Final Report
+                    </Typography>
+                  </a>
+                </ListItem>
+              </List>
+            </Paper>
+
+            <Paper elevation={24} style={paddingMarginStyle}>
+              <div id="demo-presentation-slides">
+                <Typography variant="h3"> Demo presentation slides</Typography>
+              </div>
+              <List>
+                <ListItem>
+                  <ListItemIcon>
+                    <InsertDriveFileIcon />
+                  </ListItemIcon>
+                  <a href={demo1} target="_blank">
+                    <Typography
+                      sx={{
+                        color: "white",
+                        fontSize: "24px",
+                        textDecoration: "underline",
+                        textDecorationColor: "white",
+                      }}
+                    >
+                      CS491 Final Demo Slides
+                    </Typography>
+                  </a>
+                </ListItem>
+                <ListItem>
+                  <ListItemIcon>
+                    <InsertDriveFileIcon />
+                  </ListItemIcon>
+                  <a href={demo2} target="_blank">
+                    <Typography
+                      sx={{
+                        color: "white",
+                        fontSize: "24px",
+                        textDecoration: "underline",
+                        textDecorationColor: "white",
+                      }}
+                    >
+                      CS492 Final Demo Slides
                     </Typography>
                   </a>
                 </ListItem>
