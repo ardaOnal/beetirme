@@ -9,7 +9,7 @@ GroceryBee is a robot to assist grocery stores in keeping up with their online o
 
 # Members
 ![alt text](https://github.com/ardaOnal/grocery-bee/blob/main/GroceryBee.png?raw=true)
-From left to right: Arda Önal, Emir Melih Erdem, Mert Barkın Er, Efe Beydoğan (robo), Eren Polat
+From left to right: Arda Önal, Emir Melih Erdem, Mert Barkın Er, Efe Beydoğan, Eren Polat
 
 - [Arda Önal](https://www.linkedin.com/in/ardaonal/) 21903350
 - [Efe Beydoğan](https://www.linkedin.com/in/efebeydogan/) 21901548

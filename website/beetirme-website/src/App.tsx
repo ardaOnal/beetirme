@@ -276,7 +276,7 @@ function App() {
                 <img src={groupPhoto} width={"70%"}></img>
                 <Typography>
                   From left to right: Arda Önal, Emir Melih Erdem, Mert Barkın
-                  Er, Efe Beydoğan (robo), Eren Polat
+                  Er, Efe Beydoğan, Eren Polat
                 </Typography>
               </div>
               <List>
