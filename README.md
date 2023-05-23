@@ -2,6 +2,9 @@
 GroceryBee is a robot to assist grocery stores in keeping up with their online orders. GroceryBee will help grocery store employees by collecting the items which are required for an online order from the store shelves, thus speeding up the delivery process. GroceryBee is designed to make decisions in an uncertain environment, so it is able to exploit real-time information from RGB-D cameras to make real-time changes in planning. GroceryBee is able to collect required items in response to the orders while navigating between the supermarket aisles without crashing. It can easily detect requested items on the shelves, picks them up safely and brings them to the delivery point for speedy delivery to customers. 
 
 # Members
+![alt text](https://github.com/ardaOnal/grocery-bee/blob/main/GroceryBee.png?raw=true)
+From left to right: Arda Önal, Emir Melih Erdem, Mert Barkın Er, Efe Beydoğan (robo), Eren Polat
+
 - [Arda Önal](https://www.linkedin.com/in/ardaonal/) 21903350
 - [Efe Beydoğan](https://www.linkedin.com/in/efebeydogan/) 21901548
 - [Emir Melih Erdem](https://www.linkedin.com/in/emir-melih-erdem/) 21903100
