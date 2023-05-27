@@ -1,0 +1,33 @@
+<?xml version='1.0'?>
+<sdf version="1.7">
+  <model name="pudding_box">
+    <link name="pudding_box_link">
+      <inertial>
+        <mass>0.00034177208377669197</mass>
+        <inertia>
+          <ixx>5.514501243481536e-07</ixx>
+          <ixy>-2.5122907294555473e-23</ixy>
+          <ixz>3.0872621709290617e-24</ixz>
+          <iyy>3.7221284971339426e-07</iyy>
+          <iyz>-2.5537610425232615e-23</iyz>
+          <izz>2.5064605144990336e-07</izz>
+        </inertia>
+      </inertial>
+      <visual name="pudding_box_link">
+        <geometry>
+          <mesh>
+            <uri>package://grocery/meshes/008_pudding_box_textured.obj</uri>
+	        </mesh>
+        </geometry>
+      </visual>
+      <collision name="collision">
+        <geometry>
+          <mesh>
+            <!-- Use a downsampled mesh for collisions -->
+            <uri>package://grocery/meshes/008_pudding_box_textured.obj</uri>
+	        </mesh>
+        </geometry>
+      </collision>
+    </link>
+  </model>
+</sdf>
