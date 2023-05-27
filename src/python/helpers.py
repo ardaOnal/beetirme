@@ -29,9 +29,16 @@ def place_items(shelf_index, start_index, end_index, shelf_frame, plant, plant_c
         #coordinate_array = [shelf_frame.translation()[0]+x, shelf_frame.translation()[1]+y, shelf_frame.translation()[2]+z]
         
         pitch = -np.pi/2 if body_name == "base_link_sugar" or body_name == "base_link_cracker" else 0
-
+        
         coordinate = [x, y, z]
         roll = RollPitchYaw(-np.pi/2, pitch, 0)
+
+        # place sugar in different orientation to add variety
+        if body_name == "base_link_sugar" and count == 1:
+            roll = RollPitchYaw(-np.pi/2, 0, -np.pi/4)
+            coordinate = [0.05, y, z]
+
+
         tf = RigidTransform(
                 roll,
                 coordinate)

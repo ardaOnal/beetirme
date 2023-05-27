@@ -70,7 +70,7 @@ directives:
     name: shelves2_origin
     X_PF:
         base_frame: world
-        translation: [1.1, -0.6, 0.6085]
+        translation: [0.9, -0.6, 0.6085]
         rotation: !Rpy { deg: [0, 0, 90]}
 
 - add_model:
@@ -137,7 +137,7 @@ directives:
     name: shelves3_origin
     X_PF:
         base_frame: world
-        translation: [0, 2.6999999999999997, 0.6085]
+        translation: [0, 1.2000000000000002, 0.6085]
         rotation: !Rpy { deg: [0, 0, 90]}
 
 - add_model:
@@ -204,7 +204,7 @@ directives:
     name: shelves4_origin
     X_PF:
         base_frame: world
-        translation: [1.1, 2.6999999999999997, 0.6085]
+        translation: [0.9, 1.2000000000000002, 0.6085]
         rotation: !Rpy { deg: [0, 0, 90]}
 
 - add_model:
@@ -271,7 +271,7 @@ directives:
     name: shelves5_origin
     X_PF:
         base_frame: world
-        translation: [0, 6.0, 0.6085]
+        translation: [0, 3.0, 0.6085]
         rotation: !Rpy { deg: [0, 0, 90]}
 
 - add_model:
@@ -338,7 +338,7 @@ directives:
     name: shelves6_origin
     X_PF:
         base_frame: world
-        translation: [1.1, 6.0, 0.6085]
+        translation: [0.9, 3.0, 0.6085]
         rotation: !Rpy { deg: [0, 0, 90]}
 
 - add_model:
