@@ -27,9 +27,9 @@ from pydrake.manipulation.planner import (
 from manipulation.utils import AddPackagePaths, FindResource
 
 ycb = [
-    #"004_sugar_box.sdf", "005_tomato_soup_can.sdf",
-    "008_pudding_box/008_pudding_box.sdf", "005_tomato_soup_can.sdf",
-    "006_mustard_bottle.sdf", "009_gelatin_box.sdf", "010_potted_meat_can.sdf", "011_banana/011_banana.sdf"
+    #"004_sugar_box.sdf", "005_tomato_soup_can.sdf", "008_pudding_box/008_pudding_box.sdf"
+    "004_sugar_box.sdf", "005_tomato_soup_can.sdf",
+    "006_mustard_bottle.sdf", "009_gelatin_box.sdf", "010_potted_meat_can.sdf"
 ]
 
 JOINT_COUNT = 10
