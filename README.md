@@ -17,6 +17,9 @@ From left to right: Arda Önal, Emir Melih Erdem, Mert Barkın Er, Efe Beydoğan
 - [Eren Polat](https://www.linkedin.com/in/eren-polat323/) 21902615
 - [Mert Barkın Er](https://www.linkedin.com/in/mertbarkın/) 21901645
 
+# Poster
+![grocerybee_poster](https://github.com/ardaOnal/grocery-bee/blob/main/Project%20Documents/GroceryBee_Poster_MidQ.png?raw_true)
+
 # Installation
 1) ```git clone https://github.com/ardaOnal/grocery-bee```
 2) Install python3, pip, venv.
