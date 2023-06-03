@@ -6,6 +6,7 @@ GroceryBee is a robot to assist grocery stores in keeping up with their online o
 
 ## Demo video
 [![Watch the video](https://img.youtube.com/vi/afYTiJdF9Yk/maxresdefault.jpg)](https://youtu.be/afYTiJdF9Yk)
+You can also checkout the [playlist](https://www.youtube.com/watch?v=GBnvu19R9jM&list=PL4TliZWXiW8y8ftY_JODTM1IjpGnXDufY&index=1&ab_channel=ArdaOnal) with all of our demo videos.  
 
 # Members
 ![alt text](https://github.com/ardaOnal/grocery-bee/blob/main/GroceryBee.png?raw=true)
