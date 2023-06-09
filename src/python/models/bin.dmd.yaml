@@ -1,15 +1,2 @@
 directives:
-- add_frame:
-    name: bin1_origin
-    X_PF:
-      base_frame: iiwa_link_0
-      rotation: !Rpy { deg: [0.0, 0.0, 90.0 ]}
-      translation: [0.45, 0.05, 0]
 
-- add_model:
-    name: bin1
-    file: package://drake/examples/manipulation_station/models/bin.sdf
-
-- add_weld:
-    parent: bin1_origin
-    child: bin1::bin_base

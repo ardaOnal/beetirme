@@ -19,9 +19,9 @@ class PlannerState(Enum):
     GO_HOME = 4
 
 class Planner(LeafSystem):
-    def __init__(self, plant, joint_count, meshcat, rs, prepick_distance, shelf_poses, item_list):
+    def __init__(self, plant, wsg, joint_count, meshcat, rs, prepick_distance, shelf_poses, item_list):
         LeafSystem.__init__(self)
-        self._gripper_body_index = plant.GetBodyByName("body").index()
+        self._gripper_body_index = plant.GetBodyByName("body", wsg).index()
         self.DeclareAbstractInputPort(
             "body_poses", AbstractValue.Make([RigidTransform()]))
         self._x_bin_grasp_index = self.DeclareAbstractInputPort(
