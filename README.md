@@ -34,7 +34,7 @@ sudo apt-get install python3-tk
 
 # Demo Video
 [![Watch the video](https://img.youtube.com/vi/afYTiJdF9Yk/maxresdefault.jpg)](https://youtu.be/afYTiJdF9Yk)
-You can also checkout the [playlist](https://www.youtube.com/watch?v=GBnvu19R9jM&list=PL4TliZWXiW8y8ftY_JODTM1IjpGnXDufY&index=1&ab_channel=ArdaOnal) with all of our demo videos.  
+You can also check out the [playlist](https://www.youtube.com/watch?v=GBnvu19R9jM&list=PL4TliZWXiW8y8ftY_JODTM1IjpGnXDufY&index=1&ab_channel=ArdaOnal) with all of our demo videos.  
 
 # Members
 ![alt text](https://github.com/ardaOnal/grocery-bee/blob/main/GroceryBee.png?raw=true)
